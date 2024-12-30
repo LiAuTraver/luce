@@ -1,0 +1,23 @@
+# exports_files(
+#     ["loxo_driver.cpp", "execution_context.hpp", "test_env.hpp"],
+#     visibility = ["//visibility:public"],
+# )
+
+cc_library(
+    name = "utils",
+    srcs = glob(["include/net/ancillarycat/utils/**"]),
+    visibility = ["//visibility:public"],
+    linkstatic = True,
+    defines = [
+        "AC_CPP_DEBUG",
+    ],
+    copts = [
+        "/std:c++latest",
+        "/Iinclude",
+        "/Zc:preprocessor",
+    ],
+    deps = [
+        "@fmt",
+        "@spdlog",
+    ],
+)

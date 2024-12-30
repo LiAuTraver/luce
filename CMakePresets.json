@@ -1,0 +1,416 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 15,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "common",
+      "hidden": true,
+      "description": "Common options for all configurations",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE",
+        "CMAKE_CXX_EXTENSIONS": "ON",
+        "CMAKE_CXX_STANDARD": "23",
+        "CMAKE_C_STANDARD": "23",
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "Windows",
+      "hidden": true,
+      "inherits": [
+        "common"
+      ],
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Windows",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "M:/vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        },
+        "VCPKG_MANIFEST_MODE": "OFF",
+        "VCPKG_MANIFEST_INSTALL": "OFF"
+      }
+    },
+    {
+      "name": "Linux",
+      "hidden": true,
+      "inherits": [
+        "common"
+      ],
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "value": "/home/ancillarycat/realhome/build_systems/vcpkg/scripts/buildsystems/vcpkg.cmake",
+          "type": "FILEPATH"
+        },
+        "VCPKG_MANIFEST_MODE": "OFF",
+        "VCPKG_MANIFEST_INSTALL": "OFF"
+      }
+    },
+    {
+      "name": "GNU",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++"
+      }
+    },
+    {
+      "name": "LLVM",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++"
+      },
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++"
+      }
+    },
+    {
+      "name": "MSVC",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CXX_FLAGS": "/Zc:preprocessor"
+      },
+      "environment": {
+        "CC": "cl",
+        "CXX": "cl"
+      }
+    },
+    {
+      "name": "LLVM-MSVC-Compat-Mode",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_CXX_FLAGS": "/EHsc"
+      },
+      "environment": {
+        "CC": "clang-cl",
+        "CXX": "clang-cl"
+      }
+    },
+    {
+      "name": "LLVM-MSVC-Compat-Mode-Debug",
+      "hidden": false,
+      "inherits": [
+        "LLVM-MSVC-Compat-Mode",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "LLVM-MSVC-Compat-Mode-Release",
+      "hidden": false,
+      "inherits": [
+        "LLVM-MSVC-Compat-Mode",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "MSVC-Debug",
+      "hidden": false,
+      "inherits": [
+        "MSVC",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "MSVC-Release",
+      "hidden": false,
+      "inherits": [
+        "MSVC",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "GNU-Debug-Windows",
+      "hidden": false,
+      "inherits": [
+        "GNU",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "GNU-Release-Windows",
+      "hidden": false,
+      "inherits": [
+        "GNU",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "LLVM-Debug-Linux",
+      "hidden": false,
+      "inherits": [
+        "LLVM",
+        "Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "LLVM-Release-Linux",
+      "hidden": false,
+      "inherits": [
+        "LLVM",
+        "Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "LLVM-Debug-Windows",
+      "hidden": false,
+      "inherits": [
+        "LLVM",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "LLVM-Release-Windows",
+      "hidden": false,
+      "inherits": [
+        "LLVM",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "GNU-Debug-Linux",
+      "hidden": false,
+      "inherits": [
+        "GNU",
+        "Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "GNU-Release-Linux",
+      "hidden": false,
+      "inherits": [
+        "GNU",
+        "Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "MSVC-Visual-Studio-Debug",
+      "hidden": false,
+      "inherits": [
+        "MSVC",
+        "Windows"
+      ],
+      "architecture": "x64",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_GENERATOR": "Visual Studio 17 2022",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "MSVC-Visual-Studio-Release",
+      "hidden": false,
+      "inherits": [
+        "MSVC",
+        "Windows"
+      ],
+      "architecture": "x64",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_GENERATOR": "Visual Studio 17 2022",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "Qt6",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_AUTOMOC": "ON",
+        "CMAKE_AUTORCC": "ON",
+        "CMAKE_AUTOUIC": "ON",
+        "QT_VERSION_MAJOR": "6"
+      }
+    },
+    {
+      "name": "Qt6-Windows",
+      "hidden": true,
+      "inherits": [
+        "Windows",
+        "Qt6"
+      ],
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2019_64/lib/cmake/Qt6"
+      }
+    },
+    {
+      "name": "Qt6-Linux",
+      "hidden": true,
+      "inherits": [
+        "Linux",
+        "Qt6"
+      ],
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "/home/ancillarycat/Qt/6.8.0/gcc_64/lib/cmake/Qt6"
+      }
+    },
+    {
+      "name": "Qt6-Linux-GNU-Debug",
+      "hidden": false,
+      "inherits": [
+        "Qt6-Linux",
+        "GNU",
+        "Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Qt6-Linux-GNU-Release",
+      "hidden": false,
+      "inherits": [
+        "Qt6-Linux",
+        "GNU",
+        "Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "Qt6-Windows-MSVC-Debug",
+      "hidden": false,
+      "inherits": [
+        "Qt6-Windows",
+        "MSVC",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Qt6-Windows-MSVC-Release",
+      "hidden": false,
+      "inherits": [
+        "Qt6-Windows",
+        "MSVC",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "CUDA-Windows",
+      "hidden": true,
+      "inherits": [
+        "MSVC",
+        "Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_CUDA_COMPILER": "nvcc",
+        "CMAKE_CUDA_STANDARD": "20",
+        "CMAKE_CUDA_FLAGS": "-std=c++20",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_C_STANDARD": "17",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_CXX_FLAGS": "/std:c++20  /Zc:preprocessor",
+        "CUDA_TOOLKIT_ROOT_DIR": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6",
+        "CUSPARSELT_ROOT": "C:/Program Files/NVIDIA cuSPARSELt/v0.6",
+        "CMAKE_PREFIX_PATH": "C:/Users/LiAu/miniconda3/Lib/site-packages/torch/share/cmake",
+        "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+        "USE_CUDNN": "ON",
+        "USE_CUSPARSELT": "ON",
+        "CAFFE2_USE_CUDNN": "ON"
+      },
+      "environment": {
+        "CC": "cl",
+        "CXX": "cl",
+        "CUDACXX": "nvcc"
+      }
+    },
+    {
+      "name": "CUDA-Windows-Debug",
+      "hidden": false,
+      "inherits": [
+        "CUDA-Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "CUDA-Windows-Release",
+      "hidden": false,
+      "inherits": [
+        "CUDA-Windows"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "CUDA-Visual-Studio-Debug",
+      "hidden": false,
+      "inherits": [
+        "CUDA-Windows-Debug"
+      ],
+      "architecture": "x64",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_GENERATOR": "Visual Studio 17 2022"
+      }
+    },
+    {
+      "name": "CUDA-Visual-Studio-Release",
+      "hidden": false,
+      "inherits": [
+        "CUDA-Windows-Release"
+      ],
+      "architecture": "x64",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_GENERATOR": "Visual Studio 17 2022"
+      }
+    }
+  ]
+}
