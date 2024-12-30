@@ -26,7 +26,7 @@ concept Storable = true;
 template <Variantable... Types> class Variant;
 class Status;
 template <Storable Ty> class StatusOr;
-class file_reader;
+// class file_reader;
 using string = ::std::string;
 using string_view = ::std::string_view;
 using path = ::std::filesystem::path;

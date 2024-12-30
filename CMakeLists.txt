@@ -86,3 +86,5 @@ target_link_libraries(luce PUBLIC
 )
 
 target_compile_features(luce PUBLIC cxx_std_23)
+
+add_subdirectory(test)

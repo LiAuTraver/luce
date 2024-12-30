@@ -1,44 +1,62 @@
 #pragma once
 
-#include <filesystem>
 #include <fstream>
-#include <istream>
-#include <ostream>
+#include <filesystem>
+#include <algorithm>
 #include <sstream>
-#include <utility>
+#include <ranges>
+#include <string>
+#include <bit>
 
+#include "accat/auxilia/details/macros.hpp"
 #include "config.hpp"
-#include "format.hpp"
+#include "Status.hpp"
 
 namespace accat::auxilia {
-/// @brief a simple file reader that reads the contents of a file
-/// @note the file reader is not thread-safe, and will consume a lot of memory
-/// if the file is too big.
-class file_reader {
-public:
-  using path_t = path;
-  using string_t = string;
-  using ifstream_t = ifstream;
-  using ostringstream_t = ostringstream;
+namespace details {
+template <typename TargetType>
+Status check_file(const std::filesystem::path &path) noexcept {
+  if (not std::filesystem::exists(path))
+    return NotFoundError("The file does not exist");
 
-public:
-  inline explicit constexpr file_reader(path_t path_)
-      : filePath(std::move(path_)) {}
-  inline constexpr ~file_reader() = default;
+  // if (std::filesystem::file_size(path) % sizeof(TargetType))
+  // ^^^^ this THROWs! ^^^^ we want `noexcept`
 
-public:
-  [[nodiscard]] inline string_t get_contents() const {
-    ifstream_t file(filePath);
-    if (not file)
-      return {};
+  auto ec = std::error_code{};
+  auto fileSize = std::filesystem::file_size(path, ec);
+  if (ec)
+    return UnknownError(ec.message());
+  if (fileSize % sizeof(TargetType))
+    return InvalidArgumentError(
+        "The file size is not a multiple of the target type size");
 
-    ostringstream_t buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-  }
-  [[nodiscard]] inline path_t filepath() const { return filePath; }
+  return OkStatus();
+}
+} // namespace details
+template <typename TargetType,
+          std::endian Endianess = std::endian::native,
+          typename CharType = char>
+inline StatusOr<std::basic_string<CharType>>
+read_as_bytes(const std::filesystem::path &path) noexcept {
+  static_assert(Endianess == std::endian::native ||
+                    Endianess == std::endian::big ||
+                    Endianess == std::endian::little,
+                "Unsupported endianess");
 
-private:
-  const path_t filePath;
-};
+  if (auto res = details::check_file<TargetType>(path); !res)
+    return {res};
+
+  auto file = std::basic_ifstream<CharType>(path, std::ios::binary);
+  auto buffer = std::basic_ostringstream<CharType>{};
+  buffer << file.rdbuf();
+
+  if constexpr (Endianess == std::endian::native)
+    return {std::move(buffer).str()};
+
+  // differs from the native endianess; reverse the bytes
+  auto data = std::move(buffer).str();
+  auto chunks = data | std::views::chunk(sizeof(TargetType));
+  std::ranges::for_each(chunks, std::ranges::reverse);
+  return {std::move(data)};
+}
 } // namespace accat::auxilia

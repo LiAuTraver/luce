@@ -23,8 +23,9 @@ public:
   InitializeContext(const std::span<const std::string_view> args) {
     auto argc = args.size();
     static ExecutionContext<ISA> ctx;
-    // ctx.emuArgumentParser.init(ctx).ignore_error();
-    // ctx.emuArgumentParser.parse_args(args).ignore_error();
+    // TODO: parse args
+    // ...
+    
     return ctx;
   }
 
