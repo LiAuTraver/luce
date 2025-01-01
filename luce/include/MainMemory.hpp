@@ -208,9 +208,9 @@ public:
     precondition(addr >= physical_base_address &&
                      addr < physical_base_address + physical_memory_size,
                  "Caller should ensure address is within memory bounds before "
-                 "accessing the memory. Call is_in_range() first.");
+                 "accessing the memory. Call is_in_range() first.")
 
-    return self.real_data[addr - physical_base_address];
+        return self.real_data[addr - physical_base_address];
   }
   auto at(physical_address_t addr) const {
     return real_data.at(addr - physical_base_address);

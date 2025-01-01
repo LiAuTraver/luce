@@ -5,8 +5,7 @@
 
 #include "config.hpp"
 
-namespace accat::auxilia {
-namespace detail {
+namespace accat::auxilia::detail {
 /**
  * @brief A random integer generator for integral types.
  *
@@ -18,7 +17,7 @@ namespace detail {
  * @requires Ty must be an integral type.
  */
 template <typename Ty>
-  requires std::is_integral_v<Ty> || std::is_same_v<Ty, __uint128_t>
+  requires std::is_integral_v<Ty>
 struct _random_integer_generator {
   /**
    * @brief Generates a random integer of type Ty.
@@ -45,7 +44,7 @@ struct _random_integer_generator {
 };
 
 template <typename Ty>
-  requires std::is_integral_v<Ty> || std::is_same_v<Ty, __uint128_t>
+  requires std::is_integral_v<Ty>
 inline Ty _random_integer_generator<Ty>::operator()() const {
   static std::uniform_int_distribution<Ty> dist(std::numeric_limits<Ty>::min(),
                                                 std::numeric_limits<Ty>::max());
@@ -55,14 +54,15 @@ inline Ty _random_integer_generator<Ty>::operator()() const {
 }
 
 template <typename Ty>
-  requires std::is_integral_v<Ty> || std::is_same_v<Ty, __uint128_t>
+  requires std::is_integral_v<Ty>
 inline Ty _random_integer_generator<Ty>::operator()(const Ty min,
                                                     const Ty max) const {
   contract_assert(min < max, "min must be less than max");
   return (((*this).operator()()) % (max - min)) + min;
 }
-
-} // namespace detail
+} // namespace accat::auxilia::detail
+AUXILIA_EXPORT
+namespace accat::auxilia {
 /// @brief A random integer generator for 8-bit unsigned integers.
 /// @todo not working: uniform_int_distribution cannot accept unsigned char
 inline constexpr detail::_random_integer_generator<uint8_t> rand_u8;

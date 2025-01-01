@@ -2,14 +2,15 @@
 #include <cstdint>
 #include <memory_resource>
 
-#include "config.hpp"
+#include "./config.hpp"
+AUXILIA_EXPORT
 namespace accat::auxilia {
 [[noreturn]] inline void alloc_failed() {
   contract_assert(0, "Failed to allocate memory");
   std::abort();
 }
 inline void *dynamic_alloc(const size_t size) {
-  if (auto ptr = alloca(size))
+  if (auto ptr = _malloca(size))
     return ptr;
   alloc_failed();
   return nullptr;

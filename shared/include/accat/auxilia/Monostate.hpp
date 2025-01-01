@@ -5,7 +5,7 @@
 
 #include "config.hpp"
 #include "format.hpp"
-
+AUXILIA_EXPORT
 namespace accat::auxilia {
 /// @brief Represents a stateless type that can be used as a
 /// placeholder

@@ -1,4 +1,6 @@
 #pragma once
+#include "./include/config.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <span>
@@ -26,7 +28,7 @@ public:
     static ExecutionContext<ISA> ctx;
     // TODO: parse args
     // ...
-    AC_SPDLOG_INITIALIZATION(emu, debug);
+    AC_SPDLOG_INITIALIZATION(emu, debug)
     bool has_log_file = false;
     std::string log_file;
 
@@ -55,9 +57,9 @@ public:
       console_sink->set_pattern("[%^%l%$] %v");
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(
           spdlog::logger{"luce", {console_sink, file_sink}}));
-      dbg(info, "log file: {}", log_file);
+      dbg(info, "log file: {}", log_file)
     } else {
-      dbg(info, "no log file, only write to stdout");
+      dbg(info, "no log file, only write to stdout")
     }
     return ctx;
   }
@@ -78,6 +80,6 @@ public:
   }
 };
 
-[[nodiscard]] int luce_main([[maybe_unused]] std::span<const std::string_view>);
+LUCE_DRIVER_API [[nodiscard]] int luce_main([[maybe_unused]] std::span<const std::string_view>);
 
 } // namespace accat::luce

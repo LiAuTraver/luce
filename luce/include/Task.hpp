@@ -7,10 +7,10 @@
 #include <utility>
 #include <chrono>
 #include <optional>
-#include "accat/auxilia/Property.hpp"
-#include "accat/auxilia/Status.hpp"
-#include "accat/auxilia/id.hpp"
+#include <accat/auxilia/id.hpp>
+
 #include "isa/architecture.hpp"
+
 
 namespace accat::luce {
 enum class Permission : uint8_t {

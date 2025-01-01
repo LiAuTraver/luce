@@ -1,14 +1,14 @@
 #pragma once
 
+#include "details/macros.hpp"
+
 #include <atomic>
 #include <cstdint>
 #include <limits>
 #include <mutex>
 #include <unordered_set>
 
-namespace accat::auxilia::id {
-
-namespace details {
+namespace accat::auxilia::id::details {
 inline std::atomic_uint32_t _current_id{0};
 inline std::unordered_set<uint32_t> _active_ids;
 inline std::mutex _id_mutex;
@@ -16,10 +16,11 @@ static inline auto _do_insert(const uint32_t id) {
   std::lock_guard<std::mutex> lock(_id_mutex);
   return _active_ids.insert(id);
 }
-} // namespace details
-
+} // namespace accat::auxilia::id::details
+AUXILIA_EXPORT
+namespace accat::auxilia::id {
 inline auto get() {
-  auto id = details::_current_id.fetch_add(1);
+  uint32_t id;
 
   do {
     id = details::_current_id.fetch_add(1);
@@ -38,5 +39,4 @@ inline auto release(const uint32_t id) {
   std::lock_guard<std::mutex> lock(details::_id_mutex);
   return details::_active_ids.erase(id);
 }
-
 } // namespace accat::auxilia::id

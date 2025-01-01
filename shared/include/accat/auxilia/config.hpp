@@ -1,7 +1,8 @@
 #pragma once
 #include "details/macros.hpp"
 
-namespace accat::auxilia  {
+AUXILIA_EXPORT
+namespace accat::auxilia {
 class Monostate;
 /// @brief a concept that checks if the types are variantable for my custom
 /// @link Variant @endlink class,
@@ -56,7 +57,7 @@ template <typename T = void> inline T *alloc(const size_t size) {
   if (auto ptr = malloc(size))
     return static_cast<T *>(ptr);
 
-  spdlog::critical("Failed to allocate memory. The program will now exit.");
+  fprintf(stderr, "Failed to allocate memory. The program will now exit.");
   contract_assert(0, "Failed to allocate memory");
   std::abort();
 }
@@ -65,6 +66,5 @@ template <const auto &Str> struct array_size_t {
   inline static constexpr auto size =
       std::extent_v<std::remove_reference_t<decltype(Str)>>;
 };
-template <const auto &Str> 
-using array_size_v = array_size_t<Str>::size;
+template <const auto &Str> using array_size_v = typename array_size_t<Str>::size;
 } // namespace accat::auxilia

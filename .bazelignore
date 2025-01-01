@@ -1,0 +1,28 @@
+# Build outputs
+bazel-bin
+bazel-out
+bazel-testlogs
+bazel-luce
+
+# Common build directories
+build/
+cmake-build-debug/
+cmake-build-release/
+out/
+
+# IDE directories
+.vs/
+.vscode/
+.idea/
+
+# External dependencies
+external/
+third_party/build/
+
+# Generated files directory
+generated/
+
+# Object file directories
+obj/
+
+x64/

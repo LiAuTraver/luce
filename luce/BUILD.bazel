@@ -1,0 +1,26 @@
+driver_srcs = glob(["src/*.cpp"]) + ["luce_main.cpp"]
+
+driver_includes = ["include", "exec.hpp"]
+
+cc_library(
+    name = "driver",
+    srcs = driver_srcs,
+    copts = [
+        "/std:c++latest",
+        "/Ishared/include",  # MUST be added, relative to the WORKSPACE file
+        "/Zc:preprocessor",
+    ],
+    defines = [
+        "AC_CPP_DEBUG",
+        "LUCE_DRIVER_BUILD_SHARED",
+        "LUCE_DRIVER_EXPORTS",
+    ],
+    includes = driver_includes,
+    linkstatic = False,
+    visibility = ["//visibility:public"],
+    deps = [
+        "@fmt",
+        "@spdlog",
+        "//shared/include/accat/auxilia",
+    ],
+)

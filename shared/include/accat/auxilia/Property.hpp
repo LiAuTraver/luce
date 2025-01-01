@@ -1,6 +1,8 @@
 #pragma once
 
-#include "accat/auxilia/Status.hpp"
+#include "Status.hpp"
+
+AUXILIA_EXPORT
 namespace accat::auxilia {
 /// @brief fancy wrapper around the getter and setter functions
 /// @tparam Instance the parent class

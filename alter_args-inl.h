@@ -2,9 +2,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#pragma warning(push, 0)
+#pragma warning(disable : 6011)
+#pragma warning(disable : 6387)
 static inline char **new_argv = nullptr;
 static inline void cleanup_for_new_args() {
   if (not new_argv)
@@ -42,6 +45,7 @@ static void add_command_if_not_present(int *const argc,
   *argv = new_argv;
   atexit(cleanup_for_new_args);
 }
+#pragma warning(pop)
 #ifdef __cplusplus
 }
 #endif

@@ -1,0 +1,13 @@
+cc_library(
+    name = "auxilia",
+    hdrs = glob([
+        "**/*.hpp",
+        "**/*.h",
+    ]),
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@fmt",
+        "@spdlog",
+    ],
+)

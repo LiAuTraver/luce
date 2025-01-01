@@ -18,7 +18,20 @@
 #  define _Outptr_opt_
 // NOLINTEND
 #endif
-
+#ifdef AC_AUXILIA_BUILD_MODULE
+#define AUXILIA_EXPORT export
+#define AUXILIA_IMPORT(...) import __VA_ARGS__;
+#define AUXILIA_MODULE(...) module __VA_ARGS__;
+#else
+#define AUXILIA_EXPORT
+#define AUXILIA_IMPORT(...)
+#define AUXILIA_MODULE(...)
+#endif
+#if __cpp_static_call_operator >= 202207L
+#  define AC_STATIC_CALL_OPERATOR static
+#else
+#  define AC_STATIC_CALL_OPERATOR
+#endif
 #if defined(AC_CPP_DEBUG)
 /// @def AC_UTILS_DEBUG_ENABLED
 /// @note only defined in debug mode; never define it when submitting
@@ -29,7 +42,7 @@
 /// namely, `fmt`, `spdlog`, and potentially `gtest` and `Google
 /// Benchmark`. release mode carries no dependencies and only requires
 /// C++23.
-#  define AC_UTILS_DEBUG_ENABLED
+#  define AC_UTILS_DEBUG_ENABLED 1
 /// @def AC_UTILS_USE_FMT_FORMAT
 /// @note use fmt::print, fmt::println when compiling with
 /// clang-cl.exe will cause some wired error: Critical error detected
@@ -38,7 +51,7 @@
 /// program will terminate.
 /// @attention now it's ok again, why? maybe I called vcvarsall.bat?
 // #if !(defined(__clang__) && defined(_MSC_VER))
-#  define AC_UTILS_USE_FMT_FORMAT
+#  define AC_UTILS_USE_FMT_FORMAT 1
 #endif
 /// @note GNU on Windows seems failed to perform linking for
 /// `stacktrace` and `spdlog`.
@@ -86,12 +99,6 @@ struct ::fmt::formatter<::std::stacktrace> : ::fmt::formatter<::std::string> {
 #  include <spdlog/spdlog.h>
 #  define AC_UTILS_DEBUG_LOGGING(_level_, _msg_, ...)                          \
     ::spdlog::_level_(_msg_, ##__VA_ARGS__);
-
-#  if __cpp_static_call_operator >= 202207L
-#    define AC_STATIC_CALL_OPERATOR static
-#  else
-#    define AC_STATIC_CALL_OPERATOR
-#  endif
 
 namespace accat::auxilia::detail {
 struct _dbg_block_helper_struct_ {};
@@ -363,7 +370,7 @@ template <class Fun_> struct _utils_deferrer_ {
   inline constexpr ~_utils_deferrer_() { f_(); }
 };
 template <class Fun_>
-AC_STATIC_CALL_OPERATOR inline constexpr auto
+AC_STATIC_CALL_OPERATOR inline AC_CONSTEXPR20 auto
 operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {
   return {f_};
 }

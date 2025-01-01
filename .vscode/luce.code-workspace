@@ -1,9 +1,9 @@
 {
 	"folders": [
-		{
-			"path": ".."
-		},
-	],
+    {
+      "path": ".."
+    }
+  ],
 	"settings": {
 		"animations.Command-Palette": "Slide",
 		"animations.Install-Method": "Apc Customize UI++",

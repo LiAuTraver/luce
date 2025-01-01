@@ -7,11 +7,11 @@
 #include <iostream>
 #include <span>
 #include <string_view>
-#include <accat/auxilia/file_reader.hpp>
-#include <MainMemory.hpp>
-#include "isa/architecture.hpp"
 #include <fmt/ranges.h>
 #include <gtest/gtest.h>
+
+#include "accat/auxilia/file_reader.hpp"
+#include "MainMemory.hpp"
 
 TEST(EndianTest, Test) {
   auto littleEndianData =

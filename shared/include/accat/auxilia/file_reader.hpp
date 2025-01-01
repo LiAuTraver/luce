@@ -11,7 +11,7 @@
 
 #include "config.hpp"
 #include "Status.hpp"
-
+AUXILIA_EXPORT
 namespace accat::auxilia {
 namespace details {
 template <typename TargetType>

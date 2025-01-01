@@ -1,0 +1,36 @@
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
+
+buildifier(
+    name = "buildifier",
+    lint_mode = "warn",
+    mode = "check",
+    verbose = True,
+)
+
+cc_binary(
+    name = "luce",
+    srcs = [
+        "main.cpp",
+    ],
+    copts = [
+        "/std:c++latest",
+        "/Ishared/include",
+        "/Iluce/include",
+        "/Zc:preprocessor",
+    ],
+    defines = [
+        "AC_CPP_DEBUG",
+        "LUCE_DRIVER_BUILD_SHARED",
+    ],
+    includes = [
+        "init-inl.hpp",
+        "alter_args-inl.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//shared/include/accat/auxilia",
+        "//luce:driver",
+        "@fmt",
+        "@spdlog",
+    ],
+)

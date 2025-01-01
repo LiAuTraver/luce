@@ -11,7 +11,7 @@
 #warning "Abseil library detected. I recommend you to use the original Abseil library."
 #endif
 // NOTE:
-// The contents of this header are derived in part from Googls' Abseil library under the following license:
+// The contents of this header are derived in part from Googles' Abseil library under the following license:
 /////////////////////////////////////// Apache License 2.0 ////////////////////////////////////////////////
 
 ///////////////////////////////// BEGINNING OF ABSEIL COPYRIGHT ///////////////////////////////////////////
@@ -78,7 +78,7 @@
 #include <type_traits>
 #include "config.hpp"
 #include "format.hpp"
-
+AUXILIA_EXPORT
 namespace accat::auxilia {
 
 /// @brief A class that represents the status of a function call. it's

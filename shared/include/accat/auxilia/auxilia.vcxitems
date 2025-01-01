@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{5ae05cbd-1d27-41c2-9ab0-accf40a1e84c}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)auxilia.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)defines.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\config.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\details\macros.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\details\variadic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\file_reader.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\format.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\id.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\memory.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\Monostate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\Property.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\random.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\Status.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)\Variant.hpp" />
+  </ItemGroup>
+</Project>
