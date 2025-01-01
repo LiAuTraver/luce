@@ -1,9 +1,7 @@
 #pragma once
-#include <cstdint>
-#include <memory_resource>
 
 #include "./config.hpp"
-AUXILIA_EXPORT
+
 namespace accat::auxilia {
 [[noreturn]] inline void alloc_failed() {
   contract_assert(0, "Failed to allocate memory");

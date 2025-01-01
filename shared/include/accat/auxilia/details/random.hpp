@@ -1,9 +1,6 @@
 #pragma once
-#include <random>
-#include <limits>
-#include <type_traits>
 
-#include "config.hpp"
+#include "./config.hpp"
 
 namespace accat::auxilia::detail {
 /**
@@ -18,6 +15,9 @@ namespace accat::auxilia::detail {
  */
 template <typename Ty>
   requires std::is_integral_v<Ty>
+#ifdef __SIZEOF_INT128__
+  || std::is_same_v<Ty, __uint128_t>
+#endif
 struct _random_integer_generator {
   /**
    * @brief Generates a random integer of type Ty.
@@ -45,6 +45,9 @@ struct _random_integer_generator {
 
 template <typename Ty>
   requires std::is_integral_v<Ty>
+#ifdef __SIZEOF_INT128__
+  || std::is_same_v<Ty, __uint128_t>
+#endif
 inline Ty _random_integer_generator<Ty>::operator()() const {
   static std::uniform_int_distribution<Ty> dist(std::numeric_limits<Ty>::min(),
                                                 std::numeric_limits<Ty>::max());
@@ -55,13 +58,16 @@ inline Ty _random_integer_generator<Ty>::operator()() const {
 
 template <typename Ty>
   requires std::is_integral_v<Ty>
+#ifdef __SIZEOF_INT128__
+  || std::is_same_v<Ty, __uint128_t>
+#endif
 inline Ty _random_integer_generator<Ty>::operator()(const Ty min,
                                                     const Ty max) const {
   contract_assert(min < max, "min must be less than max");
   return (((*this).operator()()) % (max - min)) + min;
 }
 } // namespace accat::auxilia::detail
-AUXILIA_EXPORT
+
 namespace accat::auxilia {
 /// @brief A random integer generator for 8-bit unsigned integers.
 /// @todo not working: uniform_int_distribution cannot accept unsigned char

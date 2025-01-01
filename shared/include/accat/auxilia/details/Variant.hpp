@@ -1,17 +1,10 @@
 #pragma once
 
-#include <utility>
-#include <variant>
-#include <string>
-#include <string_view>
-#include <type_traits>
-#include <typeinfo>
+#include "./config.hpp"
+#include "./format.hpp"
 
-#include "config.hpp"
-#include "format.hpp"
+#include "./Monostate.hpp"
 
-#include "Monostate.hpp"
-AUXILIA_EXPORT
 namespace accat::auxilia {
 /// @brief A simple variant wrapper class around @link std::variant @endlink for
 /// convenience when evaluating expressions, especially when the operation was

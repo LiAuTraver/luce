@@ -7,7 +7,7 @@
 #include <utility>
 #include <chrono>
 #include <optional>
-#include <accat/auxilia/id.hpp>
+#include <accat/auxilia/auxilia.hpp>
 
 #include "isa/architecture.hpp"
 

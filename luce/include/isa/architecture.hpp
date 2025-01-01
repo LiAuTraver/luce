@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <limits>
 
-#include <accat/auxilia/config.hpp>
+#include <accat/auxilia/auxilia.hpp>
 
 namespace accat::luce::isa {
 

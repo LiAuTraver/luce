@@ -1,12 +1,14 @@
+#include "deps.hh"
+
 #include <fmt/base.h>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <ranges>
 #include <span>
-#include <accat/auxilia/file_reader.hpp>
+#include <accat/auxilia/auxilia.hpp>
 #include "MainMemory.hpp"
 #include <cstdint>
-
+import std;
 TEST(load_program, bytes) {
   auto littleEndianData =
       *accat::auxilia::read_as_bytes<uint32_t>("Z:/luce/data/image.bin");

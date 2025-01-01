@@ -4,6 +4,7 @@
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{5ae05cbd-1d27-41c2-9ab0-accf40a1e84c}</ItemsProjectGuid>
+    <ItemsRootNamespace>auxilia</ItemsRootNamespace>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -16,17 +17,17 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)auxilia.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)defines.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\config.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\config.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\file_reader.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\format.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\id.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\memory.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\Monostate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\Property.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\random.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\Status.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\Variant.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)\details\macros.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)\details\variadic.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\file_reader.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\format.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\id.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\memory.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\Monostate.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\Property.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\random.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\Status.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\Variant.hpp" />
   </ItemGroup>
 </Project>

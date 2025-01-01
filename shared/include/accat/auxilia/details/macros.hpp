@@ -1,37 +1,7 @@
 #pragma once
 
-#include <version>
-#include <filesystem>
-#include "variadic.h"
+#include "./variadic.h"
 
-/// @note I use Source Code Annotation sometimes; but libstdc++
-/// doesn't support
-#if __has_include(<sal.h>)
-#  include <sal.h>
-#else
-// NOLINTBEGIN
-#  define _In_
-#  define _Inout_
-#  define _Out_
-#  define _Outptr_
-#  define _Outptr_result_maybenull_
-#  define _Outptr_opt_
-// NOLINTEND
-#endif
-#ifdef AC_AUXILIA_BUILD_MODULE
-#define AUXILIA_EXPORT export
-#define AUXILIA_IMPORT(...) import __VA_ARGS__;
-#define AUXILIA_MODULE(...) module __VA_ARGS__;
-#else
-#define AUXILIA_EXPORT
-#define AUXILIA_IMPORT(...)
-#define AUXILIA_MODULE(...)
-#endif
-#if __cpp_static_call_operator >= 202207L
-#  define AC_STATIC_CALL_OPERATOR static
-#else
-#  define AC_STATIC_CALL_OPERATOR
-#endif
 #if defined(AC_CPP_DEBUG)
 /// @def AC_UTILS_DEBUG_ENABLED
 /// @note only defined in debug mode; never define it when submitting
@@ -53,23 +23,80 @@
 // #if !(defined(__clang__) && defined(_MSC_VER))
 #  define AC_UTILS_USE_FMT_FORMAT 1
 #endif
+
+///////////////////////////// BEGIN OF INCLUDES ////////////////////////////////
+#ifdef __clang__
+#pragma clang diagnostic push
+#endif
+#pragma warning(push, 0)
+#if __has_include(<fmt.hh>)
+#  include <fmt.hh>
+#else
+#  include <fmt/format.h>
+#  include <fmt/ostream.h>
+#  include <fmt/color.h>
+#endif
+#if __has_include(<std.hh>)
+#  include <std.hh>
+#else
+#  include <algorithm>
+#  include <any>
+#  include <atomic>
+#  include <bit>
+#  include <cmath>
+#  include <compare>
+#  include <concepts>
+#  include <cstdint>
+#  include <filesystem>
+#  include <fstream>
+#  include <ios>
+#  include <iostream>
+#  include <limits>
+#  include <memory_resource>
+#  include <mutex>
+#  include <ostream>
+#  include <random>
+#  include <ranges>
+#  include <source_location>
+#  include <sstream>
+#  include <stacktrace>
+#  include <stdexcept>
+#  include <string>
+#  include <string_view>
+#  include <type_traits>
+#  include <typeinfo>
+#  include <unordered_set>
+#  include <utility>
+#  include <variant>
+#  include <version>
+/// @note I use Source Code Annotation sometimes; but libstdc++
+/// doesn't support
+#  if __has_include(<sal.h>)
+#    include <sal.h>
+#  else
+#    define _In_
+#    define _Inout_
+#    define _Out_
+#    define _Outptr_
+#    define _Outptr_result_maybenull_
+#    define _Outptr_opt_
+#  endif
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#pragma warning(pop)
+////////////////////////////// END OF INCLUDES /////////////////////////////////
+#if __cpp_static_call_operator >= 202207L
+#  define AC_STATIC_CALL_OPERATOR static
+#else
+#  define AC_STATIC_CALL_OPERATOR
+#endif
+
 /// @note GNU on Windows seems failed to perform linking for
 /// `stacktrace` and `spdlog`.
-#if __has_include(<stacktrace>) && defined(AC_UTILS_DEBUG_ENABLED) && defined(_WIN32)
-#  include <stacktrace>
+#if defined(AC_UTILS_DEBUG_ENABLED) && defined(_WIN32)
 #  if __has_include(<fmt/format.h>)
-/// how can fmt cannot format std::filesystem::path? let's fix that
-#    include <fmt/format.h>
-#    include <filesystem>
-template <>
-struct ::fmt::formatter<::std::filesystem::path>
-    : ::fmt::formatter<::std::string> {
-  template <typename FormatContext>
-  constexpr auto format(const ::std::filesystem::path &p,
-                        FormatContext &ctx) const -> decltype(ctx.out()) {
-    return ::fmt::formatter<std::string>::format(p.string(), ctx);
-  }
-};
 #    define AC_UTILS_STACKTRACE                                                \
       (::std::format("\n{}", ::std::stacktrace::current()))
 #  else
@@ -385,7 +412,6 @@ operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {
 #define defer AC_DEFER
 #define postcondition AC_DEFER
 
-#include <type_traits>
 // NOLINTBEGIN(bugprone-macro-parentheses)
 /// @def AC_BITMASK_OPS
 /// @brief define the basic bitmask operations for the given bitmask

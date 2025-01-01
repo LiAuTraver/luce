@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <accat/auxilia/config.hpp>
+#include <accat/auxilia/auxilia.hpp>
 #if _WIN32
 #  if defined(LUCE_DRIVER_BUILD_SHARED)
 #    if defined(LUCE_DRIVER_EXPORTS) || defined (luce_driver_EXPORTS)

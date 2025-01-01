@@ -1,17 +1,8 @@
 #pragma once
 
-#include <fstream>
-#include <filesystem>
-#include <algorithm>
-#include <ios>
-#include <sstream>
-#include <ranges>
-#include <string>
-#include <bit>
+#include "./config.hpp"
+#include "./Status.hpp"
 
-#include "config.hpp"
-#include "Status.hpp"
-AUXILIA_EXPORT
 namespace accat::auxilia {
 namespace details {
 template <typename TargetType>

@@ -1,21 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
-  <PropertyGroup Label="UserMacros">
-    <AC_CPP_DEBUG>1</AC_CPP_DEBUG>
-    <SPDLOG_FMT_EXTERNAL>1</SPDLOG_FMT_EXTERNAL>
-    <SPDLOG_FUNCTION>__PRETTY_FUNCTION__</SPDLOG_FUNCTION>
-    <SPDLOG_SHARED_LIB>1</SPDLOG_SHARED_LIB>
-    <SPDLOG_COMPILED_LIB>1</SPDLOG_COMPILED_LIB>
-    <GTEST_CREATE_SHARED_LIBRARY>1</GTEST_CREATE_SHARED_LIBRARY>
-  </PropertyGroup>
   <PropertyGroup>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)luce;$(SolutionDir)luce\include;$(SolutionDir)include;$(SolutionDir)shared\include;$(SolutionDir)driver\include;$(SolutionDir);$(PublicIncludeDirectories)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
+    <PublicIncludeDirectories>$(SolutionDir)include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicModuleDirectories>$(SolutionDir)modules;$(PublicModuleDirectories)</PublicModuleDirectories>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <EnableASAN>true</EnableASAN>
@@ -24,49 +17,49 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <ConformanceMode>true</ConformanceMode>
       <EnableModules>true</EnableModules>
-      <BuildStlModules>true</BuildStlModules>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <WarningLevel>Level3</WarningLevel>
-      <TranslateIncludes>true</TranslateIncludes>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <ExternalWarningLevel>Level1</ExternalWarningLevel>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ExternalTemplatesDiagnostics>true</ExternalTemplatesDiagnostics>
       <DisableSpecificWarnings>26498;4996;4267</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(SolutionDir)luce;$(SolutionDir)include;$(SolutionDir)shared\include;$(SolutionDir)luce\include;$(SolutionDir)</AdditionalIncludeDirectories>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>Disabled</Optimization>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <SDLCheck>true</SDLCheck>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <GuardEHContMetadata>true</GuardEHContMetadata>
+      <OpenMPSupport>true</OpenMPSupport>
+      <GenerateSourceDependencies>true</GenerateSourceDependencies>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)precompiled.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <AssemblyDebug>true</AssemblyDebug>
+      <AdditionalOptions>/ignore:4300 %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <ResourceCompile>
+      <ShowProgress>true</ShowProgress>
+    </ResourceCompile>
+    <PostBuildEvent>
+      <Command>
+        for %%f in (clang_rt.asan_dbg_dynamic-x86_64.dll clang_rt.asan_dbg_dynamic-x86_64.pdb clang_rt.asan_dynamic-x86_64.dll clang_rt.asan_dynamic-x86_64.pdb) do copy "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\Hostx64\x64\%%f" "Z:\luce\x64\Debug\" &gt; nul
+      </Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying AddressSanitizer DLLs and PDBs...</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <BuildMacro Include="AC_CPP_DEBUG">
-      <Value>$(AC_CPP_DEBUG)</Value>
-      <EnvironmentVariable>true</EnvironmentVariable>
-    </BuildMacro>
-    <BuildMacro Include="SPDLOG_FMT_EXTERNAL">
-      <Value>$(SPDLOG_FMT_EXTERNAL)</Value>
-    </BuildMacro>
-    <BuildMacro Include="SPDLOG_FUNCTION">
-      <Value>$(SPDLOG_FUNCTION)</Value>
-    </BuildMacro>
-    <BuildMacro Include="SPDLOG_SHARED_LIB">
-      <Value>$(SPDLOG_SHARED_LIB)</Value>
-    </BuildMacro>
-    <BuildMacro Include="SPDLOG_COMPILED_LIB">
-      <Value>$(SPDLOG_COMPILED_LIB)</Value>
-    </BuildMacro>
-    <BuildMacro Include="GTEST_CREATE_SHARED_LIBRARY">
-      <Value>$(GTEST_CREATE_SHARED_LIBRARY)</Value>
-    </BuildMacro>
-  </ItemGroup>
 </Project>

@@ -1,21 +1,7 @@
 #pragma once
 
-#include <fmt/base.h>
-#include <fmt/color.h>
-#include <any>
-#include <cstdint>
-#include <ostream>
-#include <string>
-#include <string_view>
-#include <type_traits>
-#include <utility>
-#include <variant>
-#include <cmath>
+#include "./config.hpp"
 
-#include "config.hpp"
-#include <fmt/core.h>
-#include <fmt/format.h>
-AUXILIA_EXPORT
 namespace accat::auxilia {
 template <Variantable... Ts> class Variant;
 enum class FormatPolicy : uint8_t;

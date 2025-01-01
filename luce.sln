@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "auxilia", "shared\include\a
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{F6D2F47F-4BA6-4D95-8506-EB2AA9FAE125}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deps", "deps.vcxitems", "{EA3BAA90-1518-4497-AAE0-92C4AA95B172}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -48,7 +50,12 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		deps.vcxitems*{539b3521-4fce-4b49-a26c-53738fd88252}*SharedItemsImports = 4
 		shared\include\accat\auxilia\auxilia.vcxitems*{539b3521-4fce-4b49-a26c-53738fd88252}*SharedItemsImports = 4
 		shared\include\accat\auxilia\auxilia.vcxitems*{5ae05cbd-1d27-41c2-9ab0-accf40a1e84c}*SharedItemsImports = 9
+		deps.vcxitems*{653f6c26-1ca9-4e9e-9235-ba4a00eaed1c}*SharedItemsImports = 4
+		shared\include\accat\auxilia\auxilia.vcxitems*{653f6c26-1ca9-4e9e-9235-ba4a00eaed1c}*SharedItemsImports = 4
+		deps.vcxitems*{ea3baa90-1518-4497-aae0-92c4aa95b172}*SharedItemsImports = 9
+		deps.vcxitems*{f6d2f47f-4ba6-4d95-8506-eb2aa9fae125}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal

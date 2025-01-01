@@ -70,15 +70,10 @@
 ///////////////////////////////// END OF ABSEIL COPYRIGHT ///////////////////////////////////////////
 
 // clang-format on
-#include <concepts>
-#include <limits>
-#include <source_location>
-#include <string>
-#include <string_view>
-#include <type_traits>
-#include "config.hpp"
-#include "format.hpp"
-AUXILIA_EXPORT
+
+#include "./config.hpp"
+#include "./format.hpp"
+
 namespace accat::auxilia {
 
 /// @brief A class that represents the status of a function call. it's

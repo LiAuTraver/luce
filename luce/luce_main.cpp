@@ -1,14 +1,17 @@
+#include "deps.hh"
+
 #include "config.hpp"
 
 #include <fmt/base.h>
 #include <cstdint>
 #include <span>
 #include <iostream>
+#include <accat/auxilia/auxilia.hpp>
 #include "MainMemory.hpp"
 
 #include "Task.hpp"
-#include <accat/auxilia/file_reader.hpp>
 #include "exec.hpp"
+#include "isa/architecture.hpp"
 namespace accat::luce {
 LUCE_DRIVER_API int luce_main(const std::span<const std::string_view> args) {
   int callback = 0;

@@ -1,7 +1,6 @@
 #pragma once
-#include "details/macros.hpp"
+#include "./macros.hpp"
 
-AUXILIA_EXPORT
 namespace accat::auxilia {
 class Monostate;
 /// @brief a concept that checks if the types are variantable for my custom
@@ -66,5 +65,6 @@ template <const auto &Str> struct array_size_t {
   inline static constexpr auto size =
       std::extent_v<std::remove_reference_t<decltype(Str)>>;
 };
-template <const auto &Str> using array_size_v = typename array_size_t<Str>::size;
+template <const auto &Str>
+using array_size_v = typename array_size_t<Str>::size;
 } // namespace accat::auxilia

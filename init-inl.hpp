@@ -4,7 +4,7 @@
 #include <span>
 #include <ranges>
 
-#include <accat/auxilia/memory.hpp>
+#include <accat/auxilia/auxilia.hpp>
 #include "alter_args-inl.h"
 
 namespace accat::luce {

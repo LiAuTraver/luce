@@ -1,12 +1,6 @@
 #pragma once
 
-#include "details/macros.hpp"
-
-#include <atomic>
-#include <cstdint>
-#include <limits>
-#include <mutex>
-#include <unordered_set>
+#include "./config.hpp"
 
 namespace accat::auxilia::id::details {
 inline std::atomic_uint32_t _current_id{0};
@@ -17,7 +11,7 @@ static inline auto _do_insert(const uint32_t id) {
   return _active_ids.insert(id);
 }
 } // namespace accat::auxilia::id::details
-AUXILIA_EXPORT
+
 namespace accat::auxilia::id {
 inline auto get() {
   uint32_t id;

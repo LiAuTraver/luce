@@ -1,11 +1,8 @@
 #pragma once
-#include <compare>
-#include <string>
-#include <string_view>
 
-#include "config.hpp"
-#include "format.hpp"
-AUXILIA_EXPORT
+#include "./config.hpp"
+#include "./format.hpp"
+
 namespace accat::auxilia {
 /// @brief Represents a stateless type that can be used as a
 /// placeholder

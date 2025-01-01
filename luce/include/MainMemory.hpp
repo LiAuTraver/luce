@@ -10,10 +10,7 @@
 #include <memory>
 #include <cstdint>
 #include <stdexcept>
-#include "accat/auxilia/Status.hpp"
-#include "accat/auxilia/details/macros.hpp"
-#include "accat/auxilia/format.hpp"
-#include "accat/auxilia/memory.hpp"
+#include <accat/auxilia/auxilia.hpp>
 #include "isa/architecture.hpp"
 
 namespace accat::luce {
@@ -196,9 +193,7 @@ struct MemoryAccess : private isa::Architecture<ISA> {
 
 public:
   MemoryAccess() {
-    auto sz = physical_memory_size * sizeof(minimal_addressable_unit_t) /
-              sizeof(typename isa::Architecture<
-                     isa::instruction_set::host>::physical_address_t);
+    auto sz = physical_memory_size * sizeof(minimal_addressable_unit_t);
 
     // auto my_alloc = polymorphic_allocator_t::FromSize(sz);
     // real_data = std::pmr::vector<minimal_addressable_unit_t>(&my_alloc);

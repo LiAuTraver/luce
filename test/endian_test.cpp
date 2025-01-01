@@ -1,17 +1,9 @@
-#include <fmt/base.h>
-#include <bit>
-#include <cstddef>
-#include <cstdint>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <span>
-#include <string_view>
-#include <fmt/ranges.h>
-#include <gtest/gtest.h>
+#include "deps.hh"
 
-#include "accat/auxilia/file_reader.hpp"
+#include <accat/auxilia/auxilia.hpp>
 #include "MainMemory.hpp"
+
+#include <gtest/gtest.h>
 
 TEST(EndianTest, Test) {
   auto littleEndianData =
