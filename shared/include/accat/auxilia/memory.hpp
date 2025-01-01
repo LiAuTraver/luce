@@ -4,16 +4,17 @@
 
 #include "config.hpp"
 namespace accat::auxilia {
-[[noreturn]] static void alloc_failed() {
+[[noreturn]] inline void alloc_failed() {
   contract_assert(0, "Failed to allocate memory");
   std::abort();
 }
-static void *dynamic_alloc(const size_t size) { 
+inline void *dynamic_alloc(const size_t size) {
   if (auto ptr = alloca(size))
     return ptr;
   alloc_failed();
   return nullptr;
 }
+/// @note this allocator has some issues when using MSVC compiler
 class FixedSizeMemoryPool : public std::pmr::memory_resource {
 private:
   void *const buffer;

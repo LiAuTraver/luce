@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+include_guard()
 
 find_package(gtest CONFIG REQUIRED)
 find_package(scn CONFIG REQUIRED)
@@ -27,4 +27,5 @@ function(create_test_executable test_name)
   gtest_discover_tests(${test_name})
 endfunction(create_test_executable)
 
-create_test_executable(endian_test endian_test.cpp)
+create_test_executable(endian_test test/endian_test.cpp)
+create_test_executable(memory_load_test test/memory_load_test.cpp)

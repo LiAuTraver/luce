@@ -2,10 +2,11 @@
 //! @file Status.hpp
 //! @brief A class that represents the status of a function call.
 //! @copyright Ancillarycat & The Abseil Authors
-//! @note The contents of this header are derived in part from Google's Abseil Common Libraries.
+//! @note Part of the contents of this header are derived in part from Google's Abseil Common Libraries.
 #ifndef ACCAT_AUXILIA_STATUS_HPP
 #define ACCAT_AUXILIA_STATUS_HPP
 
+#include "accat/auxilia/details/macros.hpp"
 #ifdef ABSL_BASE_CONFIG_H_
 #warning "Abseil library detected. I recommend you to use the original Abseil library."
 #endif
@@ -342,6 +343,7 @@ public:
                            my_location.line(),
                            my_location.column());
   }
+  // monadic operations
   template <typename Self, std::invocable<> Func>
     requires requires(Self &&self, Func &&func) {
       std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>,
@@ -353,7 +355,6 @@ public:
       return self;
     return std::invoke(std::forward<Func>(func));
   }
-  // and_then
   template <typename Self, std::invocable<> Func>
     requires requires(Self &&self, Func &&func) {
       std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>,
@@ -365,7 +366,6 @@ public:
       return self;
     return std::invoke(std::forward<Func>(func));
   }
-
   template <typename Self, std::invocable<> Func>
     requires requires(Self &&self, Func &&func) {
       std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>,
@@ -450,6 +450,8 @@ public:
   }
   [[nodiscard]]
   inline constexpr value_type operator*(this auto &&self) noexcept {
+    precondition(self.ok() or self.code() == Status::kReturning,
+                 "Cannot dereference a status that is not OK.");
     return self.my_value;
   }
   [[nodiscard]]

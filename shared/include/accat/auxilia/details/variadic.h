@@ -6,7 +6,8 @@
 //! in C and C++. It enables overloading of functions based on the
 //! number of parameters provided.
 //!
-//! @note This is an internal header file, included by other library headers.
+//! @note This is an internal header file, included by other library
+//! headers.
 //!
 //! @see
 //! https://stackoverflow.com/questions/11761703/overloading-macro-on-number-of-arguments
@@ -15,7 +16,8 @@
 //! // Example usage:
 //! #define foo(...) AC_UTILS_VFUNC(foo, ##__VA_ARGS__)
 //! // the `##` is used to remove the comma if no arguments are passed;
-//! //                       modern preprocessor will handle this automatically.
+//! //                       modern preprocessor will handle this
+//! automatically.
 //!
 //! void foo_0();
 //! void foo_1(int);

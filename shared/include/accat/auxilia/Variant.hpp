@@ -18,16 +18,13 @@ namespace accat::auxilia {
 /// `to_string` or check the type's name when debugging.
 /// @note exception-free variant wrapper
 template <Variantable... Types>
-class Variant : public Printable<Variant<Types...>>,
+class Variant :public Printable<Variant<Types...>>,
                 public Viewable<Variant<Types...>> {
   using self_type = Variant<Types...>;
-  friend class Printable<self_type>;
-  friend class Viewable<self_type>;
-
 public:
   using variant_type = std::variant<Types...>;
-  using string_type = std::decay_t<self_type>::string_type;
-  using string_view_type = std::decay_t<self_type>::string_view_type;
+  using string_type = typename Printable<self_type>::string_type;
+  using string_view_type = typename Viewable<self_type>::string_view_type;
 
 public:
   inline constexpr Variant() = default;
@@ -46,7 +43,7 @@ public:
     that.my_variant.template emplace<Monostate>();
     return *this;
   }
-  virtual ~Variant() override = default;
+  ~Variant() = default;
 
 public:
   auto set(Variant &&that = {}) noexcept -> Variant & {
@@ -129,12 +126,12 @@ private:
     return ans;
   }
 
-private:
-  constexpr auto to_string_impl(const FormatPolicy &format_policy) const
+public:
+  constexpr auto to_string(const FormatPolicy &format_policy) const
       -> string_type {
     return typeid(decltype(*this)).name();
   }
-  constexpr auto to_string_view_impl(const FormatPolicy &format_policy) const
+  constexpr auto to_string_view(const FormatPolicy &format_policy) const
       -> string_view_type {
     return typeid(decltype(*this)).name();
   }

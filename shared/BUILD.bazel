@@ -5,7 +5,7 @@
 
 cc_library(
     name = "utils",
-    srcs = glob(["include/net/ancillarycat/utils/**"]),
+    srcs = glob(["include/accat/auxilia/**"]),
     visibility = ["//visibility:public"],
     linkstatic = True,
     defines = [

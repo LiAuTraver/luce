@@ -1,5 +1,5 @@
 #pragma once
-#include "./details/macros.hpp"
+#include "details/macros.hpp"
 
 namespace accat::auxilia  {
 class Monostate;

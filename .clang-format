@@ -61,4 +61,4 @@ InsertTrailingCommas: Wrapped
 IndentPPDirectives: AfterHash
 BinPackArguments: false
 BinPackParameters: false
-ColumnLimit: 70
+ColumnLimit: 80

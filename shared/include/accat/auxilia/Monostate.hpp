@@ -13,11 +13,8 @@ namespace accat::auxilia {
 /// @remark Different from `std::monostate`, this class implements two
 /// traits which can be extremely important in my @link Variant
 /// @endlink class.
-class Monostate final : public Printable<Monostate>,
+class Monostate final :public Printable<Monostate>,
                         public Viewable<Monostate> {
-  friend class Printable<Monostate>;
-  friend class Viewable<Monostate>;
-
 public:
   inline consteval Monostate() = default;
   inline constexpr ~Monostate() = default;
@@ -31,13 +28,13 @@ public:
     return *this;
   }
 
-private:
-  inline consteval auto to_string_impl(const FormatPolicy &) const
+public:
+  inline consteval auto to_string(const FormatPolicy &) const
       -> string_type {
     return {};
   }
   inline consteval auto
-  to_string_view_impl(const FormatPolicy &) const
+  to_string_view(const FormatPolicy &) const
       -> string_view_type {
     return {};
   }
