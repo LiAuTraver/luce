@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
-import std;
 
 #include "isa/architecture.hpp"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./variadic.h"
+#include "./variadic-inl.h"
 
 #if defined(AC_CPP_DEBUG)
 /// @def AC_UTILS_DEBUG_ENABLED
@@ -19,8 +19,7 @@
 /// c0000374 A breakpoint instruction (__debugbreak() statement or a
 /// similar call) was executed, which related to heap corruption. The
 /// program will terminate.
-/// @attention now it's ok again, why? maybe I called vcvarsall.bat?
-// #if !(defined(__clang__) && defined(_MSC_VER))
+/// @internal now it's ok again, why? maybe I called vcvarsall.bat?
 #  define AC_UTILS_USE_FMT_FORMAT 1
 #endif
 
@@ -34,74 +33,8 @@
 #  endif
 #endif
 
-///////////////////////////// BEGIN OF INCLUDES ////////////////////////////////
-#pragma warning(push, 0)
-#ifdef __clang__
-#  pragma clang diagnostic push
-#endif
-#ifdef AC_USE_MODULE
-import std;
-// import fmt;
-#else
-#  if __has_include(<fmt.hh>)
-#    include <fmt.hh>
-#  else
-#    include <fmt/format.h>
-#    include <fmt/ostream.h>
-#    include <fmt/color.h>
-#  endif
-#  if __has_include(<std.hh>)
-#    include <std.hh>
-#  else
-#    include <algorithm>
-#    include <any>
-#    include <atomic>
-#    include <bit>
-#    include <cmath>
-#    include <compare>
-#    include <concepts>
-#    include <cstdint>
-#    include <filesystem>
-#    include <fstream>
-#    include <ios>
-#    include <iostream>
-#    include <limits>
-#    include <memory_resource>
-#    include <mutex>
-#    include <ostream>
-#    include <random>
-#    include <ranges>
-#    include <source_location>
-#    include <sstream>
-#    include <stacktrace>
-#    include <stdexcept>
-#    include <string>
-#    include <string_view>
-#    include <type_traits>
-#    include <typeinfo>
-#    include <unordered_set>
-#    include <utility>
-#    include <variant>
-#    include <version>
-/// @note I use Source Code Annotation sometimes; but libstdc++
-/// doesn't support
-#    if __has_include(<sal.h>)
-#      include <sal.h>
-#    else
-#      define _In_
-#      define _Inout_
-#      define _Out_
-#      define _Outptr_
-#      define _Outptr_result_maybenull_
-#      define _Outptr_opt_
-#    endif
-#  endif
-#endif
-#ifdef __clang__
-#  pragma clang diagnostic pop
-#endif
-#pragma warning(pop)
-////////////////////////////// END OF INCLUDES /////////////////////////////////
+#include "./includes-inl.hpp"
+
 #if __cpp_static_call_operator >= 202207L
 #  define AC_STATIC_CALL_OPERATOR static
 #else
@@ -118,8 +51,8 @@ import std;
 template <>
 struct ::fmt::formatter<::std::stacktrace> : ::fmt::formatter<::std::string> {
   template <typename FormatContext>
-  auto format(const ::std::stacktrace &st,
-              FormatContext &ctx) -> decltype(ctx.out()) {
+  auto format(const ::std::stacktrace &st, FormatContext &ctx)
+      -> decltype(ctx.out()) {
     std::string result;
     for (const auto &entry : st) {
       result += fmt::format("{} {} {} {}\n",
@@ -154,8 +87,8 @@ template <class Fun_> struct _dbg_block_ {
 EXPORT_AUXILIA
 template <class Fun_>
 AC_STATIC_CALL_OPERATOR inline constexpr auto
-operator*(_dbg_block_helper_struct_,
-          Fun_ f_) noexcept(noexcept(f_())) -> _dbg_block_<Fun_> {
+operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
+    -> _dbg_block_<Fun_> {
   return {f_};
 }
 } // namespace accat::auxilia::detail
@@ -200,7 +133,7 @@ operator*(_dbg_block_helper_struct_,
 #  define AC_UTILS_DEBUG_BREAK __builtin_debugtrap();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __PRETTY_FUNCTION__
 // Visual Studio's intellisense cannot recognize `elifdef` yet.
-// Use the old, good `#elif` instead.
+// Use the old, good `#elif` here.
 #elif defined(__GNUC__)
 #  define AC_UTILS_FORCEINLINE [[gnu::always_inline]]
 #  define AC_UTILS_DEBUG_BREAK __builtin_trap();
@@ -483,10 +416,25 @@ operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {
       _bitmask_ _left_) noexcept { /* return ~_left_ */                        \
     using _intergral_type_ = ::std::underlying_type_t<_bitmask_>;              \
     return (static_cast<_bitmask_>(~static_cast<_intergral_type_>(_left_)));   \
+  }                                                                            \
+  [[nodiscard]]                                                                \
+  inline constexpr bool operator==(                                            \
+      _bitmask_ _value_,                                                       \
+      std::underlying_type_t<_bitmask_>                                        \
+          _zero_) noexcept { /* return _left_ == _right_ */                    \
+    using _intergral_type_ = ::std::underlying_type_t<_bitmask_>;              \
+    return static_cast<_intergral_type_>(_value_) == _zero_;                   \
+  }                                                                            \
+  [[nodiscard]]                                                                \
+  inline constexpr bool operator!(                                             \
+      _bitmask_ _left_) noexcept { /* return !_left_ */                        \
+    using _intergral_type_ = ::std::underlying_type_t<_bitmask_>;              \
+    return !static_cast<_intergral_type_>(_left_);                             \
   }
 
 /// @def AC_BITMASK_OPS_NESTED
-/// @brief Useful if the enum class is nested inside a template class.
+/// @brief Useful if the enum class is nested inside a template class(usually
+/// you won't do this).
 #define AC_BITMASK_OPS_NESTED(_bitmask_)                                       \
   [[nodiscard]] friend inline constexpr _bitmask_ operator&(                   \
       _bitmask_ _left_,                                                        \
@@ -528,5 +476,20 @@ operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {
       _bitmask_ _left_) noexcept { /* return ~_left_ */                        \
     using _intergral_type_ = ::std::underlying_type_t<_bitmask_>;              \
     return (static_cast<_bitmask_>(~static_cast<_intergral_type_>(_left_)));   \
-  }
+  }                                                                            \
+  [[nodiscard]]                                                                \
+  friend inline constexpr bool operator==(                                     \
+      _bitmask_ _value_,                                                       \
+      std::underlying_type_t<_bitmask_>                                        \
+          _zero_) noexcept { /* return _left_ == _right_ */                    \
+    using _intergral_type_ = ::std::underlying_type_t<_bitmask_>;              \
+    return static_cast<_intergral_type_>(_value_) == _zero_;                   \
+  }                                                                            \
+                                                                               \
+  [[nodiscard]]                                                                \
+  friend inline constexpr bool operator!(                                      \
+      _bitmask_ _left_) noexcept { /* return !_left_ */                        \
+    using _intergral_type_ = ::std::underlying_type_t<_bitmask_>;              \
+    return !static_cast<_intergral_type_>(_left_);                             \
+  }                                                                            \
 // NOLINTEND(bugprone-macro-parentheses)

@@ -21,6 +21,9 @@ cc_binary(
     defines = [
         "AC_CPP_DEBUG",
         "LUCE_DRIVER_BUILD_SHARED",
+        "SPDLOG_FMT_EXTERNAL",
+        "SPDLOG_SHARED_LIB",
+        "SPDLOG_COMPILED_LIB",
     ],
     includes = [
         "init-inl.hpp",

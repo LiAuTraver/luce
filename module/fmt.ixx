@@ -3,6 +3,16 @@
 // avoid unresolved symbol (reason unknown)
 #define FMT_HEADER_ONLY 1
 
+#ifdef __clang__
+#  pragma clang system_header
+#elifdef __GNUC__
+#  pragma GCC system_header
+#elifdef _MSC_VER
+#  pragma system_header
+#else
+// nothing
+#endif
+
 // NOTE:
 // The contents of this header are derived in part from libfmt under the
 // following license:

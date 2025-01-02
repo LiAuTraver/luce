@@ -5,6 +5,16 @@
 // module;
 #pragma once
 
+#ifdef __clang__
+#  pragma clang system_header
+#elifdef __GNUC__
+#  pragma GCC system_header
+#elifdef _MSC_VER
+#  pragma system_header
+#else
+#  pragma system_header
+#endif
+
 // This named module expects to be built with classic headers, not header units.
 // #define _BUILD_STD_MODULE
 

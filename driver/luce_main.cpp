@@ -1,3 +1,4 @@
+#include <deps.hh>
 
 #include <luce/config.hpp>
 
@@ -7,7 +8,7 @@
 #include "exec.hpp"
 
 #include <accat/auxilia/auxilia.hpp>
-#ifndef AC_USE_MODULE
+#ifndef AC_USE_STD_MODULE
 #else
 import accat.auxilia;
 import fmt;

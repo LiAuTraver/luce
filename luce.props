@@ -32,7 +32,7 @@
       <UseStandardPreprocessor>true</UseStandardPreprocessor>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ExternalTemplatesDiagnostics>true</ExternalTemplatesDiagnostics>
-      <DisableSpecificWarnings>26498;4996;4267</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
       <OmitFramePointers>false</OmitFramePointers>
       <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -45,9 +45,11 @@
       <OpenMPSupport>true</OpenMPSupport>
       <GenerateSourceDependencies>true</GenerateSourceDependencies>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <BuildStlModules>true</BuildStlModules>
+<!--      <BuildStlModules>true</BuildStlModules>-->
       <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
       <AdditionalOptions>/Zf %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AssemblyDebug>true</AssemblyDebug>

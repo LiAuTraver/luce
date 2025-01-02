@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <luce/MainMemory.hpp>
 import std;
-// import fmt;
 using namespace accat::luce;
 TEST(load_program, bytes) {
   auto littleEndianData =

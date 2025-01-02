@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////
-//! @file variadic.h
+//! @file variadic-inl.h
 //! @brief Variadic macros for C and C++.
 //!
 //! This file provides macros to define and utilize variadic functions

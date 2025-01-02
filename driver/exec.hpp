@@ -1,7 +1,7 @@
 #pragma once
 #include <luce/config.hpp>
 
-#ifdef AC_USE_MODULE
+#ifdef AC_USE_STD_MODULE
 import std;
 #else
 #endif

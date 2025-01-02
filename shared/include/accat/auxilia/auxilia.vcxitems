@@ -21,16 +21,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)details\file_reader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\format.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\id.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\includes-inl.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\memory.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\Monostate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\Property.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\random.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\Status.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\variadic-inl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\Variant.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\macros.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)details\variadic.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)auxilia.ixx" />
   </ItemGroup>
 </Project>

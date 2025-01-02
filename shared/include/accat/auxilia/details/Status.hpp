@@ -267,7 +267,7 @@ public:
     that.my_message = "This status has been moved from."s;
     that.my_location = std::source_location::current();
   }
-  [[nodiscard]]
+  // [[nodiscard]]
   Status(const Status &that) = default;
   auto operator=(const Status &that) -> Status & = default;
   /// @brief Logical OR operator.
@@ -293,7 +293,7 @@ public:
       return *this;
     return that;
   }
-  [[nodiscard]]
+  // [[nodiscard]]
   Status &operator=(Status &&that) noexcept {
     my_code = that.my_code;
     my_message = std::move(that.my_message);
@@ -456,7 +456,7 @@ public:
   }
   [[nodiscard]]
   inline constexpr base_type as_status(this auto &&self) noexcept {
-    return static_cast<Status &&>(self);
+    return static_cast<base_type &&>(self);
   }
   inline auto reset(Ty &&value = {}) noexcept {
     my_value = std::move(value);

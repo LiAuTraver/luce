@@ -1,7 +1,7 @@
 #pragma once
 #include <accat/auxilia/auxilia.hpp>
 #include <luce/isa/architecture.hpp>
-#ifndef AC_USE_MODULE
+#ifndef AC_USE_STD_MODULE
 #  include <algorithm>
 #  include <array>
 #  include <cstddef>
@@ -157,7 +157,7 @@ public:
     //    Solution 2: use std::as_writable_bytes
     T value;
     auto bytes = std::as_writable_bytes(std::span{&value, 1});
-    for (const auto i : std::views::iota(0, sizeof(T)))
+    for (const auto i : std::views::iota(0ull, sizeof(T)))
       bytes[i] = memory[addr + i];
 
     return value;
