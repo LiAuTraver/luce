@@ -73,6 +73,8 @@ file(GLOB_RECURSE LUCE_HEADER_SOURCES "luce/include/*.hpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shared/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shared)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/luce/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 
 add_executable(luce)
 target_sources(luce PUBLIC
@@ -88,7 +90,9 @@ target_link_libraries(luce PUBLIC
   capstone::capstone
   scn::scn
 )
-
+target_precompile_headers(luce PUBLIC
+  include/deps.hh
+)
 target_compile_features(luce PUBLIC cxx_std_23)
 
 include(cmake/test.cmake)

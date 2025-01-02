@@ -55,7 +55,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        for %%f in (clang_rt.asan_dbg_dynamic-x86_64.dll clang_rt.asan_dbg_dynamic-x86_64.pdb clang_rt.asan_dynamic-x86_64.dll clang_rt.asan_dynamic-x86_64.pdb) do copy "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\Hostx64\x64\%%f" "Z:\luce\x64\Debug\" &gt; nul
+        for %%f in (clang_rt.asan_dbg_dynamic-x86_64.dll clang_rt.asan_dbg_dynamic-x86_64.pdb clang_rt.asan_dynamic-x86_64.dll clang_rt.asan_dynamic-x86_64.pdb) do copy "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\Hostx64\x64\%%f" "Z:\luce\x64\Debug\" &gt; nul 2&gt;&amp;1
       </Command>
     </PostBuildEvent>
     <PostBuildEvent>
