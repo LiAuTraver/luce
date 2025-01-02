@@ -1,6 +1,6 @@
 #pragma once
 #include "./macros.hpp"
-
+EXPORT_AUXILIA
 namespace accat::auxilia {
 class Monostate;
 /// @brief a concept that checks if the types are variantable for my custom
@@ -23,9 +23,9 @@ concept Storable = true;
 //                                       std::is_nothrow_destructible<Ty>,
 //                                       std::is_nothrow_constructible<Ty>>;
 
-template <Variantable... Types> class Variant;
+template <Variantable...> class Variant;
 class Status;
-template <Storable Ty> class StatusOr;
+template <Storable> class StatusOr;
 // class file_reader;
 using string = ::std::string;
 using string_view = ::std::string_view;
@@ -38,15 +38,15 @@ constexpr auto isspacelike = [](const char &c) noexcept -> bool {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 };
 inline consteval const char *raw(const char *str) {
-  while (*str && (*str == '\n')) {
+  while (str && *str && (*str == '\n')) {
     ++str;
   }
-  char *ptr = const_cast<char *>(str);
-  while (*ptr)
+  auto ptr = const_cast<char *>(str);
+  while (ptr && *ptr)
     ptr++;
 
   // remove trailing newline and space
-  while (ptr != str && isspacelike(*ptr)) {
+  while (ptr && ptr != str && isspacelike(*ptr)) {
     *ptr = '\0';
     ptr--;
   }
@@ -57,7 +57,7 @@ template <typename T = void> inline T *alloc(const size_t size) {
     return static_cast<T *>(ptr);
 
   fprintf(stderr, "Failed to allocate memory. The program will now exit.");
-  contract_assert(0, "Failed to allocate memory");
+  contract_assert(0, "Failed to allocate memory")
   std::abort();
 }
 

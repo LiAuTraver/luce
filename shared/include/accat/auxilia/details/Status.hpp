@@ -73,7 +73,7 @@
 
 #include "./config.hpp"
 #include "./format.hpp"
-
+EXPORT_AUXILIA
 namespace accat::auxilia {
 
 /// @brief A class that represents the status of a function call. it's
@@ -597,7 +597,7 @@ RetuenMe(const std::source_location &location =
 
 #define AC_RETURN_IF_NOT(_status_)                                   \
   AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                    \
-  if (auto ac_utils_status_return_ = _status_)                           \
+  if (auto ac_utils_status_return_ = (_status_))                               \
     ;                                                                \
   else {                                                             \
     return ac_utils_status_return_;                                      \

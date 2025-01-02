@@ -1,7 +1,7 @@
 #include "deps.hh"
 
 #include <accat/auxilia/auxilia.hpp>
-#include "MainMemory.hpp"
+#include "luce/MainMemory.hpp"
 
 #include <gtest/gtest.h>
 

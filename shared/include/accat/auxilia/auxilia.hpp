@@ -1,9 +1,5 @@
 ﻿#pragma once
-#ifdef AUXILIA_BUILD_MODULE
-#define EXPORT_AUXILIA export
-#else
-#define EXPORT_AUXILIA
-#endif
+
 #include "./details/config.hpp"
 #include "./details/id.hpp"
 #include "./details/memory.hpp"

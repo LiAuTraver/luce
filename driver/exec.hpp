@@ -1,17 +1,17 @@
 #pragma once
-#include "./include/config.hpp"
+#include <luce/config.hpp>
 
-#include <algorithm>
-#include <cstdint>
-#include <span>
-#include <string>
-#include <string_view>
+#ifdef AC_USE_MODULE
+import std;
+#else
+#endif
+
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <accat/auxilia/auxilia.hpp>
+#include <luce/isa/architecture.hpp>
 
-#include "isa/architecture.hpp"
 namespace accat::luce {
 template <isa::instruction_set ISA>
 class ExecutionContext : public auxilia::Printable<ExecutionContext<ISA>> {

@@ -24,66 +24,81 @@
 #  define AC_UTILS_USE_FMT_FORMAT 1
 #endif
 
+#ifdef AUXILIA_BUILD_MODULE
+#  define EXPORT_AUXILIA export
+#  define AUXILIA_USE_STD_MODULE
+#else
+#  define EXPORT_AUXILIA
+#  if AC_UTILS_DEBUG_ENABLED
+#    include <spdlog/spdlog.h>
+#  endif
+#endif
+
 ///////////////////////////// BEGIN OF INCLUDES ////////////////////////////////
-#ifdef __clang__
-#pragma clang diagnostic push
-#endif
 #pragma warning(push, 0)
-#if __has_include(<fmt.hh>)
-#  include <fmt.hh>
-#else
-#  include <fmt/format.h>
-#  include <fmt/ostream.h>
-#  include <fmt/color.h>
+#ifdef __clang__
+#  pragma clang diagnostic push
 #endif
-#if __has_include(<std.hh>)
-#  include <std.hh>
+#ifdef AC_USE_MODULE
+import std;
+// import fmt;
 #else
-#  include <algorithm>
-#  include <any>
-#  include <atomic>
-#  include <bit>
-#  include <cmath>
-#  include <compare>
-#  include <concepts>
-#  include <cstdint>
-#  include <filesystem>
-#  include <fstream>
-#  include <ios>
-#  include <iostream>
-#  include <limits>
-#  include <memory_resource>
-#  include <mutex>
-#  include <ostream>
-#  include <random>
-#  include <ranges>
-#  include <source_location>
-#  include <sstream>
-#  include <stacktrace>
-#  include <stdexcept>
-#  include <string>
-#  include <string_view>
-#  include <type_traits>
-#  include <typeinfo>
-#  include <unordered_set>
-#  include <utility>
-#  include <variant>
-#  include <version>
+#  if __has_include(<fmt.hh>)
+#    include <fmt.hh>
+#  else
+#    include <fmt/format.h>
+#    include <fmt/ostream.h>
+#    include <fmt/color.h>
+#  endif
+#  if __has_include(<std.hh>)
+#    include <std.hh>
+#  else
+#    include <algorithm>
+#    include <any>
+#    include <atomic>
+#    include <bit>
+#    include <cmath>
+#    include <compare>
+#    include <concepts>
+#    include <cstdint>
+#    include <filesystem>
+#    include <fstream>
+#    include <ios>
+#    include <iostream>
+#    include <limits>
+#    include <memory_resource>
+#    include <mutex>
+#    include <ostream>
+#    include <random>
+#    include <ranges>
+#    include <source_location>
+#    include <sstream>
+#    include <stacktrace>
+#    include <stdexcept>
+#    include <string>
+#    include <string_view>
+#    include <type_traits>
+#    include <typeinfo>
+#    include <unordered_set>
+#    include <utility>
+#    include <variant>
+#    include <version>
 /// @note I use Source Code Annotation sometimes; but libstdc++
 /// doesn't support
-#  if __has_include(<sal.h>)
-#    include <sal.h>
-#  else
-#    define _In_
-#    define _Inout_
-#    define _Out_
-#    define _Outptr_
-#    define _Outptr_result_maybenull_
-#    define _Outptr_opt_
+#    if __has_include(<sal.h>)
+#      include <sal.h>
+#    else
+#      define _In_
+#      define _Inout_
+#      define _Out_
+#      define _Outptr_
+#      define _Outptr_result_maybenull_
+#      define _Outptr_opt_
+#    endif
 #  endif
 #endif
 #ifdef __clang__
-#pragma clang diagnostic pop
+#  pragma clang diagnostic pop
 #endif
 #pragma warning(pop)
 ////////////////////////////// END OF INCLUDES /////////////////////////////////
@@ -103,8 +118,8 @@
 template <>
 struct ::fmt::formatter<::std::stacktrace> : ::fmt::formatter<::std::string> {
   template <typename FormatContext>
-  auto format(const ::std::stacktrace &st, FormatContext &ctx)
-      -> decltype(ctx.out()) {
+  auto format(const ::std::stacktrace &st,
+              FormatContext &ctx) -> decltype(ctx.out()) {
     std::string result;
     for (const auto &entry : st) {
       result += fmt::format("{} {} {} {}\n",
@@ -123,11 +138,11 @@ struct ::fmt::formatter<::std::stacktrace> : ::fmt::formatter<::std::string> {
 #  define AC_UTILS_STACKTRACE ("<no further information>")
 #endif
 #ifdef AC_UTILS_DEBUG_ENABLED
-#  include <spdlog/spdlog.h>
 #  define AC_UTILS_DEBUG_LOGGING(_level_, _msg_, ...)                          \
     ::spdlog::_level_(_msg_, ##__VA_ARGS__);
 
 namespace accat::auxilia::detail {
+EXPORT_AUXILIA
 struct _dbg_block_helper_struct_ {};
 template <class Fun_> struct _dbg_block_ {
   inline constexpr _dbg_block_(Fun_ f) {
@@ -136,10 +151,11 @@ template <class Fun_> struct _dbg_block_ {
   }
   inline constexpr ~_dbg_block_() = default;
 };
+EXPORT_AUXILIA
 template <class Fun_>
 AC_STATIC_CALL_OPERATOR inline constexpr auto
-operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
-    -> _dbg_block_<Fun_> {
+operator*(_dbg_block_helper_struct_,
+          Fun_ f_) noexcept(noexcept(f_())) -> _dbg_block_<Fun_> {
   return {f_};
 }
 } // namespace accat::auxilia::detail
@@ -202,7 +218,6 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __func__
 #endif
 #ifdef AC_UTILS_DEBUG_ENABLED
-#  include <source_location>
 #  define AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                      \
     switch (0)                                                                 \
     case 0:                                                                    \
@@ -390,12 +405,14 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 namespace accat::auxilia::detail {
 /// @see
 /// https://stackoverflow.com/questions/32432450/what-is-standard-defer-finalizer-implementation-in-c
+EXPORT_AUXILIA
 struct _utils_defer_helper_struct_ {};
 template <class Fun_> struct _utils_deferrer_ {
   Fun_ f_;
   inline constexpr _utils_deferrer_(Fun_ f) : f_(f) {}
   inline constexpr ~_utils_deferrer_() { f_(); }
 };
+EXPORT_AUXILIA
 template <class Fun_>
 AC_STATIC_CALL_OPERATOR inline AC_CONSTEXPR20 auto
 operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {

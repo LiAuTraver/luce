@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./config.hpp"
-
+EXPORT_AUXILIA
 namespace accat::auxilia {
 template <Variantable... Ts> class Variant;
 enum class FormatPolicy : uint8_t;

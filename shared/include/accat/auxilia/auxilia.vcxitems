@@ -8,7 +8,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)..\..\</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -27,7 +27,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)details\random.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\Status.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)details\Variant.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\details\macros.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)\details\variadic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\macros.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)details\variadic.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)auxilia.ixx" />
   </ItemGroup>
 </Project>

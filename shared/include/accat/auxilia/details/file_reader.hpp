@@ -3,8 +3,7 @@
 #include "./config.hpp"
 #include "./Status.hpp"
 
-namespace accat::auxilia {
-namespace details {
+namespace accat::auxilia::details {
 template <typename TargetType>
 inline Status check_file(const std::filesystem::path &path) noexcept {
   if (not std::filesystem::exists(path))
@@ -23,7 +22,9 @@ inline Status check_file(const std::filesystem::path &path) noexcept {
 
   return OkStatus();
 }
-} // namespace details
+} // namespace accat::auxilia::details
+EXPORT_AUXILIA
+namespace accat::auxilia {
 template <typename TargetType,
           std::endian Endianess = std::endian::native,
           typename CharType = char>

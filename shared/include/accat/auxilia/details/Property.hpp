@@ -10,6 +10,7 @@ namespace accat::auxilia {
 /// @tparam Field the field type
 /// @tparam ReturnType the return type of the getter function
 /// @tparam getter the getter function
+EXPORT_AUXILIA
 template <typename Instance,
           typename Field,
           typename ReturnType,

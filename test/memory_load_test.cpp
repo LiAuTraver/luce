@@ -1,14 +1,13 @@
-#include "deps.hh"
-
-#include <fmt/base.h>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <ranges>
 #include <span>
 #include <accat/auxilia/auxilia.hpp>
-#include "MainMemory.hpp"
 #include <cstdint>
+#include <luce/MainMemory.hpp>
 import std;
+// import fmt;
+using namespace accat::luce;
 TEST(load_program, bytes) {
   auto littleEndianData =
       *accat::auxilia::read_as_bytes<uint32_t>("Z:/luce/data/image.bin");
@@ -16,12 +15,17 @@ TEST(load_program, bytes) {
   auto little_endian_byte_span =
       std::span{reinterpret_cast<const std::byte *>(littleEndianData.data()),
                 littleEndianData.size()};
-  accat::luce::MainMemory<accat::luce::isa::instruction_set::riscv32> memory;
+  MainMemory<isa::instruction_set::riscv32> memory;
   memory.load_program(little_endian_byte_span);
 
+  std::vector<std::byte> readData;
+  readData.reserve(littleEndianData.size());
   for (const auto i : std::ranges::views::iota(0ull, littleEndianData.size())) {
+    readData.push_back(*memory.read(0x80000000 + i));
     EXPECT_EQ(*memory.read(0x80000000 + i), little_endian_byte_span[i]);
-    fmt::println("r: {:#04x}, o: {:#04x}", static_cast<unsigned int>(*memory.read(0x80000000 + i)),
-                 static_cast<unsigned int>(little_endian_byte_span[i]));
   }
+  fmt::println("Orig: {:#04x}\n"
+               "Read: {:#04x}",
+               fmt::join(littleEndianData, " "),
+               fmt::join(readData, " "));
 }

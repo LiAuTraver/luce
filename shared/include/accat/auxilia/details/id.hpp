@@ -11,7 +11,7 @@ static inline auto _do_insert(const uint32_t id) {
   return _active_ids.insert(id);
 }
 } // namespace accat::auxilia::id::details
-
+EXPORT_AUXILIA
 namespace accat::auxilia::id {
 inline auto get() {
   uint32_t id;

@@ -68,18 +68,21 @@ if(AC_CPP_DEBUG)
   endif()
 endif()
 
-file(GLOB_RECURSE LUCE_DRIVER_SOURCES "luce/src/*.cpp")
-file(GLOB_RECURSE LUCE_HEADER_SOURCES "luce/include/*.hpp")
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shared/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/shared)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/luce/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+file(GLOB_RECURSE LUCE_DRIVER_SOURCES "driver/src/*.cpp")
+file(GLOB_RECURSE LUCE_HEADER_SOURCES "driver/luce/*.hpp")
+list(APPEND LUCE_DRIVER_SOURCES "driver/luce_main.cpp")
+list(APPEND LUCE_HEADER_SOURCES "driver/exec.hpp")
 
+include_directories(shared/include)
+include_directories(shared)
+include_directories(driver)
+include_directories(include)
 
 add_executable(luce)
 target_sources(luce PUBLIC
-  main.cpp
-  luce/luce_main.cpp
+  tools/luce/alter_args-inl.h
+  tools/luce/init-inl.hpp
+  tools/luce/main.cpp
   ${LUCE_DRIVER_SOURCES}
   ${LUCE_HEADER_SOURCES}
 )

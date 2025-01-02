@@ -14,6 +14,7 @@ Diagnostics:
     - fatal_too_many_errors
     - c23-extensions
     - pragma-pack
+    - global_module_introducer_not_at_start
 InlayHints:
   BlockEnd: true
 Hover:

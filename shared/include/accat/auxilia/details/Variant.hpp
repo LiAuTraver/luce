@@ -4,7 +4,7 @@
 #include "./format.hpp"
 
 #include "./Monostate.hpp"
-
+EXPORT_AUXILIA
 namespace accat::auxilia {
 /// @brief A simple variant wrapper class around @link std::variant @endlink for
 /// convenience when evaluating expressions, especially when the operation was

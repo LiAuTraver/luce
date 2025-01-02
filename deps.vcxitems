@@ -21,6 +21,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\std.hh" />
   </ItemGroup>
   <ItemGroup>
-<!--    <ClCompile Include="$(MSBuildThisFileDirectory)module\std.ixx" />-->
+    <ClCompile Include="$(MSBuildThisFileDirectory)module\fmt.ixx" />
   </ItemGroup>
 </Project>

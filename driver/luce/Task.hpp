@@ -1,13 +1,8 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-#include <array>
-#include <cstdint>
-#include <format>
-#include <utility>
-#include <chrono>
-#include <optional>
 #include <accat/auxilia/auxilia.hpp>
+import std;
 
 #include "isa/architecture.hpp"
 

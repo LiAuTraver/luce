@@ -10,6 +10,7 @@ namespace accat::auxilia {
 /// @remark Different from `std::monostate`, this class implements two
 /// traits which can be extremely important in my @link Variant
 /// @endlink class.
+EXPORT_AUXILIA
 class Monostate final :public Printable<Monostate>,
                         public Viewable<Monostate> {
 public:

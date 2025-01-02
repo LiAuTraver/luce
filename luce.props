@@ -7,8 +7,11 @@
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
     <LinkIncremental>false</LinkIncremental>
-    <PublicIncludeDirectories>$(SolutionDir)include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)include;$(SolutionDir)shared\include;$(SolutionDir)driver\;$(SolutionDir);$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <PublicModuleDirectories>$(SolutionDir)modules;$(PublicModuleDirectories)</PublicModuleDirectories>
+    <OutDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\</OutDir>
+    <IntDir>build\Visual-Studio-$(Platform)-$(Configuration)\$(ShortProjectName)\intermediate\</IntDir>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <EnableASAN>true</EnableASAN>
@@ -30,7 +33,6 @@
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ExternalTemplatesDiagnostics>true</ExternalTemplatesDiagnostics>
       <DisableSpecificWarnings>26498;4996;4267</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(SolutionDir)luce;$(SolutionDir)include;$(SolutionDir)shared\include;$(SolutionDir)luce\include;$(SolutionDir)</AdditionalIncludeDirectories>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
       <OmitFramePointers>false</OmitFramePointers>
       <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -42,9 +44,10 @@
       <GuardEHContMetadata>true</GuardEHContMetadata>
       <OpenMPSupport>true</OpenMPSupport>
       <GenerateSourceDependencies>true</GenerateSourceDependencies>
-      <PrecompiledHeader>Create</PrecompiledHeader>
-      <PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>$(IntDir)precompiled.pch</PrecompiledHeaderOutputFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BuildStlModules>true</BuildStlModules>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <AdditionalOptions>/Zf %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AssemblyDebug>true</AssemblyDebug>
@@ -55,7 +58,7 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        for %%f in (clang_rt.asan_dbg_dynamic-x86_64.dll clang_rt.asan_dbg_dynamic-x86_64.pdb clang_rt.asan_dynamic-x86_64.dll clang_rt.asan_dynamic-x86_64.pdb) do copy "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\Hostx64\x64\%%f" "Z:\luce\x64\Debug\" &gt; nul 2&gt;&amp;1
+        for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
       </Command>
     </PostBuildEvent>
     <PostBuildEvent>
