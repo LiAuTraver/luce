@@ -1,12 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)module\fmt.ixx">
-      <Filter>modules</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\deps.hh" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\fmt.hh">
       <Filter>includes</Filter>
     </ClInclude>
@@ -16,6 +10,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\spdlog.hh">
       <Filter>includes</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\deps.hh">
+      <Filter>precompiled</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
@@ -24,5 +21,13 @@
     <Filter Include="modules">
       <UniqueIdentifier>{d3532538-eb33-433d-beea-6cad56e845e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="precompiled">
+      <UniqueIdentifier>{c416192c-eacc-4b05-8987-5b1d077754a8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\deps.cc">
+      <Filter>precompiled</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

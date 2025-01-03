@@ -1,5 +1,3 @@
-#include <deps.hh>
-
 #include "init-inl.hpp"
 int main(int argc, char **argv) {
   accat::luce::init X{&argc, &argv};

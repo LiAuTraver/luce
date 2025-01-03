@@ -1,0 +1,5 @@
+// precompiled header for deps.hh
+// NOTE: REMEMBER TO MODIFY VISUAL STUDIO SOLUTION TO ONLY SET THIS FILE AS
+// CREATE PRECOMPILED HEADER!
+
+#include "deps.hh"

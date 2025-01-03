@@ -7,10 +7,10 @@
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
     <LinkIncremental>false</LinkIncremental>
-    <PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)include;$(SolutionDir)shared\include;$(SolutionDir)driver\;$(SolutionDir);$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)driver\;$(SolutionDir)include;$(SolutionDir)shared\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <PublicModuleDirectories>$(SolutionDir)modules;$(PublicModuleDirectories)</PublicModuleDirectories>
-    <OutDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\</OutDir>
-    <IntDir>build\Visual-Studio-$(Platform)-$(Configuration)\$(ShortProjectName)\intermediate\</IntDir>
+    <OutDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\out\$(ShortProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\intermediate\$(ShortProjectName)\</IntDir>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
@@ -24,7 +24,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdclatest</LanguageStandard_C>
       <ConformanceMode>true</ConformanceMode>
-      <EnableModules>true</EnableModules>
+      <EnableModules>false</EnableModules>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <WarningLevel>Level3</WarningLevel>
@@ -35,7 +35,7 @@
       <DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
       <OmitFramePointers>false</OmitFramePointers>
-      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;LUCE_DRIVER_BUILD_SHARED;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <SDLCheck>true</SDLCheck>
@@ -44,11 +44,11 @@
       <GuardEHContMetadata>true</GuardEHContMetadata>
       <OpenMPSupport>true</OpenMPSupport>
       <GenerateSourceDependencies>true</GenerateSourceDependencies>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)include;$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-<!--      <BuildStlModules>true</BuildStlModules>-->
+      <AdditionalIncludeDirectories>$(SolutionDir)driver\;$(ProjectDir);$(ProjectDir)include;$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BuildStlModules>false</BuildStlModules>
       <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
       <AdditionalOptions>/Zf %(AdditionalOptions)</AdditionalOptions>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -60,8 +60,8 @@
     </ResourceCompile>
     <PostBuildEvent>
       <Command>
-        for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
-      </Command>
+				for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
+			</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying AddressSanitizer DLLs and PDBs...</Message>

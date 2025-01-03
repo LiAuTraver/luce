@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <limits>
 
+#include <accat/auxilia/auxilia.hpp>
+
 namespace accat::luce::isa {
 
 enum class instruction_set : std::uint8_t {

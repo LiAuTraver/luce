@@ -1,19 +1,10 @@
-#include <deps.hh>
-
+#include "deps.hh"
 #include <luce/config.hpp>
-
 #include <luce/isa/architecture.hpp>
 #include <luce/MainMemory.hpp>
 #include <luce/Task.hpp>
 #include "exec.hpp"
-
 #include <accat/auxilia/auxilia.hpp>
-#ifndef AC_USE_STD_MODULE
-#else
-import accat.auxilia;
-import fmt;
-import std;
-#endif
 namespace accat::luce {
 LUCE_DRIVER_API int luce_main(const std::span<const std::string_view> args) {
   int callback = 0;

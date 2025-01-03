@@ -12,18 +12,18 @@ inline void *dynamic_alloc(const size_t size) {
     return ptr;
   alloc_failed();
 }
-EXPORT_AUXILIA
 /// @note this allocator has some issues when using MSVC compiler
-class FixedSizeMemoryPool : public std::pmr::memory_resource {
+EXPORT_AUXILIA
+class MemoryPool : public std::pmr::memory_resource {
 private:
   void *const buffer;
   size_t remaining_size;
   const size_t total_size;
 
 public:
-  FixedSizeMemoryPool(void *t, const size_t size)
+  MemoryPool(void *t, const size_t size)
       : buffer(t), remaining_size(size), total_size(size) {}
-  static FixedSizeMemoryPool FromSize(const size_t size) {
+  static MemoryPool FromSize(const size_t size) {
     return {dynamic_alloc(size), size};
   }
 

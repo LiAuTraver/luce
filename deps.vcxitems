@@ -20,4 +20,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\spdlog.hh" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\std.hh" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\deps.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
 </Project>

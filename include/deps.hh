@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #ifdef __clang__
 #  pragma clang system_header

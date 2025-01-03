@@ -1,25 +1,22 @@
 #pragma once
 #include <accat/auxilia/auxilia.hpp>
 #include <luce/isa/architecture.hpp>
-#ifndef AC_USE_STD_MODULE
-#  include <algorithm>
-#  include <array>
-#  include <cstddef>
-#  include <span>
-#  include <type_traits>
-#  include <vector>
-#  include <ranges>
-#  include <bit>
-#  include <memory>
-#  include <cstdint>
-#  include <stdexcept>
-#else
-import std;
-#endif
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <span>
+#include <type_traits>
+#include <vector>
+#include <ranges>
+#include <bit>
+#include <memory>
+#include <cstdint>
+#include <stdexcept>
 
 namespace accat::luce {
 template <isa::instruction_set ISA>
-struct MemoryAccess : private isa::Architecture<ISA> {
+class MemoryAccess : private isa::Architecture<ISA> {
+public:
   // i don't like `unqualified name lookup` :(
   using MemoryAccess::Architecture::physical_base_address;
   using MemoryAccess::Architecture::physical_memory_begin;
@@ -32,17 +29,10 @@ struct MemoryAccess : private isa::Architecture<ISA> {
   static_assert(sizeof(std::byte) == sizeof(minimal_addressable_unit_t),
                 "current implementation requires std::byte to be same size as "
                 "minimal_addressable_unit_t");
-  using polymorphic_allocator_t = auxilia::FixedSizeMemoryPool;
+  using polymorphic_allocator_t = auxilia::MemoryPool;
   std::pmr::vector<std::byte> real_data;
 
-public:
-  MemoryAccess() {
-    auto sz = physical_memory_size * sizeof(minimal_addressable_unit_t);
-
-    auto my_alloc = polymorphic_allocator_t::FromSize(sz);
-    real_data = std::pmr::vector<std::byte>(&my_alloc);
-    real_data.resize(sz);
-  }
+  MemoryAccess();
   auto operator[](this auto &&self, physical_address_t addr) -> decltype(auto) {
     precondition(addr >= physical_base_address &&
                      addr < physical_base_address + physical_memory_size,
@@ -89,21 +79,10 @@ public:
 
 public:
   // Basic memory operations
-  auxilia::StatusOr<std::byte> read(physical_address_t addr) const noexcept {
-    if (!memory.is_in_range(addr)) {
-      return auxilia::OutOfRangeError("Memory access violation");
-    }
-    return {memory[addr]};
-  }
+  auxilia::StatusOr<std::byte> read(physical_address_t addr) const noexcept;
 
   auxilia::Status write(physical_address_t addr,
-                        minimal_addressable_unit_t value) noexcept {
-    if (!memory.is_in_range(addr)) {
-      return auxilia::OutOfRangeError("Memory access violation");
-    }
-    memory[addr] = value;
-    return auxilia::OkStatus();
-  }
+                        minimal_addressable_unit_t value) noexcept;
 
   auxilia::Status load_program(const std::ranges::range auto &data,
                                const physical_address_t start_addr =
@@ -123,74 +102,19 @@ public:
 
   auxilia::Status fill(const physical_address_t start,
                        const size_t size,
-                       const minimal_addressable_unit_t value) {
-    if (!memory.is_in_range(start, start + size)) {
-      return auxilia::OutOfRangeError("Memory block operation out of bounds");
-    }
-    std::ranges::fill_n(memory.begin() + start, size, value);
-    return auxilia::OkStatus();
-  }
+                       const minimal_addressable_unit_t value);
   template <typename CallableRandom>
   auxilia::Status generate(const physical_address_t start,
                            const size_t size,
-                           CallableRandom &&generator) {
-    if (!memory.is_in_range(start, start + size)) {
-      return auxilia::OutOfRangeError("Memory block operation out of bounds");
-    }
-    std::ranges::generate_n(
-        memory.begin() + start, size, std::forward<CallableRandom>(generator));
-    return auxilia::OkStatus();
-  }
+                           CallableRandom &&generator);
 
   // reading different sized values
   template <typename T>
-  auxilia::StatusOr<T> read_typed(physical_address_t addr) const {
-    if (!memory.is_in_range(addr, addr + sizeof(T))) {
-      return auxilia::OutOfRangeError("Memory access violation");
-    }
-    //    Solution 1: use std::start_lifetime_as
-    // until C++23 compiler magic std utils `std::start_lifetime_as`, reading
-    // through the lens of another type(except for unsigned char, char, or
-    // std::byte) is undefined behavior. currently my stl doesn't support it, so
-    // we have to create a copy. when it's supported, we can use the
-    // std::start_lifetime_as to avoid the copy.
-    //    Solution 2: use std::as_writable_bytes
-    T value;
-    auto bytes = std::as_writable_bytes(std::span{&value, 1});
-    for (const auto i : std::views::iota(0ull, sizeof(T)))
-      bytes[i] = memory[addr + i];
-
-    return value;
-    // Solution 3: use std::bit_cast
-    // ...
-    // Solution 4: use placement new (more verbose)
-    //    alignas(T) std::byte buffer[sizeof(T)];
-    //    memcpy(buffer, memory.begin() + addr, sizeof(T));
-    //    T* value = new (buffer) T;
-    //    T  result = *value;
-    //    value->~T();
-    //    return result;
-    // Solution 5: use union  (might not be strictly aligned)
-    //    union {
-    //      T value;
-    //      std::byte bytes[sizeof(T)];
-    //    } u;
-    //    memcpy(u.bytes, memory.begin() + addr, sizeof(T));
-    //    return u.value;
-  }
+  auxilia::StatusOr<T> read_typed(physical_address_t addr) const;
 
   // writing different sized values
   template <typename T>
-  auxilia::Status write_typed(physical_address_t addr, const T &value) {
-    if (!memory.is_in_range(addr, addr + sizeof(T))) {
-      return auxilia::OutOfRangeError("Memory access violation");
-    }
-    std::span<const T, 1> tmp{&value, 1};
-    std::ranges::copy(std::as_bytes(tmp),
-                      memory.begin() + addr,
-                      memory.begin() + addr + sizeof(T));
-    return auxilia::OkStatus();
-  }
+  auxilia::Status write_typed(physical_address_t addr, const T &value);
 
 private:
   MainMemory(const MainMemory &) = delete;

@@ -2,7 +2,7 @@
 
 #if _WIN32
 #  if defined(LUCE_DRIVER_BUILD_SHARED)
-#    if defined(LUCE_DRIVER_EXPORTS) || defined (luce_driver_EXPORTS)
+#    if defined(DRIVER_EXPORTS) || defined (driver_EXPORTS)
 #      define LUCE_DRIVER_API __declspec(dllexport)
 #    else
 #      define LUCE_DRIVER_API __declspec(dllimport)
