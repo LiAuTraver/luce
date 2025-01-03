@@ -88,7 +88,7 @@ public:
   /// @enum Code
   enum class [[nodiscard]] Code : uint8_t {
 
-  /// @brief kOK (gRPC code "OK") does not indicate an error; this value is returned on
+  /// kOK (gRPC code "OK") does not indicate an error; this value is returned on
   /// success. It is typical to check for this value before proceeding on any
   /// given call across an API or RPC boundary.
   ///
@@ -96,17 +96,17 @@ public:
   /// `absl::Status::ok()` member function rather than inspecting the raw code.
   kOk = 0,
 
-  /// @brief kCancelled (gRPC code "CANCELLED") indicates the operation was cancelled,
+  /// kCancelled (gRPC code "CANCELLED") indicates the operation was cancelled,
   /// typically by the caller.
   kCancelled = 1,
 
-  /// @brief kUnknown (gRPC code "UNKNOWN") indicates an unknown error occurred. In
+  /// kUnknown (gRPC code "UNKNOWN") indicates an unknown error occurred. In
   /// general, more specific errors should be raised, if possible. Errors raised
   /// by APIs that do not return enough error information may be converted to
   /// this error.
   kUnknown = 2,
 
-  /// @brief kInvalidArgument (gRPC code "INVALID_ARGUMENT") indicates the caller
+  /// kInvalidArgument (gRPC code "INVALID_ARGUMENT") indicates the caller
   /// specified an invalid argument, such as a malformed filename. Note that use
   /// of such errors should be narrowly limited to indicate the invalid nature of
   /// the arguments themselves. Errors with validly formed arguments that may
@@ -114,7 +114,7 @@ public:
   /// `kFailedPrecondition` instead.
   kInvalidArgument = 3,
 
-  /// @brief kDeadlineExceeded (gRPC code "DEADLINE_EXCEEDED") indicates a deadline
+  /// kDeadlineExceeded (gRPC code "DEADLINE_EXCEEDED") indicates a deadline
   /// expired before the operation could complete.
   ///
   /// @note For operations that may change state within a system, this error may be
@@ -123,7 +123,7 @@ public:
   /// could have been delayed long enough for the deadline to expire.
   kDeadlineExceeded = 4,
 
-  /// @brief kNotFound (gRPC code "NOT_FOUND") indicates some requested entity (such as
+  /// kNotFound (gRPC code "NOT_FOUND") indicates some requested entity (such as
   /// a file or directory) was not found.
   ///
   /// @remark `kNotFound` is useful if a request should be denied for an entire class of
@@ -132,12 +132,12 @@ public:
   /// user-based access control, use `kPermissionDenied` instead.
   kNotFound = 5,
 
-  /// @brief kAlreadyExists (gRPC code "ALREADY_EXISTS") indicates that the entity a
+  /// kAlreadyExists (gRPC code "ALREADY_EXISTS") indicates that the entity a
   /// caller attempted to create (such as a file or directory) is already
   /// present.
   kAlreadyExists = 6,
 
-  /// @brief kPermissionDenied (gRPC code "PERMISSION_DENIED") indicates that the caller
+  /// kPermissionDenied (gRPC code "PERMISSION_DENIED") indicates that the caller
   /// does not have permission to execute the specified operation. Note that this
   /// error is different than an error due to an *un*authenticated user. This
   /// error code does not imply the request is valid or the requested entity
@@ -149,12 +149,12 @@ public:
   /// Instead, use `kUnauthenticated` for those errors.
   kPermissionDenied = 7,
 
-  /// @brief kResourceExhausted (gRPC code "RESOURCE_EXHAUSTED") indicates some resource
+  /// kResourceExhausted (gRPC code "RESOURCE_EXHAUSTED") indicates some resource
   /// has been exhausted, perhaps a per-user quota, or perhaps the entire file
   /// system is out of space.
   kResourceExhausted = 8,
 
-  /// @brief kFailedPrecondition (gRPC code "FAILED_PRECONDITION") indicates that the
+  /// kFailedPrecondition (gRPC code "FAILED_PRECONDITION") indicates that the
   /// operation was rejected because the system is not in a state required for
   /// the operation's execution. For example, a directory to be deleted may be
   /// non-empty, an "rmdir" operation is applied to a non-directory, etc.
@@ -173,7 +173,7 @@ public:
   ///      the files are deleted from the directory.
   kFailedPrecondition = 9,
 
-  /// @brief kAborted (gRPC code "ABORTED") indicates the operation was aborted,
+  /// kAborted (gRPC code "ABORTED") indicates the operation was aborted,
   /// typically due to a concurrency issue such as a sequencer check failure or a
   /// failed transaction.
   ///
@@ -181,7 +181,7 @@ public:
   /// `kAborted`, and `kUnavailable`.
   kAborted = 10,
 
-  /// @brief kOutOfRange (gRPC code "OUT_OF_RANGE") indicates the operation was
+  /// kOutOfRange (gRPC code "OUT_OF_RANGE") indicates the operation was
   /// attempted past the valid range, such as seeking or reading past an
   /// end-of-file.
   ///
@@ -199,17 +199,17 @@ public:
   /// they are done.
   kOutOfRange = 11,
 
-  /// @brief kUnimplemented (gRPC code "UNIMPLEMENTED") indicates the operation is not
+  /// kUnimplemented (gRPC code "UNIMPLEMENTED") indicates the operation is not
   /// implemented or supported in this service. In this case, the operation
   /// should not be re-attempted.
   kUnimplemented = 12,
 
-  /// @brief kInternal (gRPC code "INTERNAL") indicates an internal error has occurred
+  /// kInternal (gRPC code "INTERNAL") indicates an internal error has occurred
   /// and some invariants expected by the underlying system have not been
   /// satisfied. This error code is reserved for serious errors.
   kInternal = 13,
 
-  /// @brief kUnavailable (gRPC code "UNAVAILABLE") indicates the service is currently
+  /// kUnavailable (gRPC code "UNAVAILABLE") indicates the service is currently
   /// unavailable and that this is most likely a transient condition. An error
   /// such as this can be corrected by retrying with a backoff scheme. Note that
   /// it is not always safe to retry non-idempotent operations.
@@ -218,17 +218,17 @@ public:
   /// `kAborted`, and `kUnavailable`.
   kUnavailable = 14,
 
-  /// @brief kDataLoss (gRPC code "DATA_LOSS") indicates that unrecoverable data loss or
+  /// kDataLoss (gRPC code "DATA_LOSS") indicates that unrecoverable data loss or
   /// corruption has occurred. As this error is serious, proper alerting should
   /// be attached to errors such as this.
   kDataLoss = 15,
 
-  /// @brief kUnauthenticated (gRPC code "UNAUTHENTICATED") indicates that the request
+  /// kUnauthenticated (gRPC code "UNAUTHENTICATED") indicates that the request
   /// does not have valid authentication credentials for the operation. Correct
   /// the authentication and try again.
   kUnauthenticated = 16,
 
-  /// @brief The purpose of this enumerated value is to force people who handle status
+  /// The purpose of this enumerated value is to force people who handle status
   /// codes with `switch()` statements to *not* simply enumerate all possible
   /// values, but instead provide a "default:" case. Providing such a default
   /// case ensures that code will compile when new codes are added.
@@ -237,12 +237,12 @@ public:
   /// its value, which may change.
   kDoNotUseReservedForFutureExpansionUseDefaultInSwitchInstead_ = 20,
 
-  /// @brief kReturning indicates that the function is returning.
+  /// kReturning indicates that the function is returning.
   /// @note This is just a workaround, for I don't come up with an idea to
   ///   handle the returning status. Use with caution.
   kReturning = 21,
 
-  /// @brief kMovedFrom indicates that the status has been moved from.
+  /// kMovedFrom indicates that the status has been moved from.
   kMovedFrom = std::numeric_limits<uint8_t>::max()
   };
   // clang-format on
@@ -254,10 +254,10 @@ public:
   [[nodiscard]]
   constexpr Status() = default;
   [[nodiscard]]
-  AC_CONSTEXPR20 Status(const Code code,
+  AC_CONSTEXPR20
+  Status(const Code code,
          const string_view message = "<no message provided>",
-         const std::source_location &location =
-             std::source_location::current())
+         const std::source_location &location = std::source_location::current())
       : my_code(code), my_message(message), my_location(location) {}
   [[nodiscard]]
   Status(Status &&that) noexcept
@@ -310,20 +310,14 @@ public:
   inline AC_CONSTEXPR20 explicit operator bool() const noexcept {
     return this->ok();
   }
-  [[nodiscard]] constexpr bool ok() const noexcept {
-    return my_code == kOk;
-  }
+  [[nodiscard]] constexpr bool ok() const noexcept { return my_code == kOk; }
   [[nodiscard]] AC_CONSTEXPR20 bool is_return() const noexcept {
     return my_code == kReturning;
   }
   Code code() const { return my_code; }
   [[nodiscard]] string_view message() const { return my_message; }
-  [[nodiscard]] std::source_location location() const {
-    return my_location;
-  }
-  [[nodiscard]] string stacktrace() const {
-    return AC_UTILS_STACKTRACE;
-  }
+  [[nodiscard]] std::source_location location() const { return my_location; }
+  [[nodiscard]] string stacktrace() const { return AC_UTILS_STACKTRACE; }
   void ignore_error() const noexcept {
     if (ok())
       return;
@@ -341,33 +335,28 @@ public:
   // monadic operations
   template <typename Self, std::invocable<> Func>
     requires requires(Self &&self, Func &&func) {
-      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>,
-                     Status>;
+      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>, Status>;
     }
-  [[nodiscard]] inline constexpr auto or_else(this Self &&self,
-                                              Func &&func) -> Status {
+  [[nodiscard]] inline constexpr auto or_else(this Self &&self, Func &&func)
+      -> Status {
     if (self.ok())
       return self;
     return std::invoke(std::forward<Func>(func));
   }
   template <typename Self, std::invocable<> Func>
     requires requires(Self &&self, Func &&func) {
-      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>,
-                     Status>;
+      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>, Status>;
     }
-  constexpr inline auto and_then(this Self &&self, Func &&func)
-      -> Status {
+  constexpr inline auto and_then(this Self &&self, Func &&func) -> Status {
     if (!self.ok())
       return self;
     return std::invoke(std::forward<Func>(func));
   }
   template <typename Self, std::invocable<> Func>
     requires requires(Self &&self, Func &&func) {
-      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>,
-                     Status>;
+      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>, Status>;
     }
-  constexpr inline auto transform(this Self &&self, Func &&func)
-      -> Status {
+  constexpr inline auto transform(this Self &&self, Func &&func) -> Status {
     return std::invoke(std::forward<Func>(func));
   }
   constexpr inline auto as_status(this auto &&self) noexcept {
@@ -470,137 +459,120 @@ private:
   value_type my_value;
 };
 
-inline AC_CONSTEXPR20 Status
-OkStatus(const std::string_view message = "Ok"sv,
-         const std::source_location &location =
-             std::source_location::current()) {
+inline AC_CONSTEXPR20 Status OkStatus(
+    const std::string_view message = "Ok"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kOk, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-Cancelled(const std::string_view message = "Cancelled"sv,
-          const std::source_location &location =
-              std::source_location::current()) {
+inline AC_CONSTEXPR20 Status Cancelled(
+    const std::string_view message = "Cancelled"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kCancelled, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-UnknownError(const std::string_view message = "Unknown"sv,
-             const std::source_location &location =
-                 std::source_location::current()) {
+inline AC_CONSTEXPR20 Status UnknownError(
+    const std::string_view message = "Unknown"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kUnknown, message, location};
 }
 
 inline AC_CONSTEXPR20 Status InvalidArgumentError(
     const std::string_view message = "Invalid argument"sv,
-    const std::source_location &location =
-        std::source_location::current()) {
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kInvalidArgument, message, location};
 }
 
 inline AC_CONSTEXPR20 Status DeadlineExceededError(
     const std::string_view message = "Deadline exceeded"sv,
-    const std::source_location &location =
-        std::source_location::current()) {
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kDeadlineExceeded, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-NotFoundError(const std::string_view message = "Not found"sv,
-              const std::source_location &location =
-                  std::source_location::current()) {
+inline AC_CONSTEXPR20 Status NotFoundError(
+    const std::string_view message = "Not found"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kNotFound, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-AlreadyExistsError(const std::string_view message = "Already exists"sv,
-                   const std::source_location &location =
-                       std::source_location::current()) {
+inline AC_CONSTEXPR20 Status AlreadyExistsError(
+    const std::string_view message = "Already exists"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kAlreadyExists, message, location};
 }
 
 inline AC_CONSTEXPR20 Status PermissionDeniedError(
     const std::string_view message = "Permission denied"sv,
-    const std::source_location &location =
-        std::source_location::current()) {
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kPermissionDenied, message, location};
 }
 
 inline AC_CONSTEXPR20 Status ResourceExhaustedError(
     const std::string_view message = "Resource exhausted"sv,
-    const std::source_location &location =
-        std::source_location::current()) {
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kResourceExhausted, message, location};
 }
 
 inline AC_CONSTEXPR20 Status FailedPreconditionError(
     const std::string_view message = "Failed precondition"sv,
-    const std::source_location &location =
-        std::source_location::current()) {
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kFailedPrecondition, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-AbortedError(const std::string_view message = "Aborted"sv,
-             const std::source_location &location =
-                 std::source_location::current()) {
+inline AC_CONSTEXPR20 Status AbortedError(
+    const std::string_view message = "Aborted"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kAborted, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-OutOfRangeError(const std::string_view message = "Out of range"sv,
-                const std::source_location &location =
-                    std::source_location::current()) {
+inline AC_CONSTEXPR20 Status OutOfRangeError(
+    const std::string_view message = "Out of range"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kOutOfRange, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-UnimplementedError(const std::string_view message = "Unimplemented"sv,
-                   const std::source_location &location =
-                       std::source_location::current()) {
+inline AC_CONSTEXPR20 Status UnimplementedError(
+    const std::string_view message = "Unimplemented"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kUnimplemented, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-InternalError(const std::string_view message = "Internal"sv,
-              const std::source_location &location =
-                  std::source_location::current()) {
+inline AC_CONSTEXPR20 Status InternalError(
+    const std::string_view message = "Internal"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kInternal, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-UnavailableError(const std::string_view message = "Unavailable"sv,
-                 const std::source_location &location =
-                     std::source_location::current()) {
+inline AC_CONSTEXPR20 Status UnavailableError(
+    const std::string_view message = "Unavailable"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kUnavailable, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-DataLossError(const std::string_view message = "Data loss"sv,
-              const std::source_location &location =
-                  std::source_location::current()) {
+inline AC_CONSTEXPR20 Status DataLossError(
+    const std::string_view message = "Data loss"sv,
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kDataLoss, message, location};
 }
 
 inline AC_CONSTEXPR20 Status UnauthenticatedError(
     const std::string_view message = "Unauthenticated"sv,
-    const std::source_location &location =
-        std::source_location::current()) {
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kUnauthenticated, message, location};
 }
 
-inline AC_CONSTEXPR20 Status
-RetuenMe(const std::source_location &location =
-             std::source_location::current()) {
+inline AC_CONSTEXPR20 Status ReturnMe(
+    const std::string_view message = "Returning",
+    const std::source_location &location = std::source_location::current()) {
   return {Status::kReturning, "Returning", location};
 }
 
-#define AC_RETURN_IF_NOT(_status_)                                   \
-  AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                    \
+#define AC_RETURN_IF_NOT(_status_)                                             \
+  AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                              \
   if (auto ac_utils_status_return_ = (_status_))                               \
-    ;                                                                \
-  else {                                                             \
-    return ac_utils_status_return_;                                      \
+    ;                                                                          \
+  else {                                                                       \
+    return ac_utils_status_return_;                                            \
   }
 #define return_if_not(_status_) AC_RETURN_IF_NOT(_status_)
 } // namespace accat::auxilia

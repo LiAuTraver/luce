@@ -55,6 +55,8 @@ StatementMacros:
   - dbg_block
   - dbg
   - contract_assert
+  - precondition
+  - postcondition
   - TODO
 InsertNewlineAtEOF: true
 InsertTrailingCommas: Wrapped

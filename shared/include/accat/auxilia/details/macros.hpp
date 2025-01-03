@@ -176,7 +176,7 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
     spdlog::critical("in file {0}, line {2} column {3},\n"                     \
                      "           function {1},\n"                              \
                      "           Constraints not satisfied:\n"                 \
-                     "           Expect `{4}` equals to true.\n"               \
+                     "           Expect `{4}` to be true.\n"                   \
                      "Additional message: {5}\n"                               \
                      "Stacktrace:{6}",                                         \
                      AC_UTILS_FILENAME,                                        \

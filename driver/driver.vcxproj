@@ -21,14 +21,109 @@
   <ItemGroup>
     <ClInclude Include="exec.hpp" />
     <ClInclude Include="luce\config.hpp" />
+    <ClInclude Include="luce\cpu.hpp" />
     <ClInclude Include="luce\isa\architecture.hpp" />
     <ClInclude Include="luce\MainMemory.hpp" />
+    <ClInclude Include="luce\Monitor.hpp" />
+    <ClInclude Include="luce\Pattern.hpp" />
     <ClInclude Include="luce\Task.hpp" />
+    <ClInclude Include="luce\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp" />
     <ClCompile Include="luce_main.cpp" />
     <ClCompile Include="src\MainMemory.cpp" />
+    <ClCompile Include="src\Monitor.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>true</EnableASAN>
+      <EnableFuzzer>true</EnableFuzzer>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>true</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdclatest</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</ModuleDependenciesFile>
+      <ModuleOutputFile>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\vc143.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\driver.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\driver.tlog\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>Z:\luce\build\Visual-Studio-x64-Debug\intermediate\driver\</XMLDocumentationFileName>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <BuildStlModules>false</BuildStlModules>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <PreprocessorDefinitions>_DEBUG;DRIVER_EXPORTS;_WINDOWS;_USRDLL;AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;LUCE_DRIVER_BUILD_SHARED;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Z:\luce\driver\;Z:\luce\driver\;Z:\luce\driver\include;Z:\luce\driver\driver\;;Z:\luce\shared\include\accat\auxilia\..\..\;Z:\luce\modules;Z:\luce\include;M:\vcpkg\installed\x64-windows\include</AdditionalIncludeDirectories>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <EnableModules>false</EnableModules>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <ExternalTemplatesDiagnostics>true</ExternalTemplatesDiagnostics>
+      <DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
+      <OmitFramePointers>false</OmitFramePointers>
+      <FloatingPointExceptions>true</FloatingPointExceptions>
+      <SDLCheck>true</SDLCheck>
+      <GuardEHContMetadata>true</GuardEHContMetadata>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/Zf </AdditionalOptions>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="luce\SystemBus.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

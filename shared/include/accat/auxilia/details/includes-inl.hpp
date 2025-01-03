@@ -7,12 +7,9 @@
 #elifdef _MSC_VER
 #  pragma system_header
 #else
-// nothing
 #  pragma system_header
 #endif
-#if __has_include(<fmt.hh>)
-#  include <fmt.hh>
-#elif __has_include(<fmt/format.h>)
+#if __has_include(<fmt/format.h>)
 #  include <fmt/format.h>
 #  include <fmt/ostream.h>
 #  include <fmt/color.h>
@@ -24,8 +21,6 @@
 #endif
 #ifdef AC_USE_STD_MODULE
 import std;
-#elif __has_include(<std.hh>)
-#  include <std.hh>
 #else
 #  include <algorithm>
 #  include <any>

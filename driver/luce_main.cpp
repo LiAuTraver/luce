@@ -4,6 +4,7 @@
 #include <luce/MainMemory.hpp>
 #include <luce/Task.hpp>
 #include "exec.hpp"
+#include "luce/Monitor.hpp"
 #include <accat/auxilia/auxilia.hpp>
 namespace accat::luce {
 LUCE_DRIVER_API int luce_main(const std::span<const std::string_view> args) {
@@ -14,20 +15,23 @@ LUCE_DRIVER_API int luce_main(const std::span<const std::string_view> args) {
   });
 
   auto &context =
-      ExecutionContext<isa::instruction_set::riscv32>::InitializeContext(args);
+      ExecutionContext::InitializeContext(args);
 
-  auto task = Task<isa::instruction_set::riscv32>{};
+  auto task = Task{};
 
   auto littleEndianData = image.get().value_or("\xcc\xcc\xcc\xcc");
   auto little_endian_byte_span =
       std::span{reinterpret_cast<const std::byte *>(littleEndianData.data()),
                 littleEndianData.size()};
                 
-  auto mainMemory = MainMemory<isa::instruction_set::riscv32>{};
+  auto mainMemory = MainMemory{};
   mainMemory.load_program(little_endian_byte_span);
   
   // test, print image data
-  dbg(info,"Data : {:#04x}\n", fmt::join(little_endian_byte_span, " "));
+  dbg(info,"Data : {:#04x}\n", fmt::join(little_endian_byte_span, " "))
+
+  auto monitor = Monitor{};
+  monitor.REPL();
 
   return callback;
 }

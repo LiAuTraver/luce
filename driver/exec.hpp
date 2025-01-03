@@ -7,18 +7,17 @@
 #include <luce/isa/architecture.hpp>
 
 namespace accat::luce {
-template <isa::instruction_set ISA>
-class ExecutionContext : public auxilia::Printable<ExecutionContext<ISA>> {
+class ExecutionContext : public auxilia::Printable<ExecutionContext> {
 public:
-  using host_arch_t = isa::Architecture<isa::instruction_set::host>;
-  using host_address_t = typename host_arch_t::virtual_address_t;
-  using guest_arch_t = isa::Architecture<ISA>;
-  using guest_address_t = typename guest_arch_t::virtual_address_t;
+  // using host_arch_t = isa::Architecture<isa::instruction_set::host>;
+  using host_address_t = typename isa::host::virtual_address_t;
+  // using guest_arch_t = isa::Architecture;
+  using guest_address_t = typename isa::virtual_address_t;
 
 public:
   static auto &InitializeContext(const std::span<const std::string_view> args) {
     auto argc = args.size();
-    static ExecutionContext<ISA> ctx;
+    static ExecutionContext ctx;
     // TODO: parse args
     // ...
     AC_SPDLOG_INITIALIZATION(emu, debug)

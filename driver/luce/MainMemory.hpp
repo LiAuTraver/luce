@@ -14,35 +14,27 @@
 #include <stdexcept>
 
 namespace accat::luce {
-template <isa::instruction_set ISA>
-class MemoryAccess : private isa::Architecture<ISA> {
+class MemoryAccess {
 public:
-  // i don't like `unqualified name lookup` :(
-  using MemoryAccess::Architecture::physical_base_address;
-  using MemoryAccess::Architecture::physical_memory_begin;
-  using MemoryAccess::Architecture::physical_memory_end;
-  using MemoryAccess::Architecture::physical_memory_size;
-
-  using typename MemoryAccess::Architecture::minimal_addressable_unit_t;
-  using typename MemoryAccess::Architecture::physical_address_t;
-
-  static_assert(sizeof(std::byte) == sizeof(minimal_addressable_unit_t),
+  static_assert(sizeof(std::byte) == sizeof(isa::minimal_addressable_unit_t),
                 "current implementation requires std::byte to be same size as "
                 "minimal_addressable_unit_t");
   using polymorphic_allocator_t = auxilia::MemoryPool;
   std::pmr::vector<std::byte> real_data;
 
   MemoryAccess();
-  auto operator[](this auto &&self, physical_address_t addr) -> decltype(auto) {
-    precondition(addr >= physical_base_address &&
-                     addr < physical_base_address + physical_memory_size,
+  auto operator[](this auto &&self, isa::physical_address_t addr)
+      -> decltype(auto) {
+    precondition(addr >= isa::physical_base_address &&
+                     addr <
+                         isa::physical_base_address + isa::physical_memory_size,
                  "Caller should ensure address is within memory bounds before "
                  "accessing the memory. Call is_in_range() first.")
 
-        return self.real_data[addr - physical_base_address];
+    return self.real_data[addr - isa::physical_base_address];
   }
-  auto at(physical_address_t addr) const {
-    return real_data.at(addr - physical_base_address);
+  auto at(isa::physical_address_t addr) const {
+    return real_data.at(addr - isa::physical_base_address);
   }
   auto begin(this auto &&self) { return self.real_data.begin(); }
   auto end(this auto &&self) { return self.real_data.end(); }
@@ -53,25 +45,23 @@ public:
     return self.real_data.data();
   }
   auto address_of(size_t offset) const {
-    return physical_base_address + offset;
+    return isa::physical_base_address + offset;
   }
   template <typename... Args>
-  bool is_in_range(physical_address_t addr, Args... addrs) const noexcept
-    requires(std::convertible_to<Args, physical_address_t> && ...)
+  bool is_in_range(isa::physical_address_t addr, Args... addrs) const noexcept
+    requires(std::convertible_to<Args, isa::physical_address_t> && ...)
   {
     if constexpr (sizeof...(Args) == 0)
-      return addr >= physical_memory_begin && addr < physical_memory_end;
+      return addr >= isa::physical_memory_begin &&
+             addr < isa::physical_memory_end;
 
     return (is_in_range(addr) && ... && is_in_range(addrs));
   }
 };
 
-template <isa::instruction_set ISA>
-class MainMemory : private isa::Architecture<ISA> {
+class MainMemory {
 
-  using typename MainMemory::Architecture::minimal_addressable_unit_t;
-  using typename MainMemory::Architecture::physical_address_t;
-  MemoryAccess<ISA> memory;
+  MemoryAccess memory;
 
 public:
   MainMemory() = default;
@@ -79,14 +69,15 @@ public:
 
 public:
   // Basic memory operations
-  auxilia::StatusOr<std::byte> read(physical_address_t addr) const noexcept;
+  auxilia::StatusOr<std::byte>
+  read(isa::physical_address_t addr) const noexcept;
 
-  auxilia::Status write(physical_address_t addr,
-                        minimal_addressable_unit_t value) noexcept;
+  auxilia::Status write(isa::physical_address_t addr,
+                        isa::minimal_addressable_unit_t value) noexcept;
 
-  auxilia::Status load_program(const std::ranges::range auto &data,
-                               const physical_address_t start_addr =
-                                   MemoryAccess<ISA>::physical_base_address) {
+  auxilia::Status load_program(
+      const std::ranges::range auto &data,
+      const isa::physical_address_t start_addr = isa::physical_base_address) {
     auto bytes = std::as_bytes(data);
     if (!memory.is_in_range(start_addr, start_addr + bytes.size())) {
       return auxilia::ResourceExhaustedError("Program too large for memory");
@@ -100,187 +91,75 @@ public:
     return auxilia::OkStatus();
   }
 
-  auxilia::Status fill(const physical_address_t start,
+  auxilia::Status fill(const isa::physical_address_t start,
                        const size_t size,
-                       const minimal_addressable_unit_t value);
+                       const isa::minimal_addressable_unit_t value);
   template <typename CallableRandom>
-  auxilia::Status generate(const physical_address_t start,
+  auxilia::Status generate(const isa::physical_address_t start,
                            const size_t size,
-                           CallableRandom &&generator);
+                           CallableRandom &&generator) {
+    if (!memory.is_in_range(start, start + size)) {
+      return auxilia::OutOfRangeError("Memory block operation out of bounds");
+    }
+    std::ranges::generate_n(
+        memory.begin() + start, size, std::forward<CallableRandom>(generator));
+    return auxilia::OkStatus();
+  }
 
-  // reading different sized values
   template <typename T>
-  auxilia::StatusOr<T> read_typed(physical_address_t addr) const;
+  auxilia::StatusOr<T> read_typed(isa::physical_address_t addr) const {
+    if (!memory.is_in_range(addr, addr + sizeof(T))) {
+      return auxilia::OutOfRangeError("Memory access violation");
+    }
+    // Solution 1: use std::start_lifetime_as
+    // until C++23 compiler magic std utils `std::start_lifetime_as`, reading
+    // through the lens of another type(except for unsigned char, char, or
+    // std::byte) is undefined behavior. currently my stl doesn't support it, so
+    // we have to create a copy. when it's supported, we can use the
+    // std::start_lifetime_as to avoid the copy.
+    //    Solution 2: use std::as_writable_bytes
+    T value;
+    auto bytes = std::as_writable_bytes(std::span{&value, 1});
+    for (const auto i : std::views::iota(0ull, sizeof(T)))
+      bytes[i] = memory[addr + i];
 
-  // writing different sized values
+    return value;
+    // Solution 3: use std::bit_cast
+    // ...
+    // Solution 4: use placement new (more verbose)
+    //    alignas(T) std::byte buffer[sizeof(T)];
+    //    memcpy(buffer, memory.begin() + addr, sizeof(T));
+    //    T* value = new (buffer) T;
+    //    T  result = *value;
+    //    value->~T();
+    //    return result;
+    // Solution 5: use union  (might not be strictly aligned)
+    //    union {
+    //      T value;
+    //      std::byte bytes[sizeof(T)];
+    //    } u;
+    //    memcpy(u.bytes, memory.begin() + addr, sizeof(T));
+    //    return u.value;
+  }
+
   template <typename T>
-  auxilia::Status write_typed(physical_address_t addr, const T &value);
+  auxilia::Status write_typed(isa::physical_address_t addr, const T &value) {
+    if (!memory.is_in_range(addr, addr + sizeof(T))) {
+      return auxilia::OutOfRangeError("Memory access violation");
+    }
+    std::span<const T, 1> tmp{&value, 1};
+    std::ranges::copy(std::as_bytes({&value, 1}),
+                      memory.begin() + addr,
+                      memory.begin() + addr + sizeof(T));
+    return auxilia::OkStatus();
+  }
 
 private:
   MainMemory(const MainMemory &) = delete;
   MainMemory &operator=(const MainMemory &) = delete;
 
 public:
-  MainMemory(MainMemory &&) = default;
-  MainMemory &operator=(MainMemory &&) = default;
+  MainMemory(MainMemory &&) noexcept = default;
+  MainMemory &operator=(MainMemory &&) noexcept = default;
 };
-// template <isa::instruction_set ISA, class Ty = std::byte>
-// struct memory_access_iterator : private isa::Architecture<ISA> {
-// private:
-//   using memory_access_iterator::Architecture::physical_base_address;
-//   using
-//       typename
-//       memory_access_iterator::Architecture::minimal_addressable_unit_t;
-//   using typename memory_access_iterator::Architecture::physical_address_t;
-
-// public:
-//   using iterator_concept = std::contiguous_iterator_tag;
-//   using iterator_category = std::random_access_iterator_tag;
-//   using value_type = std::remove_cv_t<Ty>;
-//   using difference_type = ptrdiff_t;
-//   using pointer = value_type *;
-//   using reference = value_type &;
-
-//   constexpr memory_access_iterator() noexcept = default;
-//   memory_access_iterator(pointer ptr, pointer begin, pointer end) noexcept
-//       : my_ptr(ptr) {
-//     dbg_only(my_begin = begin; my_end = end;)
-//   }
-
-//   memory_access_iterator(const std::span<value_type> s) noexcept {
-
-//     my_begin = s.data();
-//     my_end = s.data() + s.size();
-//   }
-
-//   physical_address_t address() const noexcept {
-//     return physical_base_address + (my_ptr - my_begin);
-//   }
-
-//   [[nodiscard]] constexpr reference operator*() const noexcept {
-//     precondition(my_begin,
-//                  "cannot dereference value-initialized memory iterator");
-//     precondition(my_ptr < my_end, "cannot dereference end memory iterator");
-//     return *my_ptr;
-//   }
-
-//   [[nodiscard]] constexpr pointer operator->() const noexcept {
-//     precondition(my_begin,
-//                  "cannot dereference value-initialized memory iterator");
-//     precondition(my_ptr < my_end, "cannot dereference end memory iterator");
-//     return my_ptr;
-//   }
-
-//   constexpr memory_access_iterator &operator++() noexcept {
-//     precondition(my_begin,
-//                  "cannot increment value-initialized memory iterator");
-//     precondition(my_ptr < my_end, "cannot increment memory iterator past
-//     end");
-//     ++my_ptr;
-//     return *this;
-//   }
-
-//   constexpr memory_access_iterator operator++(int) noexcept {
-//     memory_access_iterator my_tmp{*this};
-//     ++*this;
-//     return my_tmp;
-//   }
-
-//   constexpr memory_access_iterator &operator--() noexcept {
-//     precondition(my_begin,
-//                  "cannot decrement value-initialized memory iterator");
-//     precondition(my_ptr > my_begin,
-//                  "cannot decrement memory iterator before begin");
-//     --my_ptr;
-//     return *this;
-//   }
-
-//   constexpr memory_access_iterator operator--(int) noexcept {
-//     memory_access_iterator my_tmp{*this};
-//     --*this;
-//     return my_tmp;
-//   }
-
-//   constexpr void verify_offset(
-//       [[maybe_unused]] const difference_type my_offset) const noexcept {
-//     contract_assert(my_offset != 0,
-//                     "cannot seek value-initialized span iterator");
-//     contract_assert(my_offset < 0 || my_ptr - my_begin >= -my_offset,
-//                     "cannot seek span iterator before begin");
-//     contract_assert(my_offset > 0 || my_end - my_ptr >= my_offset,
-//                     "cannot seek span iterator after end");
-//   }
-
-//   constexpr memory_access_iterator &
-//   operator+=(const difference_type my_offset) noexcept {
-//     verify_offset(my_offset);
-//     my_ptr += my_offset;
-//     return *this;
-//   }
-
-//   [[nodiscard]] constexpr memory_access_iterator
-//   operator+(const difference_type my_offset) const noexcept {
-//     memory_access_iterator my_tmp{*this};
-//     my_tmp += my_offset;
-//     return my_tmp;
-//   }
-
-//   [[nodiscard]] friend constexpr memory_access_iterator
-//   operator+(const difference_type my_offset,
-//             memory_access_iterator my_next) noexcept {
-//     my_next += my_offset;
-//     return my_next;
-//   }
-
-//   constexpr memory_access_iterator &
-//   operator-=(const difference_type my_offset) noexcept {
-//     precondition(my_offset != std::numeric_limits<difference_type>::min(),
-//                  "integer overflow");
-//     verify_offset(-my_offset);
-//     my_ptr -= my_offset;
-//     return *this;
-//   }
-
-//   [[nodiscard]] constexpr memory_access_iterator
-//   operator-(const difference_type my_offset) const noexcept {
-//     memory_access_iterator my_tmp{*this};
-//     my_tmp -= my_offset;
-//     return my_tmp;
-//   }
-
-//   [[nodiscard]] constexpr difference_type
-//   operator-(const memory_access_iterator &that) const noexcept {
-//     precondition(my_begin == that.my_begin && my_end == that.my_end,
-//                  "cannot subtract incompatible span iterators");
-//     return my_ptr - that.my_ptr;
-//   }
-
-//   [[nodiscard]] constexpr reference
-//   operator[](const difference_type my_offset) const noexcept {
-//     return *(*this + my_offset);
-//   }
-
-//   [[nodiscard]] constexpr bool
-//   operator==(const memory_access_iterator &that) const noexcept {
-//     precondition(my_begin == that.my_begin && my_end == that.my_end,
-//                  "cannot compare incompatible span iterators for equality");
-//     return my_ptr == that.my_ptr;
-//   }
-
-//   [[nodiscard]] constexpr std::strong_ordering
-//   operator<=>(const memory_access_iterator &that) const noexcept {
-//     precondition(my_begin == that.my_begin && my_end == that.my_end,
-//                  "cannot compare incompatible span iterators");
-//     return my_ptr <=> that.my_ptr;
-//   }
-
-// private:
-//   pointer my_ptr = nullptr;
-//   dbg_only(                       //
-//       pointer my_begin = nullptr; //
-//       pointer my_end = nullptr;   //
-//   )
-// };
-
-// template class memory_access_iterator<isa::instruction_set::riscv32>;
 } // namespace accat::luce

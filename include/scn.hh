@@ -1,5 +1,4 @@
 #pragma once
-
 #ifdef __clang__
 #  pragma clang system_header
 #elifdef __GNUC__
@@ -10,7 +9,10 @@
 #  pragma system_header
 #endif
 
-#include <std.hh>
-#include <fmt.hh>
-#include <spdlog.hh>
-#include <scn.hh>
+#include <scn/fwd.h>
+#include <scn/scan.h>
+#include <scn/chrono.h>
+#include <scn/istream.h>
+#include <scn/ranges.h>
+#include <scn/regex.h>
+#include <scn/xchar.h>

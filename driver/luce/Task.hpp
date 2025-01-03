@@ -3,8 +3,8 @@
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
 
+#include "accat/auxilia/details/Property.hpp"
 #include "isa/architecture.hpp"
-
 
 namespace accat::luce {
 enum class Permission : uint8_t {
@@ -17,15 +17,12 @@ enum class Permission : uint8_t {
   kReadWriteExecute = kRead | kWrite | kExecute,
 };
 AC_BITMASK_OPS(Permission);
-template <isa::instruction_set ISA> class AddressSpace {
-  using virtual_address_t = typename isa::Architecture<ISA>::virtual_address_t;
-  using minimal_addressable_unit_t =
-      typename isa::Architecture<ISA>::minimal_addressable_unit_t;
+class AddressSpace {
 
 public:
   struct MemoryRegion {
-    virtual_address_t start;
-    virtual_address_t end;
+    isa::virtual_address_t start;
+    isa::virtual_address_t end;
     Permission permissions;
   };
 
@@ -34,17 +31,12 @@ private:
   MemoryRegion data_segment;
   MemoryRegion heap;
   MemoryRegion stack;
-  virtual_address_t heap_break;             // Current heap allocation point
+  isa::virtual_address_t heap_break;        // Current heap allocation point
   std::vector<MemoryRegion> mapped_regions; // Additional mapped regions
 };
 
-template <isa::instruction_set ISA> class Context {
+class Context {
   enum class PrivilegeLevel : uint8_t { kUser = 0, kSupervisor, kMachine };
-  using virtual_address_t = typename isa::Architecture<ISA>::virtual_address_t;
-  using instruction_size_t =
-      typename isa::Architecture<ISA>::instruction_size_t;
-  using minimal_addressable_unit_t =
-      typename isa::Architecture<ISA>::minimal_addressable_unit_t;
 
 public:
   Context()
@@ -52,18 +44,17 @@ public:
         general_purpose_registers{}, status_flags{} {}
 
 private:
-  virtual_address_t program_counter;
-  virtual_address_t stack_pointer;
-  instruction_size_t instruction_register;
-  std::pair<virtual_address_t, virtual_address_t> memory_bounds;
-  std::array<virtual_address_t,
-             isa::Architecture<ISA>::general_purpose_register_count>
+  isa::virtual_address_t program_counter;
+  isa::virtual_address_t stack_pointer;
+  isa::instruction_size_t instruction_register;
+  std::pair<isa::virtual_address_t, isa::virtual_address_t> memory_bounds;
+  std::array<isa::virtual_address_t, isa::general_purpose_register_count>
       general_purpose_registers;
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
 
 private:
   union {
-    struct {
+    struct alignas(1) {
       uint8_t carry : 1;
       uint8_t zero : 1;
       uint8_t negative : 1;
@@ -72,19 +63,19 @@ private:
       uint8_t supervisor : 1;
       uint8_t reserved : 2;
     } bits;
-    minimal_addressable_unit_t raw;
+    isa::minimal_addressable_unit_t raw;
   } status_flags;
 
   // Debug and profiling
   struct DebugInfo {
-    virtual_address_t last_instruction_address;
+    isa::virtual_address_t last_instruction_address;
     uint64_t instruction_count;
     uint64_t cycle_count;
   } debug_info;
 };
 
-template <isa::instruction_set ISA> class Task {
-  using self_type = Task<ISA>;
+class Task {
+  using self_type = Task;
   using clock_type = std::chrono::steady_clock;
   using time_point = clock_type::time_point;
 
@@ -94,6 +85,7 @@ public:
     kReady,
     kRunning,
     kWaiting,
+    kPaused,
     kTerminated,
   };
 
@@ -101,7 +93,7 @@ public:
 
   Task()
       : pid_(auxilia::id::get()), state_(State::kNew), context_{},
-        creation_time_(clock_type::now()) {
+        creation_time_(clock_type::now()), state(this) {
     spdlog::info("Task created with PID: {}, start time: {}",
                  pid_,
                  std::format("{}", std::chrono::system_clock::now()));
@@ -109,17 +101,24 @@ public:
 
 public:
   pid_t id() const noexcept { return pid_; }
-  State state() const noexcept { return state_; }
+  State get_state() const noexcept { return state_; }
+  Task &set_state(const State &state) noexcept {
+    state_ = state;
+    return *this;
+  }
   auto context(this auto &&self) noexcept -> decltype(auto) {
     return self.context_;
   }
+  auxilia::Status load_program(
+      const std::ranges::range auto &data,
+      const isa::physical_address_t start_addr = isa::physical_base_address) {}
 
 private:
   // Core task data
   pid_t pid_;
   State state_;
-  Context<ISA> context_;
-  AddressSpace<ISA> address_space_;
+  Context context_;
+  AddressSpace address_space_;
 
   // Task hierarchy
   std::shared_ptr<self_type> parent_;
@@ -144,5 +143,9 @@ private:
   // I/O and resources
   std::vector<int> file_descriptors_;
   std::optional<int32_t> exit_code_;
+
+public:
+  auxilia::Property<Task, State, Task &, &Task::get_state, &Task::set_state>
+      state;
 };
 } // namespace accat::luce

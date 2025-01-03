@@ -3,19 +3,20 @@
 #include "./config.hpp"
 #include "./Status.hpp"
 
-
 namespace accat::auxilia {
-/// @brief fancy wrapper around the getter and setter functions
+/// @brief fancy wrapper around the getter and setter functions.
 /// @tparam Instance the parent class
 /// @tparam Field the field type
 /// @tparam ReturnType the return type of the getter function
 /// @tparam getter the getter function
+/// @remarks C#-like properties in C++; sugar is all you need. :)
 EXPORT_AUXILIA
 template <typename Instance,
           typename Field,
           typename ReturnType,
-          Field (Instance::*getter)() const,
-          ReturnType (Instance::*setter)(const Field &)>
+          Field (Instance::*getter)() const,            // MUST be const
+          ReturnType (Instance::*setter)(const Field &) // MUST be const ref
+          >
 struct Property {
   Instance *instance;
   /// DANGER: do not use this constructor
@@ -31,15 +32,19 @@ struct Property {
     return *this;
   }
 
-  template <typename Parent2,
-            typename Field2,
-            typename ReturnType2,
-            Field2 (Parent2::*getter2)() const,
-            ReturnType2 (Parent2::*setter2)(const Field2 &)>
+  template <typename ThatParent,
+            typename ThatField,
+            typename ThatReturnType,
+            ThatField (ThatParent::*ThatGetter)() const,
+            ThatReturnType (ThatParent::*ThatSetter)(const ThatField &)>
   constexpr Property &
-  operator=(const Property<Parent2, Field2, ReturnType2, getter2, setter2>
-                &that) noexcept(noexcept((that.instance->*getter2)())) {
-    return *this = (that.instance->*getter2)();
+  operator=(const Property<ThatParent,
+                           ThatField,
+                           ThatReturnType,
+                           ThatGetter,
+                           ThatSetter>
+                &that) noexcept(noexcept((that.instance->*ThatGetter)())) {
+    return *this = (that.instance->*ThatGetter)();
   }
 
   constexpr Property &operator=(const Property &that) noexcept(
@@ -50,6 +55,14 @@ struct Property {
   constexpr Property &operator=(const ReturnType &value) noexcept(
       noexcept((instance->*setter)(value))) {
     return *this = (instance->*setter)(value);
+  }
+  constexpr bool operator==(const Field &value) const
+      noexcept(noexcept((instance->*getter)())) {
+    return (instance->*getter)() == value;
+  }
+  constexpr auto operator<=>(const Field &value) const
+      noexcept(noexcept((instance->*getter)())) {
+    return (instance->*getter)() <=> value;
   }
 };
 
