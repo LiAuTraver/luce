@@ -71,8 +71,8 @@ inline Ty _random_integer_generator<Ty>::operator()(const Ty min,
 namespace accat::auxilia {
 /// @brief A random integer generator for 8-bit unsigned integers.
 /// @todo not working: uniform_int_distribution cannot accept unsigned char
-EXPORT_AUXILIA
-inline constexpr detail::_random_integer_generator<uint8_t> rand_u8;
+// EXPORT_AUXILIA
+// inline constexpr detail::_random_integer_generator<uint8_t> rand_u8;
 /// @brief A random integer generator for 16-bit unsigned integers.
 EXPORT_AUXILIA
 inline constexpr detail::_random_integer_generator<uint16_t> rand_u16;

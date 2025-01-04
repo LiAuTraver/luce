@@ -1,8 +1,12 @@
 #pragma once
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 
 #include <accat/auxilia/auxilia.hpp>
+#include "./riscv32/isa.hpp"
+#include "./host.hpp"
 
 namespace accat::luce::isa {
 
@@ -19,93 +23,71 @@ enum class instruction_set : std::uint8_t {
   arm64 = is_arm | is_64bit,
   x86 = is_x86 | is_32bit,
   x64 = is_x86 | is_64bit,
-  unknown = std::numeric_limits<std::uint8_t>::max()
 };
 AC_BITMASK_OPS(instruction_set)
-namespace host {
-using virtual_address_t = std::uintptr_t;
-using physical_address_t = std::uintptr_t;
-} // namespace host
-
-// RISC-V 32-bit
-inline namespace riscv32 {
-using virtual_address_t = std::uint32_t;
-using physical_address_t = std::uint32_t;
-using minimal_addressable_unit_t = std::uint8_t;
-using instruction_size_t = std::uint32_t;
-static constexpr physical_address_t physical_base_address = 0x80000000;
-// static constexpr physical_address_t physical_memory_size = 0x8000000; //
-// 128MB
-static constexpr physical_address_t physical_memory_size =
-    0x800000; // 8MB, for testing
-static constexpr physical_address_t physical_memory_begin =
-    physical_base_address; // same as base
-static constexpr physical_address_t physical_memory_end =
-    physical_memory_begin + physical_memory_size - 1;
-static constexpr std::size_t general_purpose_register_count = 32;
-static constexpr std::size_t instruction_alignment = 4;
-static constexpr std::size_t page_size = 0x1000; // 4KB
-static constexpr bool has_floating_point = true;
-} // namespace riscv32
 using namespace riscv32;
+
+/// @note currently not supported/tested, so left as is.
+
 // RISC-V 64-bit
 namespace riscv64 {
 using virtual_address_t = std::uint64_t;
 using minimal_addressable_unit_t = std::uint8_t;
 using instruction_size_t =
     std::uint32_t; // Fixed: RISC-V uses 32-bit instructions
-static constexpr virtual_address_t physical_base_address = 0x80000000;
-static constexpr std::size_t general_purpose_register_count = 32;
-static constexpr std::size_t instruction_alignment = 4;
-static constexpr bool has_floating_point = true;
-}
+inline static constexpr virtual_address_t physical_base_address = 0x80000000;
+inline static constexpr std::size_t general_purpose_register_count = 32;
+inline static constexpr std::size_t instruction_alignment = 4;
+inline static constexpr bool has_floating_point = true;
+} // namespace riscv64
 
 // ARM 32-bit
 namespace arm32 {
 using virtual_address_t = std::uint32_t;
 using minimal_addressable_unit_t = std::uint8_t;
 using instruction_size_t = std::uint32_t;
-static constexpr virtual_address_t physical_base_address =
+inline static constexpr virtual_address_t physical_base_address =
     0x00008000; // Common ARM Linux base
-static constexpr std::size_t general_purpose_register_count = 16;
-static constexpr std::size_t instruction_alignment = 4;
-static constexpr bool has_floating_point = true;
-}
+inline static constexpr std::size_t general_purpose_register_count = 16;
+inline static constexpr std::size_t instruction_alignment = 4;
+inline static constexpr bool has_floating_point = true;
+} // namespace arm32
 
 // ARM 64-bit
 namespace arm64 {
-  using virtual_address_t = std::uint64_t;
-  using minimal_addressable_unit_t = std::uint8_t;
-  using instruction_size_t =
-      std::uint32_t; // Fixed: ARM64 uses 32-bit instructions
-  static constexpr virtual_address_t physical_base_address =
-      0xFFFF000000000000; // Typical AArch64 base
-  static constexpr std::size_t general_purpose_register_count = 31; // X0-X30
-  static constexpr std::size_t instruction_alignment = 4;
-  static constexpr bool has_floating_point = true;
-}
+using virtual_address_t = std::uint64_t;
+using minimal_addressable_unit_t = std::uint8_t;
+using instruction_size_t =
+    std::uint32_t; // Fixed: ARM64 uses 32-bit instructions
+inline static constexpr virtual_address_t physical_base_address =
+    0xFFFF000000000000; // Typical AArch64 base
+inline static constexpr std::size_t general_purpose_register_count =
+    31; // X0-X30
+inline static constexpr std::size_t instruction_alignment = 4;
+inline static constexpr bool has_floating_point = true;
+} // namespace arm64
 
 // x86 32-bit
 namespace x86 {
-  using virtual_address_t = std::uint32_t;
-  using minimal_addressable_unit_t = std::uint8_t;
-  using instruction_size_t = std::uint8_t; // Variable length instructions
-  static constexpr virtual_address_t physical_base_address =
-      0x08048000; // Traditional ELF base
-  static constexpr std::size_t general_purpose_register_count = 8;
-  static constexpr std::size_t instruction_alignment = 1;
-  static constexpr bool has_floating_point = true;
-}
+using virtual_address_t = std::uint32_t;
+using minimal_addressable_unit_t = std::uint8_t;
+using instruction_size_t = std::uint8_t; // Variable length instructions
+inline static constexpr virtual_address_t physical_base_address =
+    0x08048000; // Traditional ELF base
+inline static constexpr std::size_t general_purpose_register_count = 8;
+inline static constexpr std::size_t instruction_alignment = 1;
+inline static constexpr bool has_floating_point = true;
+} // namespace x86
 
 // x86-64
 namespace x64 {
-  using virtual_address_t = std::uint64_t;
-  using minimal_addressable_unit_t = std::uint8_t;
-  using instruction_size_t = std::uint8_t; // Variable length instructions
-  static constexpr virtual_address_t physical_base_address =
-      0x400000; // Common x64 base
-  static constexpr std::size_t general_purpose_register_count = 16;
-  static constexpr std::size_t instruction_alignment = 1;
-  static constexpr bool has_floating_point = true;
-}
+using virtual_address_t = std::uint64_t;
+using minimal_addressable_unit_t = std::uint8_t;
+using instruction_size_t = std::uint8_t; // Variable length instructions
+inline static constexpr virtual_address_t physical_base_address =
+    0x400000; // Common x64 base
+inline static constexpr std::size_t general_purpose_register_count = 16;
+inline static constexpr std::size_t instruction_alignment = 1;
+inline static constexpr bool has_floating_point = true;
+} // namespace x64
 } // namespace accat::luce::isa

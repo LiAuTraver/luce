@@ -6,11 +6,9 @@
 
 namespace accat::luce {
 class SystemBus : public Component {
-  MainMemory main_memory;
-
 public:
   SystemBus() = default;
-  SystemBus(Mediator *mediator) : Component(mediator) {}
+  SystemBus(Mediator *parent) : Component(parent) {}
   SystemBus(const SystemBus &) = delete;
   SystemBus &operator=(const SystemBus &) = delete;
   SystemBus(SystemBus &&) noexcept = default;

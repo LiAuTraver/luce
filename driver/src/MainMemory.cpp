@@ -1,5 +1,7 @@
 #include "deps.hh"
 
+#include <cstddef>
+#include <functional>
 #include <luce/MainMemory.hpp>
 
 namespace accat::luce {
@@ -17,9 +19,19 @@ MainMemory::read(isa::physical_address_t addr) const noexcept {
   }
   return {memory[addr]};
 }
+auto MainMemory::read_n(isa::physical_address_t addr, size_t count) const
+    -> auxilia::StatusOr<std::span<const std::byte>> {
+  if (!memory.is_in_range(addr, addr + count)) {
+    return auxilia::OutOfRangeError("Memory access violation");
+  }
+  // dont write `memory.begin() + addr` here; the operator is overloaded with
+  // different meaning
+  return std::as_bytes(std::span{&memory[addr], count});
+}
 
-auxilia::Status MainMemory::write(isa::physical_address_t addr,
-                                  isa::minimal_addressable_unit_t value) noexcept {
+auxilia::Status
+MainMemory::write(isa::physical_address_t addr,
+                  isa::minimal_addressable_unit_t value) noexcept {
   if (!memory.is_in_range(addr)) {
     return auxilia::OutOfRangeError("Memory access violation");
   }
@@ -37,5 +49,35 @@ auxilia::Status MainMemory::fill(const isa::physical_address_t start,
       memory.begin() + start, size, static_cast<std::byte>(value));
   return auxilia::OkStatus();
 }
+auto MainMemory::load_program(const std::span<const std::byte> bytes,
+                              const isa::physical_address_t start_addr,
+                              const isa::physical_address_t block_size,
+                              const bool randomize) -> auxilia::Status {
+  if (!memory.is_in_range(start_addr, start_addr + block_size)) {
+    return auxilia::ResourceExhaustedError("Program too large for memory");
+  }
+  // TODO(...)
+  // stupid way
+  for (size_t i = 0; i < bytes.size(); ++i) {
+    memory[start_addr + i] = bytes[i];
+  }
+  if (randomize) {
+    this->generate(start_addr + bytes.size(),
+                   block_size - bytes.size(),
+                   auxilia::rand_u16);
+  }
 
+  return auxilia::OkStatus();
+}
+auto MainMemory::generate(const isa::physical_address_t start,
+                          const size_t size,
+                          std::invocable auto &&generator) -> auxilia::Status {
+  if (!memory.is_in_range(start, start + size)) {
+    return auxilia::OutOfRangeError("Memory block operation out of bounds");
+  }
+  std::ranges::generate_n(memory.begin() + start, size, [&] {
+    return static_cast<std::byte>(std::invoke(generator));
+  });
+  return auxilia::OkStatus();
+}
 } // namespace accat::luce

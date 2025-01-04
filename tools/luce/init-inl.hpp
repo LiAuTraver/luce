@@ -9,7 +9,7 @@
 #include "alter_args-inl.h"
 
 namespace accat::luce {
-[[nodiscard]] LUCE_DRIVER_API int luce_main([[maybe_unused]] std::span<const std::string_view>);
+[[nodiscard]] LUCE_API int luce_main([[maybe_unused]] std::span<const std::string_view>);
 
 struct init {
 private:

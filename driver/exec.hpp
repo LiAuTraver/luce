@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include <luce/config.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -40,6 +41,7 @@ public:
     }
 
     if (has_log_file) {
+      dbg(info, "log file: {}", std::filesystem::absolute(log_file))
       auto console_sink =
           std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
       auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
@@ -49,7 +51,6 @@ public:
       console_sink->set_pattern("[%^%l%$] %v");
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(
           spdlog::logger{"luce", {console_sink, file_sink}}));
-      dbg(info, "log file: {}", log_file)
     } else {
       dbg(info, "no log file, only write to stdout")
     }
@@ -65,13 +66,14 @@ protected:
   inline ~ExecutionContext() = default;
 
 public:
-  [[nodiscard]] auto
-  to_string(const auxilia::FormatPolicy &format_policy =
-                auxilia::FormatPolicy::kDefault) const -> std::string {
+  [[nodiscard]] auto to_string(const auxilia::FormatPolicy &format_policy =
+                                   auxilia::FormatPolicy::kDefault) const
+      -> std::string {
     return "ExecutionContext";
   }
 };
 
-LUCE_DRIVER_API [[nodiscard]] int luce_main([[maybe_unused]] std::span<const std::string_view>);
+LUCE_API [[nodiscard]] int
+    luce_main([[maybe_unused]] std::span<const std::string_view>);
 
 } // namespace accat::luce

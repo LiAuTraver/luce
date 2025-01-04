@@ -1,13 +1,16 @@
 #pragma once
 
+#include "Pattern.hpp"
+
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
+#include <accat/auxilia/details/Property.hpp>
+#include <accat/auxilia/details/Status.hpp>
 
-#include "accat/auxilia/details/Property.hpp"
 #include "isa/architecture.hpp"
 
 namespace accat::luce {
-enum class Permission : uint8_t {
+enum class [[clang::flag_enum]] Permission : uint8_t {
   kNone = 0,
   kRead = 1,
   kWrite = 2,
@@ -17,64 +20,73 @@ enum class Permission : uint8_t {
   kReadWriteExecute = kRead | kWrite | kExecute,
 };
 AC_BITMASK_OPS(Permission);
-class AddressSpace {
-
-public:
-  struct MemoryRegion {
-    isa::virtual_address_t start;
-    isa::virtual_address_t end;
-    Permission permissions;
-  };
-
-private:
-  MemoryRegion text_segment;
-  MemoryRegion data_segment;
-  MemoryRegion heap;
-  MemoryRegion stack;
-  isa::virtual_address_t heap_break;        // Current heap allocation point
-  std::vector<MemoryRegion> mapped_regions; // Additional mapped regions
-};
 
 class Context {
+  static_assert(sizeof(std::byte) == sizeof(isa::minimal_addressable_unit_t),
+                "current implementation requires std::byte to be same size as "
+                "minimal_addressable_unit_t");
+  using vaddr_t = isa::virtual_address_t;
+  using register_t = std::array<std::byte,
+                                sizeof(isa::virtual_address_t) /
+                                    sizeof(isa::minimal_addressable_unit_t)>;
+
+public:
   enum class PrivilegeLevel : uint8_t { kUser = 0, kSupervisor, kMachine };
 
 public:
-  Context()
-      : program_counter(0), stack_pointer(0), instruction_register(0),
-        general_purpose_registers{}, status_flags{} {}
-
-private:
-  isa::virtual_address_t program_counter;
-  isa::virtual_address_t stack_pointer;
-  isa::instruction_size_t instruction_register;
-  std::pair<isa::virtual_address_t, isa::virtual_address_t> memory_bounds;
-  std::array<isa::virtual_address_t, isa::general_purpose_register_count>
-      general_purpose_registers;
+public:
+  vaddr_t program_counter = 0x0;
+  vaddr_t stack_pointer = 0x0;
+  register_t instruction_register = {};
+  std::pair<vaddr_t, vaddr_t> memory_bounds = {};
+  std::array<register_t, isa::general_purpose_register_count>
+      general_purpose_registers = {};
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
 
 private:
-  union {
-    struct alignas(1) {
-      uint8_t carry : 1;
-      uint8_t zero : 1;
-      uint8_t negative : 1;
-      uint8_t overflow : 1;
-      uint8_t interrupt_enable : 1;
-      uint8_t supervisor : 1;
-      uint8_t reserved : 2;
-    } bits;
-    isa::minimal_addressable_unit_t raw;
-  } status_flags;
-
-  // Debug and profiling
-  struct DebugInfo {
-    isa::virtual_address_t last_instruction_address;
-    uint64_t instruction_count;
-    uint64_t cycle_count;
-  } debug_info;
+  // union {
+  //   struct alignas(1) {
+  //     uint8_t carry : 1;
+  //     uint8_t zero : 1;
+  //     uint8_t negative : 1;
+  //     uint8_t overflow : 1;
+  //     uint8_t interrupt_enable : 1;
+  //     uint8_t supervisor : 1;
+  //     uint8_t reserved : 2;
+  //   } bits;
+  //   isa::minimal_addressable_unit_t raw;
+  // } status_flags;
+  //
+  // // Debug and profiling
+  // struct DebugInfo {
+  //   vaddr_t last_instruction_address;
+  //   uint64_t instruction_count;
+  //   uint64_t cycle_count;
+  // } debug_info;
+};
+struct AddressSpace {
+  friend class Task;
+  using vaddr_t = isa::virtual_address_t;
+  struct MemoryRegion {
+    vaddr_t start;
+    vaddr_t end;
+    Permission permissions;
+  };
+  struct StaticRegion {
+    MemoryRegion text_segment;
+    MemoryRegion data_segment;
+  };
+  struct DynamicRegion {
+    MemoryRegion stack;
+    vaddr_t heap_break; // Current heap allocation point
+    MemoryRegion heap;
+  };
+  StaticRegion static_regions;
+  DynamicRegion dynamic_regions;
+  std::vector<MemoryRegion> mapped_regions; // Additional mapped regions
 };
 
-class Task {
+class Task : public Component {
   using self_type = Task;
   using clock_type = std::chrono::steady_clock;
   using time_point = clock_type::time_point;
@@ -89,35 +101,44 @@ public:
     kTerminated,
   };
 
-  using pid_t = uint32_t;
-
-  Task()
-      : pid_(auxilia::id::get()), state_(State::kNew), context_{},
-        creation_time_(clock_type::now()), state(this) {
-    spdlog::info("Task created with PID: {}, start time: {}",
-                 pid_,
-                 std::format("{}", std::chrono::system_clock::now()));
-  }
+  Task(Mediator * = nullptr);
 
 public:
-  pid_t id() const noexcept { return pid_; }
   State get_state() const noexcept { return state_; }
-  Task &set_state(const State &state) noexcept {
-    state_ = state;
+  Task &set_state(const State &newState) noexcept {
+    state_ = newState;
     return *this;
   }
+  const AddressSpace &get_address_space() const noexcept {
+    return address_space_;
+  }
+  Task &set_address_space(const AddressSpace &) noexcept;
   auto context(this auto &&self) noexcept -> decltype(auto) {
     return self.context_;
   }
-  auxilia::Status load_program(
-      const std::ranges::range auto &data,
-      const isa::physical_address_t start_addr = isa::physical_base_address) {}
+  // auxilia::Status run() {
+  //   precondition(mediator, "Task has no mediator. Check your code.")
+  //   if (state_ == State::kRunning) {
+  //     spdlog::warn("Task already running");
+  //     return {};
+  //   }
+  //   if (state_ != State::kNew && state_ != State::kReady) {
+  //     spdlog::warn("Task not in a runnable state");
+  //     return {};
+  //   }
+  //   state_ = State::kRunning;
+  //   return send(Event::kRunTask);
+  // }
+  void pause() {}
+  void resume() {}
+  /// @brief (forcefully) terminate the task
+  void terminate() {}
+  void restart() {}
 
 private:
   // Core task data
-  pid_t pid_;
   State state_;
-  Context context_;
+  std::shared_ptr<Context> context_;
   AddressSpace address_space_;
 
   // Task hierarchy
@@ -144,8 +165,15 @@ private:
   std::vector<int> file_descriptors_;
   std::optional<int32_t> exit_code_;
 
+private:
 public:
   auxilia::Property<Task, State, Task &, &Task::get_state, &Task::set_state>
       state;
+  auxilia::Property<Task,
+                    const AddressSpace &,
+                    Task &,
+                    &Task::get_address_space,
+                    &Task::set_address_space>
+      address_space;
 };
 } // namespace accat::luce

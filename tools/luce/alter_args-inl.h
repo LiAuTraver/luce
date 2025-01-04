@@ -12,6 +12,7 @@ extern "C" {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
+// ReSharper disable All
 static inline char **new_argv = nullptr;
 static inline void cleanup_for_new_args() {
   if (not new_argv)

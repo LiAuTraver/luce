@@ -118,13 +118,11 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #else
 #  define AC_UTILS_DEBUG_LOGGING(...) (void)0;
 #endif
-#if defined(__RESHARPER__) || not defined(__PRETTY_FUNCTION__)
-/// @note seems that resharper languege server can't get through
-/// this @def __PRETTY_FUNCTION__ macro when compiler was set to
-/// clang++.
-#  if defined(__FUNCSIG__) // NOLINTNEXTLINE
+/// @note magic_enum seems to require __PRETTY_FUNCTION__ to be defined
+#if !defined(__PRETTY_FUNCTION__)
+#  if defined(__FUNCSIG__)
 #    define __PRETTY_FUNCTION__ __FUNCSIG__
-#  else // NOLINTNEXTLINE
+#  else
 #    define __PRETTY_FUNCTION__ __func__
 #  endif
 #endif

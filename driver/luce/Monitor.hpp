@@ -6,9 +6,6 @@
 #include "MainMemory.hpp"
 #include "Pattern.hpp"
 #include "Timer.hpp"
-#include "accat/auxilia/details/Status.hpp"
-#include "accat/auxilia/details/config.hpp"
-#include "accat/auxilia/details/macros.hpp"
 #include "config.hpp"
 #include "SystemBus.hpp"
 #include "Task.hpp"
@@ -16,6 +13,7 @@
 
 #include <accat/auxilia/auxilia.hpp>
 #include <iostream>
+#include <ranges>
 #include <utility>
 namespace accat::luce {
 namespace repl {
@@ -34,6 +32,9 @@ static const inline auto WelcomeMessage =
 )"));
 } // namespace repl
 class Monitor : public Mediator {
+  using paddr_t = isa::physical_address_t;
+  using vaddr_t = isa::virtual_address_t;
+
   MainMemory memory;
   SystemBus bus;
   // std::vector<Task> processes; // currently just one process
@@ -42,16 +43,47 @@ class Monitor : public Mediator {
   Timer timer;
 
 public:
-  virtual auxilia::Status notify(Component *sender, Event event) override {
-    // todo: implement
-    return {};
-  }
+  Monitor() : memory(this), bus(this), cpus(this) {}
+
+public:
+  virtual auxilia::Status notify(Component *sender, Event event) override;
   auxilia::Status REPL();
   auxilia::Status shuttle();
   auxilia::Status inspect(std::string_view);
   auxilia::StatusOr<auxilia::string> read();
+  auxilia::Status _do_execute_n_unchecked(size_t);
   auxilia::Status execute_n(size_t);
+  auto run_new_task(const std::ranges::range auto &, paddr_t, paddr_t)
+      -> auxilia::Status;
+
+public:
+  auto fetch_from_main_memory(vaddr_t addr, size_t size) -> auxilia::StatusOr<std::span<const std::byte>> {
+    return memory.read_n(addr, size);
+  }
+
+public:
+  // auxilia::Status register_process(Task &&task) {
+  //   process = std::move(task);
+  //   return this->set_as_parent(&process);
+  // }
+private:
+  auxilia::Status
+      _do_run_new_task_unchecked(std::span<const std::byte>, paddr_t, paddr_t);
 };
+auxilia::Status Monitor::run_new_task(const std::ranges::range auto &program,
+                                      paddr_t start_addr,
+                                      paddr_t block_size) {
+  auto dataSpan = std::span{program};
+  auto bytes = std::as_bytes(dataSpan);
+  block_size = std::min(block_size, isa::physical_memory_size);
+
+  contract_assert(bytes.size() > 0 && bytes.size() <= block_size,
+                  "Invalid block size")
+  contract_assert(start_addr + bytes.size() <= isa::physical_memory_end,
+                  "Out of memory bounds")
+  // add `this` for intellisenese (template intellisense was too poor)
+  return this->_do_run_new_task_unchecked(bytes, start_addr, block_size);
+}
 } // namespace accat::luce
 /*utils::Status Monitor::initDisassembler(CtxRef) {
   constexpr auto cs_arch = CS_ARCH_RISCV;

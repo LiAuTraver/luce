@@ -1,4 +1,7 @@
 #pragma once
+#include "Pattern.hpp"
+#include "config.hpp"
+
 #include <accat/auxilia/auxilia.hpp>
 #include <luce/isa/architecture.hpp>
 #include <algorithm>
@@ -14,7 +17,8 @@
 #include <stdexcept>
 
 namespace accat::luce {
-class MemoryAccess {
+
+class LUCE_API MemoryAccess {
 public:
   static_assert(sizeof(std::byte) == sizeof(isa::minimal_addressable_unit_t),
                 "current implementation requires std::byte to be same size as "
@@ -59,52 +63,33 @@ public:
   }
 };
 
-class MainMemory {
+class LUCE_API MainMemory : public Component {
 
   MemoryAccess memory;
 
 public:
-  MainMemory() = default;
+  MainMemory(Mediator *parent) : Component(parent) {}
   ~MainMemory() = default;
 
 public:
-  // Basic memory operations
-  auxilia::StatusOr<std::byte>
-  read(isa::physical_address_t addr) const noexcept;
+  auto read(isa::physical_address_t) const noexcept
+      -> auxilia::StatusOr<std::byte>;
+  auto read_n(isa::physical_address_t,size_t) const 
+      -> auxilia::StatusOr<std::span<const std::byte>>;
 
-  auxilia::Status write(isa::physical_address_t addr,
-                        isa::minimal_addressable_unit_t value) noexcept;
+  auto write(isa::physical_address_t, isa::minimal_addressable_unit_t) noexcept
+      -> auxilia::Status;
 
-  auxilia::Status load_program(
-      const std::ranges::range auto &data,
-      const isa::physical_address_t start_addr = isa::physical_base_address) {
-    auto bytes = std::as_bytes(data);
-    if (!memory.is_in_range(start_addr, start_addr + bytes.size())) {
-      return auxilia::ResourceExhaustedError("Program too large for memory");
-    }
-    // TODO(...)
-    // stupid way
-    for (size_t i = 0; i < bytes.size(); ++i) {
-      memory[start_addr + i] = bytes[i];
-    }
+  auto load_program(std::span<const std::byte>,
+                    isa::physical_address_t,
+                    isa::physical_address_t,
+                    bool = false) -> auxilia::Status;
 
-    return auxilia::OkStatus();
-  }
+  auto fill(isa::physical_address_t, size_t, isa::minimal_addressable_unit_t)
+      -> auxilia::Status;
 
-  auxilia::Status fill(const isa::physical_address_t start,
-                       const size_t size,
-                       const isa::minimal_addressable_unit_t value);
-  template <typename CallableRandom>
-  auxilia::Status generate(const isa::physical_address_t start,
-                           const size_t size,
-                           CallableRandom &&generator) {
-    if (!memory.is_in_range(start, start + size)) {
-      return auxilia::OutOfRangeError("Memory block operation out of bounds");
-    }
-    std::ranges::generate_n(
-        memory.begin() + start, size, std::forward<CallableRandom>(generator));
-    return auxilia::OkStatus();
-  }
+  auto generate(isa::physical_address_t, size_t, std::invocable auto &&)
+      -> auxilia::Status;
 
   template <typename T>
   auxilia::StatusOr<T> read_typed(isa::physical_address_t addr) const {

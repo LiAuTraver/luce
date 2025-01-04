@@ -14,8 +14,8 @@ TEST(load_program, bytes) {
   auto little_endian_byte_span =
       std::span{reinterpret_cast<const std::byte *>(littleEndianData.data()),
                 littleEndianData.size()};
-  MainMemory memory;
-  memory.load_program(little_endian_byte_span);
+  MainMemory memory{nullptr};
+  memory.load_program(little_endian_byte_span, 0, 0x10000);
 
   std::vector<std::byte> readData;
   readData.reserve(littleEndianData.size());

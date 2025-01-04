@@ -35,7 +35,7 @@
       <DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
       <OmitFramePointers>false</OmitFramePointers>
-      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;LUCE_DRIVER_BUILD_SHARED;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <SDLCheck>true</SDLCheck>
@@ -59,8 +59,7 @@
       <ShowProgress>true</ShowProgress>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>
-				for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
+      <Command>for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
 			</Command>
     </PostBuildEvent>
     <PostBuildEvent>
