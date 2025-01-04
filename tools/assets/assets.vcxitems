@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>false</HasSharedItems>
     <ItemsProjectGuid>{0750eab4-6807-4edb-8c15-296ed1ffa662}</ItemsProjectGuid>
+    <ItemsRootNamespace>luce</ItemsRootNamespace>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -14,9 +15,6 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)..\..\shared\include\accat\auxilia\auxilia.vcxitems">
-      <Link>auxilia.vcxitems</Link>
-    </Content>
     <Content Include="$(MSBuildThisFileDirectory)..\..\driver\driver.vcxproj.filters">
       <Link>driver.vcxproj.filters</Link>
     </Content>
@@ -28,6 +26,12 @@
     </Content>
     <Content Include="$(MSBuildThisFileDirectory)..\..\demo\demo.vcxproj">
       <Link>demo.vcxproj</Link>
+    </Content>
+    <Content Include="Z:\luce\tools\assets\..\..\source\auxilia\auxilia.vcxitems.filters">
+      <Link>auxilia.vcxitems.filters</Link>
+    </Content>
+    <Content Include="Z:\luce\tools\assets\..\..\source\auxilia\auxilia.vcxitems">
+      <Link>auxilia.vcxitems</Link>
     </Content>
     <Content Include="$(MSBuildThisFileDirectory)..\..\test\test.vcxproj">
       <Link>test.vcxproj</Link>

@@ -7,7 +7,7 @@ cc_library(
     srcs = driver_srcs,
     copts = [
         "/std:c++latest",
-        "/Ishared/include",  # MUST be added, relative to the WORKSPACE file
+        "/Isource/auxilia/include",  # MUST be added, relative to the WORKSPACE file
         "/Zc:preprocessor",
     ],
     defines = [
@@ -21,6 +21,6 @@ cc_library(
     deps = [
         "@fmt",
         "@spdlog",
-        "//shared/include/accat/auxilia",
+        "///auxilia",
     ],
 )

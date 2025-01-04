@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "auxilia", "shared\include\accat\auxilia\auxilia.vcxitems", "{5AE05CBD-1D27-41C2-9AB0-ACCF40A1E84C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deps", "deps.vcxitems", "{EA3BAA90-1518-4497-AAE0-92C4AA95B172}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luce", "tools\luce\luce.vcxproj", "{B53CD05D-3675-4EB0-801F-4A082AD069E5}"
@@ -16,6 +14,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assets", "tools\assets\assets.vcxitems", "{0750EAB4-6807-4EDB-8C15-296ED1FFA662}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver", "driver\driver.vcxproj", "{55F3C414-245A-49BF-BC4C-3112750D2452}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "auxilia", "source\auxilia\auxilia.vcxitems", "{5AE05CBD-1D27-41C2-9AB0-ACCF40A1E84C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,14 +64,9 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		tools\assets\assets.vcxitems*{0750eab4-6807-4edb-8c15-296ed1ffa662}*SharedItemsImports = 9
 		deps.vcxitems*{0fefe1f8-916e-4181-a1a6-b277bd16062a}*SharedItemsImports = 4
-		shared\include\accat\auxilia\auxilia.vcxitems*{0fefe1f8-916e-4181-a1a6-b277bd16062a}*SharedItemsImports = 4
-		deps.vcxitems*{55f3c414-245a-49bf-bc4c-3112750d2452}*SharedItemsImports = 4
-		shared\include\accat\auxilia\auxilia.vcxitems*{55f3c414-245a-49bf-bc4c-3112750d2452}*SharedItemsImports = 4
 		deps.vcxitems*{5712fbee-2853-4e85-87a5-7d5ffea544f8}*SharedItemsImports = 4
-		shared\include\accat\auxilia\auxilia.vcxitems*{5712fbee-2853-4e85-87a5-7d5ffea544f8}*SharedItemsImports = 4
-		shared\include\accat\auxilia\auxilia.vcxitems*{5ae05cbd-1d27-41c2-9ab0-accf40a1e84c}*SharedItemsImports = 9
+		source\auxilia\auxilia.vcxitems*{5ae05cbd-1d27-41c2-9ab0-accf40a1e84c}*SharedItemsImports = 9
 		deps.vcxitems*{b53cd05d-3675-4eb0-801f-4a082ad069e5}*SharedItemsImports = 4
-		shared\include\accat\auxilia\auxilia.vcxitems*{b53cd05d-3675-4eb0-801f-4a082ad069e5}*SharedItemsImports = 4
 		deps.vcxitems*{ea3baa90-1518-4497-aae0-92c4aa95b172}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal

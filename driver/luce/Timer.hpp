@@ -70,17 +70,19 @@ private:
   }
 
   // function for debugger to pause the timer
-  void pause() {
+  Timer& pause() {
     precondition(current_frame_ != time_frame_type{}, "Timer is not started.")
     time_point_ = clock_type::now();
+    return *this;
   }
 
   // function for debugger to resume the timer
-  void resume() {
+  Timer& resume() {
     precondition(current_frame_ != time_frame_type{}, "Timer is not started.")
     auto &[startTime, endTime, elapsedTime] = current_frame_;
     // use it to store the resume timepoint
     endTime = clock_type::now();
+    return *this;
   }
 
 private:

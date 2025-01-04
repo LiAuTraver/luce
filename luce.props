@@ -7,7 +7,7 @@
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
     <LinkIncremental>false</LinkIncremental>
-    <PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)driver\;$(SolutionDir)include;$(SolutionDir)shared\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)driver\;$(SolutionDir)include\;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <PublicModuleDirectories>$(SolutionDir)modules;$(PublicModuleDirectories)</PublicModuleDirectories>
     <OutDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\out\$(ShortProjectName)\</OutDir>
     <IntDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\intermediate\$(ShortProjectName)\</IntDir>
@@ -35,7 +35,7 @@
       <DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
       <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
       <OmitFramePointers>false</OmitFramePointers>
-      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;LUCE_DRIVER_BUILD_SHARED;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;LUCE_DRIVER_BUILD_SHARED;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <FloatingPointExceptions>true</FloatingPointExceptions>
       <SDLCheck>true</SDLCheck>
@@ -44,7 +44,7 @@
       <GuardEHContMetadata>true</GuardEHContMetadata>
       <OpenMPSupport>true</OpenMPSupport>
       <GenerateSourceDependencies>true</GenerateSourceDependencies>
-      <AdditionalIncludeDirectories>$(SolutionDir)driver\;$(ProjectDir);$(ProjectDir)include;$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)driver\;$(ProjectDir);$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BuildStlModules>false</BuildStlModules>
       <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
       <AdditionalOptions>/Zf %(AdditionalOptions)</AdditionalOptions>

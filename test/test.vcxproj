@@ -31,7 +31,6 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared">
     <Import Project="..\deps.vcxitems" Label="Shared" />
-    <Import Project="..\shared\include\accat\auxilia\auxilia.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="..\luce.props" />

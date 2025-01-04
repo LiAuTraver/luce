@@ -1,10 +1,10 @@
 cc_library(
     name = "auxilia",
     hdrs = glob([
-        "**/*.hpp",
-        "**/*.h",
+        "include/**/*.hpp",
+        "include/**/*.h",
     ]),
-    includes = ["."],
+    includes = ["include"],
     visibility = ["//visibility:public"],
     deps = [
         "@fmt",

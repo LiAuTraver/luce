@@ -6,7 +6,6 @@
 #include <accat/auxilia/auxilia.hpp>
 #include <cstdint>
 #include <luce/MainMemory.hpp>
-import std;
 using namespace accat::luce;
 TEST(load_program, bytes) {
   auto littleEndianData =
@@ -15,7 +14,7 @@ TEST(load_program, bytes) {
   auto little_endian_byte_span =
       std::span{reinterpret_cast<const std::byte *>(littleEndianData.data()),
                 littleEndianData.size()};
-  MainMemory<isa::instruction_set::riscv32> memory;
+  MainMemory memory;
   memory.load_program(little_endian_byte_span);
 
   std::vector<std::byte> readData;

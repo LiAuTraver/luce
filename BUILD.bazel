@@ -14,7 +14,7 @@ cc_binary(
     ],
     copts = [
         "/std:c++latest",
-        "/Ishared/include",
+        "/Isource/auxilia/include",
         "/Iluce/include",
         "/Zc:preprocessor",
     ],
@@ -31,7 +31,7 @@ cc_binary(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//shared/include/accat/auxilia",
+        "//source/auxilia",
         "//luce:driver",
         "@fmt",
         "@spdlog",

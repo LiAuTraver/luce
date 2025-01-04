@@ -1,7 +1,6 @@
-﻿#include "deps.hh"
-
-#if defined(_WIN32) && defined(LUCE_DRIVER_BUILD_SHARED) &&                    \
+﻿#if defined(_WIN32) && defined(LUCE_DRIVER_BUILD_SHARED) &&                    \
     defined(DRIVER_EXPORTS)
+#  include <spdlog/spdlog.h>
 #  define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #  include <Windows.h>
 BOOL APIENTRY DllMain(HMODULE hModule,

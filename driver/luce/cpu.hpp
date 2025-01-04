@@ -65,7 +65,10 @@ public:
     return {};
     // TODO();
   }
-  auxilia::StatusOr<instruction_t> fetch() { TODO(); }
+  auxilia::StatusOr<instruction_t> fetch() {
+    TODO();
+    return {};
+  }
 };
 /// @implements Component
 class CPUs : public Component {

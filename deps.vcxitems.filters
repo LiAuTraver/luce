@@ -13,6 +13,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\deps.hh">
       <Filter>precompiled</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\scn.hh">
+      <Filter>includes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="includes">
