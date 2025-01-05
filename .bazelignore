@@ -17,12 +17,20 @@ out/
 
 # External dependencies
 external/
-third_party/build/
+
+# Package manager directories
+vcpkg/
+cmake/
+data/
 
 # Generated files directory
 generated/
 
 # Object file directories
 obj/
-
 x64/
+
+# Miscellaneous
+README.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md

@@ -1,6 +1,9 @@
-driver_srcs = glob(["src/*.cpp"]) + ["luce_main.cpp"]
+driver_srcs = glob(["src/*.cpp"]) + ["luce_main.cpp"] + ["DllMain.cpp"]
 
-driver_includes = ["include", "exec.hpp"]
+driver_includes = [
+    "include",
+    "exec.hpp",
+] + glob(["luce/**/*.hpp"]) + glob(["luce/**/*.h"])
 
 cc_library(
     name = "driver",
@@ -9,18 +12,20 @@ cc_library(
         "/std:c++latest",
         "/Isource/auxilia/include",  # MUST be added, relative to the WORKSPACE file
         "/Zc:preprocessor",
+        "/Iinclude",
+        "/Idriver",
     ],
     defines = [
         "AC_CPP_DEBUG",
-        "LUCE_DRIVER_BUILD_SHARED",
-        "LUCE_DRIVER_EXPORTS",
+        "SPDLOG_FMT_EXTERNAL",
     ],
     includes = driver_includes,
-    linkstatic = False,
+    linkstatic = True,
     visibility = ["//visibility:public"],
     deps = [
+        "//include:external_deps",
+        "//source/auxilia",
         "@fmt",
         "@spdlog",
-        "///auxilia",
     ],
 )

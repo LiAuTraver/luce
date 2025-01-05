@@ -1,13 +1,27 @@
 cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
-set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports")
-project(luce LANGUAGES CXX VERSION 0.1.0 DESCRIPTION "A simple riscv64 emulator" )
 
-find_package(fmt CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
-find_package(argparse CONFIG REQUIRED)
-find_package(capstone CONFIG REQUIRED)
-find_package(scn CONFIG REQUIRED)
-find_package(auxilia CONFIG REQUIRED)
+include(cmake/prelude.cmake)
+include(cmake/folders.cmake)
+
+project(luce-project
+  LANGUAGES CXX
+  VERSION 0.1.0
+  DESCRIPTION "A simple riscv64 emulator and its assets"
+)
+
+set(LUCE_PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# if source dir is the same as project root dir,enable testing
+if(PROJECT_IS_TOP_LEVEL)
+  # MUST include at the TOP level CMakelists.txt otherwise Ctest will not work
+  enable_testing()
+
+  # set this BEFORE include CTest to disable those annoying CTest build targets
+  set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
+  include(CTest)
+  include(GoogleTest)
+endif()
+
 option(AC_CPP_DEBUG "set the environment variable AC_CPP_DEBUG to enable debug mode" OFF)
 
 if(DEFINED ENV{AC_CPP_DEBUG})
@@ -19,17 +33,13 @@ if(DEFINED ENV{AC_CPP_DEBUG})
   endif()
 endif()
 
-set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
-
-# MUST include at the TOP level CMakelists.txt otherwise Ctest will not work
-enable_testing()
-include(CTest)
-
-add_executable(luce)
-
 if(AC_CPP_DEBUG)
   add_compile_definitions(
     _DEBUG DEBUG __DEBUG__ AC_CPP_DEBUG
+    SPDLOG_FMT_EXTERNAL
+
+    # _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION
+    # _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
   )
   message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
@@ -44,12 +54,12 @@ if(AC_CPP_DEBUG)
       -fno-inline
       -Wno-c23-extensions
 
-      -fsanitize=address
-      -fsanitize=undefined
+      # -fsanitize=address
+      # -fsanitize=undefined
     )
     add_link_options(
-      -fsanitize=address
-      -fno-omit-frame-pointer
+      # -fsanitize=address
+      # -fno-omit-frame-pointer
     )
 
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -61,35 +71,15 @@ if(AC_CPP_DEBUG)
   endif()
 endif()
 
-file(GLOB_RECURSE LUCE_DRIVER_SOURCES "driver/src/*.cpp")
-file(GLOB_RECURSE LUCE_HEADER_SOURCES "driver/luce/*.hpp")
-list(APPEND LUCE_DRIVER_SOURCES "driver/luce_main.cpp")
-list(APPEND LUCE_HEADER_SOURCES "driver/exec.hpp")
+include(cmake/dependencies.cmake)
 
 include_directories(driver)
 include_directories(include)
 
-target_sources(luce PUBLIC
-  tools/luce/alter_args-inl.h
-  tools/luce/init-inl.hpp
-  tools/luce/main.cpp
-  ${LUCE_DRIVER_SOURCES}
-  ${LUCE_HEADER_SOURCES}
-)
-target_link_libraries(luce PUBLIC
-  fmt::fmt
-  spdlog::spdlog
-  argparse::argparse
-  capstone::capstone
-  scn::scn
-  auxilia::auxilia
-)
-target_precompile_headers(luce PUBLIC
-  include/deps.hh
-)
-target_compile_features(luce PUBLIC cxx_std_23)
-
-include(cmake/test.cmake)
+add_subdirectory(driver)
+add_subdirectory(tools)
+add_subdirectory(test)
+add_subdirectory(demo)
 
 #[[=== Asan dll and lib(since we altered the scnlib's build to include ASAN, no need to use this snippet)
   # Get MSVC tools directory from environment or VS installation

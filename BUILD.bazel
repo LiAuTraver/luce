@@ -7,33 +7,3 @@ buildifier(
     verbose = True,
 )
 
-cc_binary(
-    name = "luce",
-    srcs = [
-        "main.cpp",
-    ],
-    copts = [
-        "/std:c++latest",
-        "/Isource/auxilia/include",
-        "/Iluce/include",
-        "/Zc:preprocessor",
-    ],
-    defines = [
-        "AC_CPP_DEBUG",
-        "LUCE_DRIVER_BUILD_SHARED",
-        "SPDLOG_FMT_EXTERNAL",
-        "SPDLOG_SHARED_LIB",
-        "SPDLOG_COMPILED_LIB",
-    ],
-    includes = [
-        "init-inl.hpp",
-        "alter_args-inl.h",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//source/auxilia",
-        "//luce:driver",
-        "@fmt",
-        "@spdlog",
-    ],
-)

@@ -1,0 +1,11 @@
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(FATAL_ERROR "Bad user. Bad configuration.")
+endif()
+
+if(NOT DEFINED PROJECT_IS_TOP_LEVEL)
+  if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(PROJECT_IS_TOP_LEVEL ON)
+  else()
+    set(PROJECT_IS_TOP_LEVEL OFF)
+  endif()
+endif()

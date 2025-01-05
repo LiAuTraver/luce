@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "name": "debug",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${command:cmake.buildDirectory}/tools/luce/luce.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${command:cmake.launchTargetDirectory}",
+      "environment": [],
+      "console": "internalConsole"
+    }
+  ]
+}

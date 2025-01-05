@@ -1,0 +1,19 @@
+cc_binary(
+    name = "demo",
+    srcs = ["demo.cpp"],
+    copts = [
+        "/std:c++latest",
+        "/Isource/auxilia/include",
+        "/Zc:preprocessor",
+    ],
+    defines = [
+        "AC_CPP_DEBUG",
+        "SPDLOG_FMT_EXTERNAL",
+    ],
+    deps = [
+        "//source/auxilia",
+        "@fmt",
+        "@spdlog",
+    ],
+    visibility = ["//git:__pkg__"],
+)

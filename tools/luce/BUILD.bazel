@@ -1,0 +1,22 @@
+cc_binary(
+    name = "luce",
+    srcs = ["main.cpp"] + ["init-inl.hpp"] + ["alter_args-inl.h"],
+    copts = [
+        "/std:c++latest",
+        "/Isource/auxilia/include",
+        "/Zc:preprocessor",
+        "/Iinclude",
+    ],
+    defines = [
+        "AC_CPP_DEBUG",
+        "SPDLOG_FMT_EXTERNAL",
+    ],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//driver",
+        "//source/auxilia",
+        "@fmt",
+        "@spdlog",
+    ],
+)

@@ -1,0 +1,21 @@
+includes = glob(["*.hh"])
+
+cc_library(
+    name = "external_deps",
+    srcs = includes,
+    copts = [
+        "/std:c++latest",
+        "/Zc:preprocessor",
+        "/Isource/auxilia/include",
+    ],
+    defines = [
+        "SPDLOG_FMT_EXTERNAL",
+        "AC_CPP_DEBUG",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//source/auxilia",
+        "@fmt",
+        "@spdlog",
+    ],
+)

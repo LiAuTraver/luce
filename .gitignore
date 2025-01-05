@@ -491,6 +491,5 @@ FodyWeavers.xsd
 /.aswb/
 /.clwb/
 
-
-build/
-ref/
+**/build
+**/out

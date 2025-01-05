@@ -1,0 +1,16 @@
+load("//test:luce_add_test.bzl", "luce_add_test")
+
+luce_add_test(
+    name = "dummy",
+    src = "dummy.cpp",
+)
+
+luce_add_test(
+    name = "endian_test",
+    src = "endian_test.cpp",
+)
+
+luce_add_test(
+    name = "memory_load_test",
+    src = "memory_load_test.cpp",
+)
