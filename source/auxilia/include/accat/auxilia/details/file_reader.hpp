@@ -1,7 +1,15 @@
 #pragma once
 
-#include "./config.hpp"
 #include "./Status.hpp"
+#include "./config.hpp"
+#include <algorithm>
+#include <bit>
+#include <cstddef>
+#include <vector>
+#include <filesystem>
+#include <fstream>
+#include <ranges>
+#include <future>
 
 namespace accat::auxilia::details {
 template <typename TargetType>
@@ -25,8 +33,7 @@ inline Status check_file(const std::filesystem::path &path) noexcept {
 } // namespace accat::auxilia::details
 EXPORT_AUXILIA
 namespace accat::auxilia {
-template <typename TargetType,
-          std::endian Endianess = std::endian::native,
+template <typename TargetType, std::endian Endianess = std::endian::native,
           typename CharType = char>
 inline StatusOr<std::basic_string<CharType>>
 read_as_bytes(const std::filesystem::path &path) {
@@ -51,5 +58,30 @@ read_as_bytes(const std::filesystem::path &path) {
   std::ranges::for_each(data | std::views::chunk(sizeof(TargetType)),
                         std::ranges::reverse);
   return {std::move(data)};
+}
+template <typename CharType = char>
+std::vector<std::byte> as_raw_bytes(const std::basic_string<CharType> &data) {
+  // clang-format off
+  return data 
+          | std::views::transform([](auto &&c) {
+              return static_cast<std::byte>(c);
+            })
+          | std::views::common
+          | std::ranges::to<std::vector<std::byte>>();
+  // clang-format on
+}
+// read raw bytes
+template <std::endian Endianess = std::endian::native>
+inline StatusOr<std::vector<std::byte>>
+read_raw_bytes(const std::filesystem::path &path) {
+  if (auto res = read_as_bytes<char, Endianess, char>(path); !res) {
+    return {res};
+  } else {
+    return as_raw_bytes(*res);
+  }
+}
+auto async(auto &&func, auto... args) -> decltype(auto) {
+  return std::async(std::launch::async, std::forward<decltype(func)>(func),
+                    std::forward<decltype(args)>(args)...);
 }
 } // namespace accat::auxilia

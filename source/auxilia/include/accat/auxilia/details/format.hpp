@@ -51,6 +51,7 @@ template <typename... Ts> struct match : Ts... {
 template <typename... Ts> match(Ts...) -> match<Ts...>;
 enum class FormatPolicy : uint8_t {
   kDefault = 0,
+  kDetailed = 1,
 };
 /// @interface Printable
 /// @brief A class that represents a printable object; can be directly

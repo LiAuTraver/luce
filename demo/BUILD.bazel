@@ -14,6 +14,7 @@ cc_binary(
         "//source/auxilia",
         "@fmt",
         "@spdlog",
+        "@capstone",
     ],
     visibility = ["//git:__pkg__"],
 )

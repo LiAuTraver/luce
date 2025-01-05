@@ -22,7 +22,10 @@
     <ClInclude Include="exec.hpp" />
     <ClInclude Include="luce\config.hpp" />
     <ClInclude Include="luce\cpu.hpp" />
+    <ClInclude Include="luce\Image.hpp" />
     <ClInclude Include="luce\isa\architecture.hpp" />
+    <ClInclude Include="luce\isa\host.hpp" />
+    <ClInclude Include="luce\isa\riscv32\isa.hpp" />
     <ClInclude Include="luce\MainMemory.hpp" />
     <ClInclude Include="luce\Monitor.hpp" />
     <ClInclude Include="luce\Pattern.hpp" />

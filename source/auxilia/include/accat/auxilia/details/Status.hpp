@@ -7,6 +7,7 @@
 #define ACCAT_AUXILIA_STATUS_HPP
 
 #include "accat/auxilia/details/macros.hpp"
+#include <type_traits>
 #ifdef ABSL_BASE_CONFIG_H_
 #warning "Abseil library detected. I recommend you to use the original Abseil library."
 #endif
@@ -313,7 +314,12 @@ public:
   [[nodiscard]] AC_CONSTEXPR20 bool is_return() const noexcept {
     return my_code == kReturning;
   }
-  Code code() const { return my_code; }
+  [[nodiscard]]
+  Code code() const noexcept { return my_code; }
+  [[nodiscard]]
+  std::underlying_type_t<Code> raw_code() const noexcept {
+    return static_cast<std::underlying_type_t<Code>>(my_code);
+  }
   [[nodiscard]] string_view message() const { return my_message; }
   [[nodiscard]] std::source_location location() const { return my_location; }
   [[nodiscard]] string stacktrace() const { return AC_UTILS_STACKTRACE; }

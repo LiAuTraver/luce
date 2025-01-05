@@ -7,6 +7,16 @@ module(
     version = "0.0.1",
 )
 
+load_conan_dependencies = use_extension("//conan:conan_deps_module_extension.bzl", "conan_extension")
+use_repo(load_conan_dependencies, "capstone")
+use_repo(load_conan_dependencies, "scnlib")
+use_repo(load_conan_dependencies, "fmt")
+use_repo(load_conan_dependencies, "spdlog")
+use_repo(load_conan_dependencies, "argparse")
+use_repo(load_conan_dependencies, "magic_enum")
+
+
+
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
 bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
@@ -27,9 +37,9 @@ bazel_dep(name = "rules_java", version = "8.5.1")  # <-- needed when use bazel i
 bazel_dep(name = "rules_cc", version = "0.1.0")
 bazel_dep(name = "rules_foreign_cc", version = "0.12.0")
 bazel_dep(name = "googletest", version = "1.15.2")
-bazel_dep(name = "fmt", version = "11.0.2")
-bazel_dep(name = "spdlog", version = "1.15.0")
+# bazel_dep(name = "fmt", version = "11.0.2")
+# bazel_dep(name = "spdlog", version = "1.15.0")
 bazel_dep(name = "google_benchmark", version = "1.8.5")
 
-bazel_dep(name = "magic_enum", version = "0.9.6")
+# bazel_dep(name = "magic_enum", version = "0.9.6")
 bazel_dep(name = "toolchains_llvm", version = "1.2.0")

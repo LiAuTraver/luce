@@ -23,7 +23,7 @@ private:
 public:
   MemoryPool(void *t, const size_t size)
       : buffer(t), remaining_size(size), total_size(size) {}
-  static MemoryPool FromSize(const size_t size) {
+  static MemoryPool FromSize(const size_t size) noexcept {
     return {dynamic_alloc(size), size};
   }
 

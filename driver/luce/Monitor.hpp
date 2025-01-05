@@ -51,13 +51,13 @@ public:
   auxilia::Status shuttle();
   auxilia::Status inspect(std::string_view);
   auxilia::StatusOr<auxilia::string> read();
-  auxilia::Status _do_execute_n_unchecked(size_t);
   auxilia::Status execute_n(size_t);
   auto run_new_task(const std::ranges::range auto &, paddr_t, paddr_t)
       -> auxilia::Status;
 
 public:
-  auto fetch_from_main_memory(vaddr_t addr, size_t size) -> auxilia::StatusOr<std::span<const std::byte>> {
+  auto fetch_from_main_memory(vaddr_t addr, size_t size)
+      -> auxilia::StatusOr<std::span<const std::byte>> {
     return memory.read_n(addr, size);
   }
 
@@ -69,6 +69,7 @@ public:
 private:
   auxilia::Status
       _do_run_new_task_unchecked(std::span<const std::byte>, paddr_t, paddr_t);
+  auxilia::Status _do_execute_n_unchecked(size_t);
 };
 auxilia::Status Monitor::run_new_task(const std::ranges::range auto &program,
                                       paddr_t start_addr,

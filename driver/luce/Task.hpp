@@ -104,18 +104,6 @@ public:
   Task(Mediator * = nullptr);
 
 public:
-  State get_state() const noexcept { return state_; }
-  Task &set_state(const State &newState) noexcept {
-    state_ = newState;
-    return *this;
-  }
-  const AddressSpace &get_address_space() const noexcept {
-    return address_space_;
-  }
-  Task &set_address_space(const AddressSpace &) noexcept;
-  auto context(this auto &&self) noexcept -> decltype(auto) {
-    return self.context_;
-  }
   // auxilia::Status run() {
   //   precondition(mediator, "Task has no mediator. Check your code.")
   //   if (state_ == State::kRunning) {
@@ -165,7 +153,24 @@ private:
   std::vector<int> file_descriptors_;
   std::optional<int32_t> exit_code_;
 
+  /// properties
 private:
+  State get_state() const noexcept { return state_; }
+  Task &set_state(const State &newState) noexcept {
+    state_ = newState;
+    return *this;
+  }
+
+  const AddressSpace &get_address_space() const noexcept {
+    return address_space_;
+  }
+  Task &set_address_space(const AddressSpace &) noexcept;
+
+public:
+  auto context(this auto &&self) noexcept -> decltype(auto) {
+    return self.context_;
+  }
+
 public:
   auxilia::Property<Task, State, Task &, &Task::get_state, &Task::set_state>
       state;
@@ -175,5 +180,14 @@ public:
                     &Task::get_address_space,
                     &Task::set_address_space>
       address_space;
+
+private:
+  friend class accat::auxilia::
+      Property<Task, State, Task &, &Task::get_state, &Task::set_state>;
+  friend class accat::auxilia::Property<Task,
+                                        const AddressSpace &,
+                                        Task &,
+                                        &Task::get_address_space,
+                                        &Task::set_address_space>;
 };
 } // namespace accat::luce
