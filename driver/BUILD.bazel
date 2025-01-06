@@ -27,5 +27,6 @@ cc_library(
         "//source/auxilia",
         "@fmt",
         "@spdlog",
+        "@scnlib",
     ],
 )

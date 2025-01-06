@@ -517,4 +517,4 @@ gradle-app.setting
 **/build
 **/out
 **/target
-conan/
+conan_installed/

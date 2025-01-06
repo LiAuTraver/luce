@@ -30,6 +30,12 @@ load(":windows_cc_toolchain_config.bzl", "cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 
+# Empty filegroup to satisfy the requirements of the cc_toolchain rule.
+filegroup(
+    name = "empty",
+    srcs = [],
+)
+
 toolchain(
     name = "Windows_MSVC",
     exec_compatible_with = [

@@ -5,6 +5,8 @@ cc_binary(
         "/std:c++latest",
         "/Isource/auxilia/include",
         "/Zc:preprocessor",
+        "/Iinclude",
+        "/MDd", # Multi-threaded Debug DLL
     ],
     defines = [
         "AC_CPP_DEBUG",
@@ -12,6 +14,7 @@ cc_binary(
     ],
     deps = [
         "//source/auxilia",
+        "//include:external_deps",
         "@fmt",
         "@spdlog",
         "@capstone",
