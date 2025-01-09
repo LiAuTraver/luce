@@ -17,6 +17,7 @@ Diagnostics:
     - global_module_introducer_not_at_start
     - include-next-outside-header
     - pragma-system-header-outside-header
+    - module-import-in-extern-c
 InlayHints:
   BlockEnd: true
 Hover:

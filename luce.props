@@ -1,69 +1,71 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="PropertySheets" />
-  <PropertyGroup>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
-    <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
-    <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
-    <LinkIncremental>false</LinkIncremental>
-    <PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)driver\;$(SolutionDir)include\;$(PublicIncludeDirectories)</PublicIncludeDirectories>
-    <PublicModuleDirectories>$(SolutionDir)modules;$(PublicModuleDirectories)</PublicModuleDirectories>
-    <OutDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\out\$(ShortProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\intermediate\$(ShortProjectName)\</IntDir>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <EnableASAN>true</EnableASAN>
-    <EnableFuzzer>true</EnableFuzzer>
-  </PropertyGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <ControlFlowGuard>Guard</ControlFlowGuard>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdclatest</LanguageStandard_C>
-      <ConformanceMode>true</ConformanceMode>
-      <EnableModules>false</EnableModules>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <DebugInformationFormat>OldStyle</DebugInformationFormat>
-      <WarningLevel>Level3</WarningLevel>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <UseStandardPreprocessor>true</UseStandardPreprocessor>
-      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
-      <ExternalTemplatesDiagnostics>true</ExternalTemplatesDiagnostics>
-      <DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
-      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
-      <OmitFramePointers>false</OmitFramePointers>
-      <PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization>Disabled</Optimization>
-      <FloatingPointExceptions>true</FloatingPointExceptions>
-      <SDLCheck>true</SDLCheck>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <GuardEHContMetadata>true</GuardEHContMetadata>
-      <OpenMPSupport>true</OpenMPSupport>
-      <GenerateSourceDependencies>true</GenerateSourceDependencies>
-      <AdditionalIncludeDirectories>$(SolutionDir)driver\;$(ProjectDir);$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <BuildStlModules>false</BuildStlModules>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <AdditionalOptions>/Zf %(AdditionalOptions)</AdditionalOptions>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
-    </ClCompile>
-    <Link>
-      <AssemblyDebug>true</AssemblyDebug>
-      <AdditionalOptions>/ignore:4300 %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-    <ResourceCompile>
-      <ShowProgress>true</ShowProgress>
-    </ResourceCompile>
-    <PostBuildEvent>
-      <Command>for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
+	<ImportGroup Label="PropertySheets"/>
+	<PropertyGroup>
+		<RunCodeAnalysis>true</RunCodeAnalysis>
+		<EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
+		<AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
+		<AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
+		<LinkIncremental>false</LinkIncremental>
+		<PublicIncludeDirectories>$(SolutionDir);$(SolutionDir)driver\;$(SolutionDir)include\;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+		<PublicModuleDirectories>$(SolutionDir)modules;$(PublicModuleDirectories)</PublicModuleDirectories>
+		<OutDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\out\$(ShortProjectName)\</OutDir>
+		<IntDir>$(SolutionDir)build\Visual-Studio-$(Platform)-$(Configuration)\intermediate\$(ShortProjectName)\</IntDir>
+		<PreferredToolArchitecture>x64</PreferredToolArchitecture>
+	</PropertyGroup>
+	<PropertyGroup Label="Configuration">
+		<EnableASAN>true</EnableASAN>
+		<EnableFuzzer>true</EnableFuzzer>
+	</PropertyGroup>
+	<ItemDefinitionGroup>
+		<ClCompile>
+			<ControlFlowGuard>Guard</ControlFlowGuard>
+			<EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+			<LanguageStandard>stdcpplatest</LanguageStandard>
+			<LanguageStandard_C>stdclatest</LanguageStandard_C>
+			<ConformanceMode>true</ConformanceMode>
+			<EnableModules>false</EnableModules>
+			<RuntimeTypeInfo>true</RuntimeTypeInfo>
+			<DebugInformationFormat>OldStyle</DebugInformationFormat>
+			<WarningLevel>Level3</WarningLevel>
+			<MultiProcessorCompilation>true</MultiProcessorCompilation>
+			<UseStandardPreprocessor>true</UseStandardPreprocessor>
+			<ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+			<ExternalTemplatesDiagnostics>true</ExternalTemplatesDiagnostics>
+			<DisableSpecificWarnings>26498;4996;4267;4251;26439;26495;4834</DisableSpecificWarnings>
+			<ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
+			<OmitFramePointers>false</OmitFramePointers>
+			<PreprocessorDefinitions>AC_CPP_DEBUG;SPDLOG_FMT_EXTERNAL;SPDLOG_SHARED_LIB;SPDLOG_COMPILED_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<Optimization>Disabled</Optimization>
+			<FloatingPointExceptions>true</FloatingPointExceptions>
+			<SDLCheck>true</SDLCheck>
+			<InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+			<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+			<GuardEHContMetadata>true</GuardEHContMetadata>
+			<OpenMPSupport>true</OpenMPSupport>
+			<GenerateSourceDependencies>true</GenerateSourceDependencies>
+			<AdditionalIncludeDirectories>$(SolutionDir)driver\;$(ProjectDir);$(ProjectDir)$(ProjectName)\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+			<BuildStlModules>false</BuildStlModules>
+			<RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+			<AdditionalOptions>/Zf %(AdditionalOptions)</AdditionalOptions>
+			<PrecompiledHeader>Use</PrecompiledHeader>
+			<PrecompiledHeaderFile>deps.hh</PrecompiledHeaderFile>
+		</ClCompile>
+		<Link>
+			<AssemblyDebug>true</AssemblyDebug>
+			<AdditionalOptions>/ignore:4300 %(AdditionalOptions)</AdditionalOptions>
+			<!--      ws_32.lib is required for LLVM -->
+			<AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+		</Link>
+		<ResourceCompile>
+			<ShowProgress>true</ShowProgress>
+		</ResourceCompile>
+		<PostBuildEvent>
+			<Command>for %%f in ("clang_rt.asan_dbg_dynamic-x86_64.dll", "clang_rt.asan_dbg_dynamic-x86_64.pdb", "clang_rt.asan_dynamic-x86_64.dll", "clang_rt.asan_dynamic-x86_64.pdb") do copy "$(VCToolsInstallDir)bin\Hostx64\x64\%%f" "$(OutDir)" &gt; nul
 			</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copying AddressSanitizer DLLs and PDBs...</Message>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
+		</PostBuildEvent>
+		<PostBuildEvent>
+			<Message>Copying AddressSanitizer DLLs and PDBs...</Message>
+		</PostBuildEvent>
+	</ItemDefinitionGroup>
 </Project>

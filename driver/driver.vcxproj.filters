@@ -62,5 +62,14 @@
     <ClInclude Include="luce\Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="luce\Image.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="luce\isa\host.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="luce\isa\riscv32\isa.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

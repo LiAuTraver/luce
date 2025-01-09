@@ -1,7 +1,5 @@
 include_guard()
 
-set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports")
-
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(argparse CONFIG REQUIRED)

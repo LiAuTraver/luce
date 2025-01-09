@@ -9,55 +9,30 @@
     {
       "name": "common",
       "hidden": true,
-      "description": "Common options for all configurations",
+      "description": "Common options for all configurations. Note: please set the VCPKG_ROOT environment variable to the path of your vcpkg installation.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE",
         "CMAKE_CXX_EXTENSIONS": "ON",
         "CMAKE_CXX_STANDARD": "23",
         "CMAKE_C_STANDARD": "23",
-        "BUILD_SHARED_LIBS": "ON"
-      }
-    },
-    {
-      "name": "Windows",
-      "hidden": true,
-      "inherits": [
-        "common"
-      ],
-      "cacheVariables": {
-        "CMAKE_SYSTEM_NAME": "Windows",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "value": "M:/vcpkg/scripts/buildsystems/vcpkg.cmake",
-          "type": "FILEPATH"
-        },
-        "VCPKG_MANIFEST_MODE": "OFF",
-        "VCPKG_MANIFEST_INSTALL": "OFF"
-      }
-    },
-    {
-      "name": "Linux",
-      "hidden": true,
-      "inherits": [
-        "common"
-      ],
-      "cacheVariables": {
-        "CMAKE_SYSTEM_NAME": "Linux",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "value": "/home/ancillarycat/realhome/build_systems/vcpkg/scripts/buildsystems/vcpkg.cmake",
-          "type": "FILEPATH"
-        },
-        "VCPKG_MANIFEST_MODE": "OFF",
-        "VCPKG_MANIFEST_INSTALL": "OFF"
+        "BUILD_SHARED_LIBS": "ON",
+        "VCPKG_MANIFEST_INSTALL": "OFF",
+        "VCPKG_MANIFEST_MODE": "OFF"
       }
     },
     {
       "name": "GNU",
       "hidden": true,
+      "inherits": [
+        "common"
+      ],
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER": "gcc"
       },
       "environment": {
         "CC": "gcc",
@@ -65,10 +40,14 @@
       }
     },
     {
-      "name": "LLVM",
+      "name": "Clang",
       "hidden": true,
+      "inherits": [
+        "common"
+      ],
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang"
       },
       "environment": {
         "CC": "clang",
@@ -78,8 +57,17 @@
     {
       "name": "MSVC",
       "hidden": true,
+      "inherits": [
+        "common"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_FLAGS": "/permissive- /volatile:iso /Zc:inline /Zc:preprocessor /Zc:enumTypes /Zc:lambda /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew /EHsc",
         "CMAKE_EXE_LINKER_FLAGS": "/machine:x64 /guard:cf"
       },
@@ -89,10 +77,20 @@
       }
     },
     {
-      "name": "LLVM-MSVC-Compat-Mode",
+      "name": "ClangCL",
       "hidden": true,
+      "inherits": [
+        "common"
+      ],
+      "description": "clang compiler, but with MSVC-compatible flags",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_C_COMPILER": "clang-cl",
         "CMAKE_CXX_FLAGS": "/EHsc"
       },
       "environment": {
@@ -101,22 +99,20 @@
       }
     },
     {
-      "name": "LLVM-MSVC-Compat-Mode-Debug",
+      "name": "ClangCL-Debug",
       "hidden": false,
       "inherits": [
-        "LLVM-MSVC-Compat-Mode",
-        "Windows"
+        "ClangCL"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "LLVM-MSVC-Compat-Mode-Release",
+      "name": "ClangCL-Release",
       "hidden": false,
       "inherits": [
-        "LLVM-MSVC-Compat-Mode",
-        "Windows"
+        "ClangCL"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
@@ -126,8 +122,7 @@
       "name": "MSVC-Debug",
       "hidden": false,
       "inherits": [
-        "MSVC",
-        "Windows"
+        "MSVC"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -137,96 +132,27 @@
       "name": "MSVC-Release",
       "hidden": false,
       "inherits": [
-        "MSVC",
-        "Windows"
+        "MSVC"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "GNU-Debug-Windows",
+      "name": "Clang-Debug",
       "hidden": false,
       "inherits": [
-        "GNU",
-        "Windows"
+        "Clang"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "GNU-Release-Windows",
+      "name": "Clang-Release",
       "hidden": false,
       "inherits": [
-        "GNU",
-        "Windows"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "LLVM-Debug-Linux",
-      "hidden": false,
-      "inherits": [
-        "LLVM",
-        "Linux"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "LLVM-Release-Linux",
-      "hidden": false,
-      "inherits": [
-        "LLVM",
-        "Linux"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "LLVM-Debug-Windows",
-      "hidden": false,
-      "inherits": [
-        "LLVM",
-        "Windows"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "LLVM-Release-Windows",
-      "hidden": false,
-      "inherits": [
-        "LLVM",
-        "Windows"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "GNU-Debug-Linux",
-      "hidden": false,
-      "inherits": [
-        "GNU",
-        "Linux"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
-    },
-    {
-      "name": "GNU-Release-Linux",
-      "hidden": false,
-      "inherits": [
-        "GNU",
-        "Linux"
+        "Clang"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
@@ -236,8 +162,7 @@
       "name": "MSVC-Visual-Studio-Debug",
       "hidden": false,
       "inherits": [
-        "MSVC",
-        "Windows"
+        "MSVC"
       ],
       "architecture": "x64",
       "generator": "Visual Studio 17 2022",
@@ -250,8 +175,7 @@
       "name": "MSVC-Visual-Studio-Release",
       "hidden": false,
       "inherits": [
-        "MSVC",
-        "Windows"
+        "MSVC"
       ],
       "architecture": "x64",
       "generator": "Visual Studio 17 2022",
@@ -267,85 +191,61 @@
         "CMAKE_AUTOMOC": "ON",
         "CMAKE_AUTORCC": "ON",
         "CMAKE_AUTOUIC": "ON",
-        "QT_VERSION_MAJOR": "6"
+        "QT_VERSION_MAJOR": "6",
+        "CMAKE_PREFIX_PATH": "${env:Qt6_DIR}/msvc2019_64/lib/cmake/Qt6"
       }
     },
     {
-      "name": "Qt6-Windows",
-      "hidden": true,
-      "inherits": [
-        "Windows",
-        "Qt6"
-      ],
-      "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.0/msvc2019_64/lib/cmake/Qt6"
-      }
-    },
-    {
-      "name": "Qt6-Linux",
-      "hidden": true,
-      "inherits": [
-        "Linux",
-        "Qt6"
-      ],
-      "cacheVariables": {
-        "CMAKE_PREFIX_PATH": "/home/ancillarycat/Qt/6.8.0/gcc_64/lib/cmake/Qt6"
-      }
-    },
-    {
-      "name": "Qt6-Linux-GNU-Debug",
+      "name": "Qt6-GNU-Debug",
+      "description": "Currently only configuerd for Linux",
       "hidden": false,
       "inherits": [
-        "Qt6-Linux",
-        "GNU",
-        "Linux"
+        "Qt6",
+        "GNU"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "Qt6-Linux-GNU-Release",
+      "name": "Qt6-GNU-Release",
+      "description": "Currently only configuerd for Linux",
       "hidden": false,
       "inherits": [
-        "Qt6-Linux",
-        "GNU",
-        "Linux"
+        "Qt6",
+        "GNU"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "Qt6-Windows-MSVC-Debug",
+      "name": "Qt6-MSVC-Debug",
       "hidden": false,
       "inherits": [
-        "Qt6-Windows",
-        "MSVC",
-        "Windows"
+        "Qt6",
+        "MSVC"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "Qt6-Windows-MSVC-Release",
+      "name": "Qt6-MSVC-Release",
       "hidden": false,
       "inherits": [
-        "Qt6-Windows",
-        "MSVC",
-        "Windows"
+        "Qt6",
+        "MSVC"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "CUDA-Windows",
+      "name": "CUDA-MSVC",
       "hidden": true,
       "inherits": [
-        "MSVC",
-        "Windows"
+        "MSVC"
       ],
       "cacheVariables": {
         "CMAKE_CUDA_COMPILER": "nvcc",
@@ -370,20 +270,20 @@
       }
     },
     {
-      "name": "CUDA-Windows-Debug",
+      "name": "CUDA-MSVC-Debug",
       "hidden": false,
       "inherits": [
-        "CUDA-Windows"
+        "CUDA-MSVC"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "CUDA-Windows-Release",
+      "name": "CUDA-MSVC-Release",
       "hidden": false,
       "inherits": [
-        "CUDA-Windows"
+        "CUDA-MSVC"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
@@ -393,7 +293,7 @@
       "name": "CUDA-Visual-Studio-Debug",
       "hidden": false,
       "inherits": [
-        "CUDA-Windows-Debug"
+        "CUDA-MSVC-Debug"
       ],
       "architecture": "x64",
       "generator": "Visual Studio 17 2022",
@@ -405,7 +305,7 @@
       "name": "CUDA-Visual-Studio-Release",
       "hidden": false,
       "inherits": [
-        "CUDA-Windows-Release"
+        "CUDA-MSVC-Release"
       ],
       "architecture": "x64",
       "generator": "Visual Studio 17 2022",

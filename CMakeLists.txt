@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 
-include(cmake/prelude.cmake)
-include(cmake/folders.cmake)
-
 project(luce-project
-  LANGUAGES CXX
+  LANGUAGES C CXX
   VERSION 0.1.0
   DESCRIPTION "A simple riscv64 emulator and its assets"
 )
+
+include(cmake/prelude.cmake)
+include(cmake/folders.cmake)
 
 set(LUCE_PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -23,6 +23,7 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 option(AC_CPP_DEBUG "set the environment variable AC_CPP_DEBUG to enable debug mode" OFF)
+is_undefined(ENV{AC_CPP_DEBUG})
 
 if(DEFINED ENV{AC_CPP_DEBUG})
   if($ENV{AC_CPP_DEBUG} STREQUAL "ON")
@@ -37,37 +38,63 @@ if(AC_CPP_DEBUG)
   add_compile_definitions(
     _DEBUG DEBUG __DEBUG__ AC_CPP_DEBUG
     SPDLOG_FMT_EXTERNAL
-
-    # _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION
-    # _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH
+    _CRT_SECURE_NO_WARNINGS
   )
-  message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Wno-reserved-module-identifier
-      -Wno-include-angled-in-module-purview
-      -Wimplicit-fallthrough
-      -Wno-deprecated-declarations
-      -Wno-deprecated
-      -g3
-      -fstandalone-debug
-      -fno-inline
-      -Wno-c23-extensions
-
-      # -fsanitize=address
-      # -fsanitize=undefined
+  if(CXX_FLAGS_STYLES_MSVC)
+    add_compile_options(
+      /D_DISABLE_VECTOR_ANNOTATION /D_DISABLE_STRING_ANNOTATION
+      /Zi /Od /Ob0 /JMC /Oy-
+      /GR # <- rtti
+      /fsanitize=address /fsanitize=fuzzer
+      /guard:cf /guard:ehcont
+      /RTCsu /sdl
+      /Qpar
+      /Zc:wchar_t /Zc:forScope /Zc:rvalueCast
+      /fp:precise
+      /WX- /external:W0 /W3
+      /external:anglebrackets /errorReport:prompt /diagnostics:caret /openmp
+      /MP /Gd /FC
+      /GS
+      # this has already appeared in CMakePresets.json, but just in case
+      /permissive- /volatile:iso /Zc:inline /Zc:preprocessor /Zc:enumTypes /Zc:lambda /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew /EHsc
     )
+
     add_link_options(
-      # -fsanitize=address
-      # -fno-omit-frame-pointer
+      /DEBUG:FULL /INCREMENTAL
+      /SUBSYSTEM:CONSOLE /MACHINE:X64
+      /fsanitize=address /fsanitize=fuzzer
     )
+  elseif(CXX_FLAGS_STYLES_CLANGCL)
+    # TODO
+    message(FATAL_ERROR "Clang-CL TODO")
+  elseif(CXX_FLAGS_STYLES_CLANG)
+  # see below, this is not `todo`.
+  elseif(CXX_FLAGS_STYLES_GNU)
+    add_compile_options(-ftrapv
 
-  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-      message(FATAL_ERROR "GCC is not supported on Windows")
-    endif()
+      # Arch for simd
+      $<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR},x86_64>:-m64>
+    )
   else()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+  endif()
+
+  # add common gnu/clang flags
+  if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
+    add_compile_options(
+      -g3 -O0 -fno-inline -fstandalone-debug # Debug flags
+      -frtti
+      -fsanitize=address -fsanitize=fuzzer -fsanitize=undefined -fsanitize=leak
+      -fcf-protection=full -fstack-protector-strong -fstack-clash-protection # control flow protection
+      -fopenmp # openmp/qpar/simd
+      -Wno-system-headers -Wno-include-angled-in-module-purview
+      -Wno-deprecated-declarations -Wno-deprecated -Wno-c23-extensions
+      -Wimplicit-fallthrough
+    )
+    add_link_options(
+      -g -fsanitize=address -fsanitize=fuzzer -fsanitize=undefined -fsanitize=leak
+    )
   endif()
 endif()
 
@@ -80,7 +107,6 @@ add_subdirectory(driver)
 add_subdirectory(tools)
 add_subdirectory(test)
 add_subdirectory(demo)
-
 #[[=== Asan dll and lib(since we altered the scnlib's build to include ASAN, no need to use this snippet)
   # Get MSVC tools directory from environment or VS installation
   if(DEFINED ENV{VCToolsInstallDir})
