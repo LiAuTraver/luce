@@ -38,7 +38,7 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
   return {};
 }
 auxilia::Status Monitor::REPL() {
-  std::cout << repl::WelcomeMessage << '\n';
+  std::cout << message::repl::Welcome << '\n';
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
 
@@ -72,7 +72,7 @@ auxilia::Status Monitor::inspect(const std::string_view input) {
     return auxilia::ReturnMe("exit!");
   }
   if (input == "help") {
-    fmt::print(repl::HelpMessage);
+    fmt::print(message::repl::Help);
     return {};
   }
   if (input == "c") {

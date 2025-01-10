@@ -12,7 +12,7 @@
       "description": "Common options for all configurations. Note: please set the VCPKG_ROOT environment variable to the path of your vcpkg installation.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
-      "toolchainFile": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE",
@@ -21,7 +21,8 @@
         "CMAKE_C_STANDARD": "23",
         "BUILD_SHARED_LIBS": "ON",
         "VCPKG_MANIFEST_INSTALL": "OFF",
-        "VCPKG_MANIFEST_MODE": "OFF"
+        "VCPKG_MANIFEST_MODE": "OFF",
+        "CMAKE_PREFIX_PATH": "$env{VCPKG_ROOT}/installed/$env{VCPKG_DEFAULT_TRIPLET}"
       }
     },
     {
@@ -46,12 +47,12 @@
         "common"
       ],
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_COMPILER": "clang"
+        "CMAKE_C_COMPILER": "C:/Program Files/LLVM/bin/clang.exe",
+        "CMAKE_CXX_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe"
       },
       "environment": {
-        "CC": "clang",
-        "CXX": "clang++"
+        "CC": "C:/Program Files/LLVM/bin/clang.exe",
+        "CXX": "C:/Program Files/LLVM/bin/clang++.exe"
       }
     },
     {
@@ -69,7 +70,7 @@
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_FLAGS": "/permissive- /volatile:iso /Zc:inline /Zc:preprocessor /Zc:enumTypes /Zc:lambda /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew /EHsc",
-        "CMAKE_EXE_LINKER_FLAGS": "/machine:x64 /guard:cf"
+        "CMAKE_EXE_LINKER_FLAGS": "/MACHINE:X64"
       },
       "environment": {
         "CC": "cl",
@@ -89,13 +90,13 @@
         "rhs": "Windows"
       },
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "C:/Program Files/LLVM/bin/clang-cl.exe",
+        "CMAKE_C_COMPILER": "C:/Program Files/LLVM/bin/clang-cl.exe",
         "CMAKE_CXX_FLAGS": "/EHsc"
       },
       "environment": {
-        "CC": "clang-cl",
-        "CXX": "clang-cl"
+        "CC": "C:/Program Files/LLVM/bin/clang-cl.exe",
+        "CXX": "C:/Program Files/LLVM/bin/clang-cl.exe"
       }
     },
     {
@@ -192,7 +193,7 @@
         "CMAKE_AUTORCC": "ON",
         "CMAKE_AUTOUIC": "ON",
         "QT_VERSION_MAJOR": "6",
-        "CMAKE_PREFIX_PATH": "${env:Qt6_DIR}/msvc2019_64/lib/cmake/Qt6"
+        "CMAKE_PREFIX_PATH": "$ENV{Qt6_DIR}/msvc2019_64/lib/cmake/Qt6"
       }
     },
     {
@@ -242,8 +243,9 @@
       }
     },
     {
-      "name": "CUDA-MSVC",
+      "name": "CUDA",
       "hidden": true,
+      "architecture": "x64",
       "inherits": [
         "MSVC"
       ],
@@ -270,20 +272,20 @@
       }
     },
     {
-      "name": "CUDA-MSVC-Debug",
+      "name": "CUDA-Debug",
       "hidden": false,
       "inherits": [
-        "CUDA-MSVC"
+        "CUDA"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "CUDA-MSVC-Release",
+      "name": "CUDA-Release",
       "hidden": false,
       "inherits": [
-        "CUDA-MSVC"
+        "CUDA"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
@@ -293,9 +295,8 @@
       "name": "CUDA-Visual-Studio-Debug",
       "hidden": false,
       "inherits": [
-        "CUDA-MSVC-Debug"
+        "CUDA-Debug"
       ],
-      "architecture": "x64",
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
         "CMAKE_GENERATOR": "Visual Studio 17 2022"
@@ -305,9 +306,8 @@
       "name": "CUDA-Visual-Studio-Release",
       "hidden": false,
       "inherits": [
-        "CUDA-MSVC-Release"
+        "CUDA-Release"
       ],
-      "architecture": "x64",
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
         "CMAKE_GENERATOR": "Visual Studio 17 2022"

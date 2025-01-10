@@ -21,6 +21,16 @@
 /// program will terminate.
 /// @internal now it's ok again, why? maybe I called vcvarsall.bat?
 #  define AC_UTILS_USE_FMT_FORMAT 1
+/// @def AC_NO_SANITIZE_ADDRESS
+#  ifdef __clang__
+#    define AC_NO_SANITIZE_ADDRESS [[clang::no_sanitize("address")]]
+#  elifdef __GNUC__
+#    define AC_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
+#  elif defined(_MSC_VER)
+#    define AC_NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
+#  else
+#    define AC_NO_SANITIZE_ADDRESS
+#  endif
 #endif
 
 #ifdef AUXILIA_BUILD_MODULE
@@ -43,7 +53,7 @@
 
 /// @note GNU on Windows seems failed to perform linking for
 /// `stacktrace` and `spdlog`.
-#if defined(AC_UTILS_DEBUG_ENABLED) && defined(_WIN32)
+#if defined(AC_UTILS_DEBUG_ENABLED)
 #  if __has_include(<fmt/format.h>)
 #    define AC_UTILS_STACKTRACE                                                \
       (::std::format("\n{}", ::std::stacktrace::current()))
@@ -72,7 +82,7 @@ struct ::fmt::formatter<::std::stacktrace> : ::fmt::formatter<::std::string> {
 #endif
 #ifdef AC_UTILS_DEBUG_ENABLED
 #  define AC_UTILS_DEBUG_LOGGING(_level_, _msg_, ...)                          \
-    ::spdlog::_level_(_msg_, ##__VA_ARGS__);
+    ::spdlog::_level_(_msg_ __VA_OPT__(, ) __VA_ARGS__);
 
 namespace accat::auxilia::detail {
 EXPORT_AUXILIA
@@ -97,6 +107,7 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
         *[&]() // NOLINT(bugprone-macro-parentheses)
 
 #  define AC_UTILS_DEBUG_ONLY(...) __VA_ARGS__
+/// @note detect if gtest was included, if so, emit a different message.
 #  ifdef GTEST_API_
 
 #    define AC_UTILS_DEBUG_LOGGING_SETUP(_exec_, _level_, _msg_, ...)          \
@@ -104,16 +115,14 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
       ::spdlog::set_pattern("[\033[33m" #_exec_ ":\033[0m %^%5l%$] %v");       \
       AC_UTILS_DEBUG_LOGGING(_level_,                                          \
                              "\033[33m" _msg_ " with gtest."                   \
-                             "\033[0m",                                        \
-                             ##__VA_ARGS__)
+                             "\033[0m" __VA_OPT__(, ) __VA_ARGS__)
 #  else
 #    define AC_UTILS_DEBUG_LOGGING_SETUP(_exec_, _level_, _msg_, ...)          \
       ::spdlog::set_level(spdlog::level::_level_);                             \
       ::spdlog::set_pattern("[%^%l%$] %v");                                    \
       AC_UTILS_DEBUG_LOGGING(_level_,                                          \
                              "\033[33m" _msg_ "."                              \
-                             "\033[0m",                                        \
-                             ##__VA_ARGS__)
+                             "\033[0m" __VA_OPT__(, ) __VA_ARGS__)
 #  endif
 #else
 #  define AC_UTILS_DEBUG_LOGGING(...) (void)0;
@@ -190,7 +199,8 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
     AC_UTILS_PRINT_ERROR_MSG_IMPL_WITH_MSG(x, y)
 #  define AC_UTILS_PRINT_ERROR_MSG(...)                                        \
     do {                                                                       \
-      AC_UTILS_PRINT_ERROR_MSG_IMPL(__VA_ARGS__, 2, 1)(__VA_ARGS__);           \
+      AC_UTILS_PRINT_ERROR_MSG_IMPL(__VA_ARGS__ __VA_OPT__(, ) 2,              \
+                                    1)(__VA_ARGS__);                           \
       AC_UTILS_RUNTIME_DEBUG_RAISE                                             \
     } while (false);
 #  define AC_UTILS_PRINT_ERROR_MSG_IMPL(_1, _2, N, ...)                        \
@@ -216,18 +226,18 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  define AC_UTILS_RUNTIME_REQUIRE_IMPL_2(_x_, _y_)                            \
     AC_UTILS_RUNTIME_REQUIRE_IMPL_WITH_MSG(_x_, _y_)
 #  define AC_UTILS_RUNTIME_REQUIRE_IMPL(...)                                   \
-    AC_UTILS_VFUNC(AC_UTILS_RUNTIME_REQUIRE_IMPL, __VA_ARGS__)
+    AC_UTILS_VFUNC(AC_UTILS_RUNTIME_REQUIRE_IMPL __VA_OPT__(, ) __VA_ARGS__)
 
 #  ifdef AC_UTILS_USE_BOOST_CONTRACT
 #    define AC_UTILS_RUNTIME_ASSERT(...)                                       \
       AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);
 #    define AC_UTILS_PRECONDITION(...)                                         \
-      AC_UTILS_VFUNC(AC_UTILS_PRECONDITION_IMPL, __VA_ARGS__)
+      AC_UTILS_VFUNC(AC_UTILS_PRECONDITION_IMPL __VA_OPT__(, ) __VA_ARGS__)
 #    define AC_UTILS_POSTCONDITION(...)                                        \
-      AC_UTILS_VFUNC(AC_UTILS_POSTCONDITION_IMPL, __VA_ARGS__)
+      AC_UTILS_VFUNC(AC_UTILS_POSTCONDITION_IMPL __VA_OPT__(, ) __VA_ARGS__)
 #  else
 #    define AC_UTILS_RUNTIME_ASSERT(_arg_, ...)                                \
-      AC_UTILS_RUNTIME_REQUIRE_IMPL(_arg_, ##__VA_ARGS__);
+      AC_UTILS_RUNTIME_REQUIRE_IMPL(_arg_ __VA_OPT__(, ) __VA_ARGS__);
 #    define AC_UTILS_PRECONDITION(...)                                         \
       AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
 #    define AC_UTILS_POSTCONDITION(...)                                        \
@@ -276,7 +286,7 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  warning                                                                     \
       "MSVC traditional preprocessor was used. no additional debug info will be provided. to enable MSVC's new preprocessor, add compiler flag `/Zc:preprocessor`."
 #  define dbg(_level_, _msg_, ...)                                             \
-    AC_UTILS_DEBUG_LOGGING(_level_, _msg_, ##__VA_ARGS__)
+    AC_UTILS_DEBUG_LOGGING(_level_, _msg_ __VA_OPT__(, ) __VA_ARGS__)
 #  define contract_assert(...)
 #  define precondition(...)
 #else

@@ -57,8 +57,10 @@ class Component {
 
 protected:
   using pid_t = uint32_t;
+
+public:
   Mediator *mediator = nullptr;
-  auxilia::Status send(Event event) {
+  auxilia::Status send(const Event event) {
     precondition(mediator,
                  "Fatal: Component has no mediator. "
                  "Check your code.")
@@ -66,10 +68,27 @@ protected:
   }
 
 public:
-  Component(Mediator *mediator = nullptr) : mediator(mediator) {
+  explicit Component(Mediator *mediator = nullptr) : mediator(mediator) {
     spdlog::debug("Component with id {} created.", id_);
   }
+  Component(const Component &) = delete;
+  Component &operator=(const Component &) = delete;
   constexpr pid_t id() const noexcept { return id_; }
+  Component(Component &&that) noexcept
+      : mediator(that.mediator), id_(that.id_) {
+    spdlog::debug("Component with id {} moved.", id_);
+    that.mediator = nullptr;
+    that.id_ = std::numeric_limits<pid_t>::max();
+  }
+  Component &operator=(Component &&that) noexcept {
+    if (this != &that) {
+      mediator = that.mediator;
+      id_ = that.id_;
+      that.mediator = nullptr;
+      that.id_ = std::numeric_limits<pid_t>::max();
+    }
+    return *this;
+  }
 
 protected:
   virtual ~Component() noexcept { auxilia::id::release(id_); }

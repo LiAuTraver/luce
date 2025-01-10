@@ -256,7 +256,8 @@ public:
   constexpr Status() = default;
   [[nodiscard]]
   AC_CONSTEXPR20
-  Status(const Code code, const string_view message = "<no message provided>",
+  Status(const Code code,
+         const string_view message = "<no message provided>",
          const std::source_location &location = std::source_location::current())
       : my_code(code), my_message(message), my_location(location) {}
   [[nodiscard]]
@@ -315,7 +316,9 @@ public:
     return my_code == kReturning;
   }
   [[nodiscard]]
-  Code code() const noexcept { return my_code; }
+  Code code() const noexcept {
+    return my_code;
+  }
   [[nodiscard]]
   std::underlying_type_t<Code> raw_code() const noexcept {
     return static_cast<std::underlying_type_t<Code>>(my_code);
@@ -332,8 +335,10 @@ public:
     return auxilia::format("file {0}\n"
                            "              function {1},\n"
                            "              Ln {2} Col {3}\n",
-                           my_location.file_name(), my_location.function_name(),
-                           my_location.line(), my_location.column());
+                           my_location.file_name(),
+                           my_location.function_name(),
+                           my_location.line(),
+                           my_location.column());
   }
   // monadic operations
   template <typename Self, std::invocable<> Func>
@@ -427,8 +432,8 @@ public:
 public:
   [[nodiscard]]
   inline value_type value(this auto &&self) {
-    contract_assert(self.ok() or
-                    self.code() == Status::kReturning) return self.my_value;
+    contract_assert(self.ok() or self.code() == Status::kReturning)
+    return self.my_value;
   }
   [[nodiscard]]
   inline value_type value_or(this auto &&self,

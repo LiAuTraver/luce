@@ -66,13 +66,30 @@ inline Ty _random_integer_generator<Ty>::operator()(const Ty min,
   contract_assert(min < max, "min must be less than max");
   return (((*this).operator()()) % (max - min)) + min;
 }
+/// @brief A random integer generator for 8-bit unsigned integers.
+/// @relates _random_integer_generator
+/// @note uint8_t cannot be used for <random> distributions.
+template<>
+struct _random_integer_generator<uint8_t> {
+  /// @note for more precise random number, here uses 256 instead of 255
+  inline uint8_t operator()() const {
+    static std::uniform_int_distribution<uint16_t> dist(0, 256);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    return static_cast<uint8_t>(dist(gen));
+  }
+
+  inline uint8_t operator()(const uint8_t min, const uint8_t max) const {
+    contract_assert(min < max, "min must be less than max");
+    return (((*this)() % (max - min)) + min);
+  }
+};
 } // namespace accat::auxilia::detail
 
 namespace accat::auxilia {
 /// @brief A random integer generator for 8-bit unsigned integers.
-/// @todo not working: uniform_int_distribution cannot accept unsigned char
-// EXPORT_AUXILIA
-// inline constexpr detail::_random_integer_generator<uint8_t> rand_u8;
+EXPORT_AUXILIA
+inline constexpr detail::_random_integer_generator<uint8_t> rand_u8;
 /// @brief A random integer generator for 16-bit unsigned integers.
 EXPORT_AUXILIA
 inline constexpr detail::_random_integer_generator<uint16_t> rand_u16;

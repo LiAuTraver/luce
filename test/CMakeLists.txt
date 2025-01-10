@@ -10,8 +10,9 @@ include(GoogleTest)
 find_package(GTest CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 
-include(${LUCE_PROJECT_ROOT_DIR}/cmake/dependencies.cmake)
 include(${LUCE_PROJECT_ROOT_DIR}/cmake/folders.cmake)
+include(${LUCE_PROJECT_ROOT_DIR}/cmake/dependencies.cmake)
+include(${LUCE_PROJECT_ROOT_DIR}/cmake/llvm.cmake)
 
 add_library(test_deps INTERFACE)
 
@@ -30,6 +31,7 @@ function(create_test_executable test_name)
     test_deps
   )
   gtest_discover_tests(${test_name})
+  add_llvm_deps_for(${test_name})
 endfunction(create_test_executable)
 
 create_test_executable(endian_test endian_test.cpp)

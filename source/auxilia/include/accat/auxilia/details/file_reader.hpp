@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <bit>
 #include <cstddef>
+#include <utility>
 #include <vector>
 #include <filesystem>
 #include <fstream>
@@ -31,6 +32,8 @@ inline Status check_file(const std::filesystem::path &path) noexcept {
   return OkStatus();
 }
 } // namespace accat::auxilia::details
+#pragma warning(push)
+#pragma warning(disable : 4702)
 EXPORT_AUXILIA
 namespace accat::auxilia {
 template <typename TargetType, std::endian Endianess = std::endian::native,
@@ -59,6 +62,7 @@ read_as_bytes(const std::filesystem::path &path) {
                         std::ranges::reverse);
   return {std::move(data)};
 }
+#pragma warning(pop)
 template <typename CharType = char>
 std::vector<std::byte> as_raw_bytes(const std::basic_string<CharType> &data) {
   // clang-format off
@@ -77,10 +81,13 @@ read_raw_bytes(const std::filesystem::path &path) {
   if (auto res = read_as_bytes<char, Endianess, char>(path); !res) {
     return {res};
   } else {
-    return as_raw_bytes(*res);
+    return as_raw_bytes(*std::move(res));
   }
 }
-auto async(auto &&func, auto... args) -> decltype(auto) {
+
+/// @brief Asynchronously execute a function with the given arguments
+/// @note just a wrapper, but REAL async
+auto async(auto &&func, auto... args) -> decltype(auto)  {
   return std::async(std::launch::async, std::forward<decltype(func)>(func),
                     std::forward<decltype(args)>(args)...);
 }

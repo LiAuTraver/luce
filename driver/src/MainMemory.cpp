@@ -64,7 +64,7 @@ auto MainMemory::load_program(const std::span<const std::byte> bytes,
   if (randomize) {
     this->generate(start_addr + bytes.size(),
                    block_size - bytes.size(),
-                   auxilia::rand_u16);
+                   auxilia::rand_u8);
   }
 
   return auxilia::OkStatus();

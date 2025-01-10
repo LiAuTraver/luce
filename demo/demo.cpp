@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <vector>
 
@@ -24,6 +25,7 @@
 #include <llvm/MC/MCTargetOptionsCommandFlags.h>
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/MC/MCRegisterInfo.h>
+#include <llvm/MC/MCSubtargetInfo.h>
 #include <llvm/MC/MCAsmInfo.h>
 #include <llvm/MC/MCInstrInfo.h>
 
@@ -75,29 +77,45 @@ void captsone_demo() {
   return;
 }
 
+AC_NO_SANITIZE_ADDRESS
 void llvm_mc_demo() {
   llvm::InitializeAllTargetInfos();
   llvm::InitializeAllTargets();
   llvm::InitializeAllTargetMCs();
   llvm::InitializeAllDisassemblers();
-  std::string error;
+  auto error = std::string{};
   auto triple = llvm::Triple("riscv32");
   auto *target = llvm::TargetRegistry::lookupTarget(triple.getTriple(), error);
-  if (!target) {
+  if (!error.empty() or !target) {
     std::cerr << "Failed to lookup target: " << error << '\n';
     return;
   }
-  auto cpu = "generic";
-  auto features = "";
-  auto options = llvm::MCTargetOptions{};
-  auto sti = target->createMCSubtargetInfo(triple.getTriple(), cpu, features);
-  auto mri = target->createMCRegInfo(triple.getTriple());
-  auto asm_info = target->createMCAsmInfo(*mri, triple.getTriple(), options);
-  auto ctx = llvm::MCContext(triple, asm_info, mri, nullptr);
-  auto disassembler = target->createMCDisassembler(*sti, ctx);
-  auto instruction_info = target->createMCInstrInfo();
-  auto instruction_printer = target->createMCInstPrinter(
-      triple, 0, *asm_info, *instruction_info, *mri);
+
+  auto mri = std::unique_ptr<llvm::MCRegisterInfo>(
+      target->createMCRegInfo(triple.getTriple()));
+
+  auto options = std::make_unique<llvm::MCTargetOptions>();
+
+  auto asm_info = std::unique_ptr<llvm::MCAsmInfo>(
+      target->createMCAsmInfo(*mri, triple.getTriple(), *options));
+
+  auto sti = std::unique_ptr<llvm::MCSubtargetInfo>(
+      target->createMCSubtargetInfo(triple.getTriple(), "generic", ""));
+
+  auto instruction_info =
+      std::unique_ptr<llvm::MCInstrInfo>(target->createMCInstrInfo());
+
+  // Context needs to outlive the disassembler
+  auto ctx = std::make_unique<llvm::MCContext>(
+      triple, asm_info.get(), mri.get(), nullptr);
+
+  auto disassembler = std::unique_ptr<llvm::MCDisassembler>(
+      target->createMCDisassembler(*sti, *ctx));
+
+  auto instruction_printer =
+      std::unique_ptr<llvm::MCInstPrinter>(target->createMCInstPrinter(
+          triple, 0, *asm_info, *instruction_info, *mri));
+
   // clang-format off
   llvm::ArrayRef<uint8_t> code = {
                                 0x97, 0x02, 0x00, 0x00,
@@ -128,6 +146,8 @@ void llvm_mc_demo() {
       break;
     }
   }
+
+  return;
 }
 int main() {
   std::cout << "Capstone demo" << '\n';

@@ -11,7 +11,6 @@
 #include "luce/Monitor.hpp"
 namespace accat::luce {
 LUCE_API int luce_main(const std::span<const std::string_view> args) {
-  int callback = 0;
 
   auto imageData =
       auxilia::async(auxilia::read_raw_bytes<>, R"(Z:/luce/data/image.bin)");

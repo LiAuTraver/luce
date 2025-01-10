@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <fmt/color.h>
 #include <fmt/compile.h>
 #include <fmt/xchar.h>
 #include <scn/scan.h>
@@ -10,27 +11,34 @@
 #include "SystemBus.hpp"
 #include "Task.hpp"
 #include "cpu.hpp"
+#include "isa/architecture.hpp"
+#include "Disassembler.hpp"
 
 #include <accat/auxilia/auxilia.hpp>
 #include <iostream>
 #include <ranges>
 #include <utility>
 namespace accat::luce {
-namespace repl {
+namespace message::repl {
 using namespace std::literals;
-static constexpr inline auto HelpMessage = auxilia::raw(R"(
+using auxilia::raw;
+using enum fmt::color;
+using fmt::bg;
+using fmt::fg;
+
+// NOLINTNEXTLINE
+static constexpr inline auto Help = raw(R"(
 Available commands:
     - help: show this message
     - exit: exit the program
     - c: continue execution
 )");
-static const inline auto WelcomeMessage =
-    fmt::format(fmt::fg(fmt::color::dark_cyan), "Welcome to luce emulator!\n")
-        .append(auxilia::raw(R"(
+static const inline auto Welcome =
+    fmt::format(fg(dark_cyan), "Welcome to luce emulator!\n").append(raw(R"(
     Type 'help' for help
     Type 'exit' to exit
 )"));
-} // namespace repl
+} // namespace message::repl
 class Monitor : public Mediator {
   using paddr_t = isa::physical_address_t;
   using vaddr_t = isa::virtual_address_t;
@@ -72,7 +80,7 @@ private:
   auxilia::Status _do_execute_n_unchecked(size_t);
 };
 auxilia::Status Monitor::run_new_task(const std::ranges::range auto &program,
-                                      paddr_t start_addr,
+                                      const paddr_t start_addr,
                                       paddr_t block_size) {
   auto dataSpan = std::span{program};
   auto bytes = std::as_bytes(dataSpan);

@@ -51,6 +51,8 @@ public:
   auto address_of(size_t offset) const {
     return isa::physical_base_address + offset;
   }
+#pragma warning(push)
+#pragma warning(disable: 4702) // unreachable code
   template <typename... Args>
   bool is_in_range(isa::physical_address_t addr, Args... addrs) const noexcept
     requires(std::convertible_to<Args, isa::physical_address_t> && ...)
@@ -58,10 +60,10 @@ public:
     if constexpr (sizeof...(Args) == 0)
       return addr >= isa::physical_memory_begin &&
              addr < isa::physical_memory_end;
-
     return (is_in_range(addr) && ... && is_in_range(addrs));
   }
 };
+#pragma warning(pop)
 
 class LUCE_API MainMemory : public Component {
 

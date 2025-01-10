@@ -18,6 +18,8 @@ Diagnostics:
     - include-next-outside-header
     - pragma-system-header-outside-header
     - module-import-in-extern-c
+    - drv_argument_not_allowed_with
+    - note_drv_address_sanitizer_debug_runtime
 InlayHints:
   BlockEnd: true
 Hover:
@@ -25,5 +27,11 @@ Hover:
 CompileFlags:
   Add:
     - -xc++
-    - -std=c++23
+    - -std=c++latest
+    # https://github.com/clangd/clangd/issues/1850, a bug for clangd
+    - -clang:-std=c++23
+    # ^^^ workaround when compiler is MSVC and incompatible flags in it.
     - -IM:\vcpkg\installed\x64-windows\include
+    # workaround, clang does not support both `-fsanitize=address` and `-MDd` at the same time.
+    - -MD
+    # ^^^ unfortunately MSVC compiles. Add this to override -MDd.
