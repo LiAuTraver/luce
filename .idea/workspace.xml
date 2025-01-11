@@ -43,24 +43,24 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "LiAuTraver"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LiAuTraver&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:LiAuTraver/luce.git",
-    "accountId": "d6e6fda4-6e53-4214-a6aa-bf4ff50ac62c"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:LiAuTraver/luce.git&quot;,
+    &quot;accountId&quot;: &quot;d6e6fda4-6e53-4214-a6aa-bf4ff50ac62c&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="2" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2rDglzc3uLFJZ8LYdMR6AI1lB7A" />
   <component name="ProjectViewState">
     <option name="autoscrollToSource" value="true" />
@@ -75,7 +75,7 @@
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "Z:/luce",
+    "last_opened_file_path": "Z:/",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -102,6 +102,7 @@
       <option name="presentableId" value="Default" />
       <updated>1736099214869</updated>
       <workItem from="1736099216032" duration="4073000" />
+      <workItem from="1736594778821" duration="8000" />
     </task>
     <servers />
   </component>

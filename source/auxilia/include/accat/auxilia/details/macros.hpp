@@ -28,7 +28,7 @@
 #  define AC_NO_SANITIZE_ADDRESS [[clang::no_sanitize("address")]]
 #elif defined(_MSC_VER)
 #  define AC_NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
-#elifdef __GNUC__
+#elif defined(__GNUC__)
 #  define AC_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
 #else
 #  define AC_NO_SANITIZE_ADDRESS
@@ -38,7 +38,7 @@
 #  define AC_FLATTEN [[clang::flatten]]
 #elif defined(_MSC_VER)
 #  define AC_FLATTEN __declspec("flatten")
-#elifdef __GNUC__
+#elif defined(__GNUC__)
 #  define AC_FLATTEN [[gnu::flatten]]
 #else
 #  define AC_FLATTEN

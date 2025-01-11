@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+#include <utility>
 #include "./config.hpp"
 #include "./format.hpp"
 
@@ -11,9 +13,10 @@ namespace accat::auxilia {
 /// `to_string` or check the type's name when debugging.
 /// @note exception-free variant wrapper
 template <Variantable... Types>
-class Variant :public Printable<Variant<Types...>>,
+class Variant : public Printable<Variant<Types...>>,
                 public Viewable<Variant<Types...>> {
   using self_type = Variant<Types...>;
+
 public:
   using variant_type = std::variant<Types...>;
   using string_type = typename Printable<self_type>::string_type;
@@ -48,12 +51,17 @@ public:
   auto visit(this auto &&self, Callable &&callable) -> decltype(auto) {
     using ReturnType = decltype(std::forward<Callable>(callable)(
         std::declval<variant_type>()));
-    static_assert(std::is_default_constructible_v<ReturnType>,
+    static_assert(std::is_default_constructible_v<ReturnType> ||
+                      std::is_same_v<ReturnType, void>,
                   "ReturnType must be default constructible");
-    return self.is_valid()
-               ? static_cast<ReturnType>(std::visit(
-                     std::forward<Callable>(callable), self.my_variant))
-               : ReturnType{};
+    if constexpr (std::is_same_v<ReturnType, void>) {
+      return std::visit(std::forward<Callable>(callable), self.my_variant);
+    } else {
+      return self.is_valid()
+                 ? static_cast<ReturnType>(std::visit(
+                       std::forward<Callable>(callable), self.my_variant))
+                 : ReturnType{};
+    }
   }
   auto type_name() const {
     return is_valid() ? this->visit([]([[maybe_unused]] const auto &value)
@@ -122,11 +130,21 @@ private:
 public:
   constexpr auto to_string(const FormatPolicy &format_policy) const
       -> string_type {
-    return typeid(decltype(*this)).name();
+    if (format_policy == FormatPolicy::kDefault) {
+      return typeid(decltype(*this)).name();
+    } else if (format_policy == FormatPolicy::kDetailed) {
+      return typeid(decltype(*this)).raw_name();
+    }
+    std::unreachable();
   }
   constexpr auto to_string_view(const FormatPolicy &format_policy) const
       -> string_view_type {
-    return typeid(decltype(*this)).name();
+    if (format_policy == FormatPolicy::kDefault) {
+      return typeid(decltype(*this)).name();
+    } else if (format_policy == FormatPolicy::kDetailed) {
+      return typeid(decltype(*this)).raw_name();
+    }
+    std::unreachable();
   }
 
 private:
