@@ -21,16 +21,27 @@
 /// program will terminate.
 /// @internal now it's ok again, why? maybe I called vcvarsall.bat?
 #  define AC_UTILS_USE_FMT_FORMAT 1
+#endif
+
 /// @def AC_NO_SANITIZE_ADDRESS
-#  ifdef __clang__
-#    define AC_NO_SANITIZE_ADDRESS [[clang::no_sanitize("address")]]
-#  elifdef __GNUC__
-#    define AC_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
-#  elif defined(_MSC_VER)
-#    define AC_NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
-#  else
-#    define AC_NO_SANITIZE_ADDRESS
-#  endif
+#ifdef __clang__
+#  define AC_NO_SANITIZE_ADDRESS [[clang::no_sanitize("address")]]
+#elif defined(_MSC_VER)
+#  define AC_NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
+#elifdef __GNUC__
+#  define AC_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
+#else
+#  define AC_NO_SANITIZE_ADDRESS
+#endif
+
+#ifdef __clang__
+#  define AC_FLATTEN [[clang::flatten]]
+#elif defined(_MSC_VER)
+#  define AC_FLATTEN __declspec("flatten")
+#elifdef __GNUC__
+#  define AC_FLATTEN [[gnu::flatten]]
+#else
+#  define AC_FLATTEN
 #endif
 
 #ifdef AUXILIA_BUILD_MODULE
@@ -136,24 +147,24 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  endif
 #endif
 #ifdef __clang__
-#  define AC_UTILS_FORCEINLINE [[clang::always_inline]]
+#  define AC_FORCEINLINE [[clang::always_inline]]
 #  define AC_UTILS_DEBUG_BREAK __builtin_debugtrap();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __PRETTY_FUNCTION__
 // Visual Studio's intellisense cannot recognize `elifdef` yet.
 // Use the old, good `#elif` here.
 #elif defined(__GNUC__)
-#  define AC_UTILS_FORCEINLINE [[gnu::always_inline]]
+#  define AC_FORCEINLINE [[gnu::always_inline]]
 #  define AC_UTILS_DEBUG_BREAK __builtin_trap();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
-#  define AC_UTILS_FORCEINLINE [[msvc::forceinline]]
+#  define AC_FORCEINLINE [[msvc::forceinline]]
 #  define AC_UTILS_DEBUG_BREAK __debugbreak();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __FUNCSIG__
 #  pragma warning(disable : 4716) // must return a value
 #  pragma warning(disable : 4530) // /EHsc
 #else
 #  include <csignal>
-#  define AC_UTILS_FORCEINLINE inline
+#  define AC_FORCEINLINE inline
 #  define AC_UTILS_DEBUG_BREAK raise(SIGTRAP);
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __func__
 #endif
@@ -370,7 +381,6 @@ operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {
 #define defer AC_DEFER
 #define postcondition AC_DEFER
 
-// NOLINTBEGIN(bugprone-macro-parentheses)
 /// @def AC_BITMASK_OPS
 /// @brief define the basic bitmask operations for the given bitmask
 /// type. the bitmask type should be an enum class.

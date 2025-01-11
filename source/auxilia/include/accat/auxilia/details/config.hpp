@@ -52,6 +52,10 @@ inline consteval const char *raw(const char *str) {
   }
   return str;
 }
+inline consteval auto operator""_raw(const char *str, const size_t) noexcept
+    -> const char * {
+  return raw(str);
+}
 template <typename T = void> inline T *alloc(const size_t size) {
   if (auto ptr = malloc(size))
     return static_cast<T *>(ptr);

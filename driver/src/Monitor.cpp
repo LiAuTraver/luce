@@ -1,12 +1,19 @@
-﻿#include "deps.hh"
+﻿#include "accat/auxilia/details/format.hpp"
+#include "deps.hh"
 
+#include <fmt/color.h>
+#include <fmt/xchar.h>
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/details/Status.hpp>
 #include <accat/auxilia/details/macros.hpp>
 #include <functional>
 #include <luce/Monitor.hpp>
+#include <utility>
 
 namespace accat::luce {
+using namespace fmt::literals;
+using enum fmt::color;
+using fmt::fg;
 auxilia::Status Monitor::notify(Component *sender, Event event) {
   // todo: implement
   switch (event) {
@@ -21,10 +28,11 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
     defer { cpu->detach_context(); };
     // find the task and mark it as terminated
     if (process.id() != cpu->task_id()) {
-      spdlog::error("Task id mismatch: {} != {}; should not happen; currently "
-                    "we just have excatly one task",
-                    process.id(),
-                    cpu->task_id());
+      spdlog::error(
+          "Task id mismatch: {lpid} != {rpid}; should not happen; currently "
+          "we just have excatly one task",
+          "lpid"_a = process.id(),
+          "rpid"_a = cpu->task_id());
       dbg_break
       return auxilia::InternalError("Task id mismatch");
     }
@@ -38,9 +46,10 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
   return {};
 }
 auxilia::Status Monitor::REPL() {
-  std::cout << message::repl::Welcome << '\n';
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
+
+  fmt::println("{}", message::repl::Welcome);
 
   for (;;) {
     if (auto [res, elapsed] = timer.measure(std::bind(&Monitor::shuttle, this));
@@ -58,7 +67,7 @@ auxilia::Status Monitor::shuttle() {
   if (!maybe_input) {
     return maybe_input.as_status();
   }
-  auto input = std::move(maybe_input).value();
+  auto input = *std::move(maybe_input);
 
   if (auto res = inspect(input); !res) {
     return res;
@@ -84,20 +93,19 @@ auxilia::Status Monitor::inspect(const std::string_view input) {
       auto [steps] = std::move(maybe_steps)->values();
       return execute_n(steps);
     }
-    fmt::print(stderr,
-               fg(fmt::color::red),
-               "luce: error: {}\n",
-               maybe_steps.error().msg());
+    auxilia::println(stderr,
+                     fg(crimson),
+                     "luce: error: {err_msg}",
+                     "err_msg"_a = maybe_steps.error().msg());
     return {};
   }
-  fmt::print(
-      stderr, fg(fmt::color::red), "luce: unknown command '{}'\n", input);
+  auxilia::println(stderr, fg(crimson), "luce: unknown command '{}'", input);
   return {};
 }
 auxilia::StatusOr<auxilia::string> Monitor::read() {
   for (;;) {
     std::string input;
-    fmt::print(stdout, fmt::fg(fmt::color::dark_cyan), "(luce) ");
+    fmt::print(stdout, fg(cyan), "(luce) ");
 
     if (!std::getline(std::cin, input)) {
       if (std::cin.eof()) {
@@ -108,9 +116,7 @@ auxilia::StatusOr<auxilia::string> Monitor::read() {
       if (std::cin.fail()) {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        fmt::print(stderr,
-                   fmt::fg(fmt::color::red),
-                   "Input error, please try again\n");
+        auxilia::println(stderr, fg(crimson), "Input error, please try again");
         continue;
       }
       contract_assert(0, "unreachable")
@@ -118,7 +124,7 @@ auxilia::StatusOr<auxilia::string> Monitor::read() {
     }
     // clang-format off
     // trim input
-    auto input_view = input 
+    auto trimmed_input = input 
         | std::ranges::views::drop_while(auxilia::isspacelike) 
         | std::ranges::views::reverse 
         | std::ranges::views::drop_while(auxilia::isspacelike) 
@@ -126,14 +132,14 @@ auxilia::StatusOr<auxilia::string> Monitor::read() {
         | std::ranges::to<std::string>()
     ;
     // clang-format on
-    if (input_view.empty())
+    if (trimmed_input.empty())
       continue;
-    return input_view;
+    return {std::move(trimmed_input)};
   }
 }
 auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   // TODO: implement this
-  for (const auto _ : std::views::iota(0ull, steps)) {
+  for ([[maybe_unused]] const auto _ : std::views::iota(0ull, steps)) {
     if (process.state == Task::State::kTerminated) {
       spdlog::info("Program has terminated.");
       return {};

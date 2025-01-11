@@ -48,6 +48,7 @@ if(CXX_FLAGS_STYLES_MSVC)
     /MACHINE:X64
     /GUARD:CF # control flow protection
     /GUARD:EHCONT # exception handler control
+    # /bigobj # big object files
   )
 
 # failed. vvvvvv

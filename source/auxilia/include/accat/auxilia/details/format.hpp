@@ -3,10 +3,7 @@
 #include "./config.hpp"
 EXPORT_AUXILIA
 namespace accat::auxilia {
-template <Variantable... Ts> class Variant;
-enum class FormatPolicy : uint8_t;
-template <typename Derived> class Printable;
-template <typename Derived> class Viewable;
+#if __has_include(<fmt/format.h>)
 using ::fmt::format;
 using ::fmt::format_to;
 using ::fmt::print;
@@ -26,6 +23,22 @@ void println(FILE *f,
   fmt::print(f, ts, fmt, std::forward<decltype(args)>(args)...);
   putchar('\n');
 }
+#else
+using ::std::format;
+using ::std::format_to;
+using ::std::print;
+using ::std::println;
+template <class... T>
+void println(const auto &, std::format_string<T...> fmt, T &&...args) {
+  std::print(fmt, std::forward<decltype(args)>(args)...);
+  putchar('\n');
+}
+template <class... T>
+void println(FILE *f, const auto &, std::format_string<T...> fmt, T &&...args) {
+  std::print(f, fmt, std::forward<decltype(args)>(args)...);
+  putchar('\n');
+}
+#endif
 
 // clang-format off
 /*!
@@ -40,6 +53,13 @@ void println(FILE *f,
  void _deprecated_any_cast();
 // the note's function has been removed so the note is not needed above.
 // clang-format on
+} // namespace accat::auxilia
+
+namespace accat::auxilia {
+template <Variantable... Ts> class Variant;
+enum class FormatPolicy : uint8_t;
+template <typename Derived> class Printable;
+template <typename Derived> class Viewable;
 template <typename Ty>
   requires std::is_arithmetic_v<std::remove_cvref_t<Ty>>
 bool is_integer(Ty &&value) noexcept {
@@ -59,7 +79,7 @@ enum class FormatPolicy : uint8_t {
 /// @note use public inheritance to make fmt::print work.
 template <typename Derived> class AC_NOVTABLE Printable {
 public:
-  using string_type = std::string;
+  using string_type = string;
 
 public:
   constexpr Printable() = default;
@@ -73,7 +93,8 @@ protected:
 
 private:
   [[nodiscard]] auto
-  _to_string(const FormatPolicy &format_policy = FormatPolicy::kDefault) const -> string_type
+  _to_string(const FormatPolicy &format_policy = FormatPolicy::kDefault) const
+      -> string_type
     requires requires(const Derived &d) {
       { d.to_string(format_policy) } -> std::convertible_to<string_type>;
     }
@@ -86,8 +107,9 @@ private:
       -> std::ostream & {
     return os << p._to_string();
   }
-  friend auto format_as(const Printable &p,
-                        const FormatPolicy &format_policy = FormatPolicy::kDefault)
+  friend auto
+  format_as(const Printable &p,
+            const FormatPolicy &format_policy = FormatPolicy::kDefault)
       -> string_type {
     return p._to_string(format_policy);
   }
@@ -109,8 +131,8 @@ protected:
   constexpr ~Viewable() = default;
 
 private:
-  [[nodiscard]] auto
-  _to_string_view(const FormatPolicy &format_policy = FormatPolicy::kDefault) const
+  [[nodiscard]] auto _to_string_view(
+      const FormatPolicy &format_policy = FormatPolicy::kDefault) const
       -> string_view_type
     requires requires(const Derived &d) {
       {
@@ -123,16 +145,16 @@ private:
 };
 } // namespace accat::auxilia
 
+namespace std {
 template <typename Derived>
-  requires ::std::is_base_of_v<::accat::auxilia::Printable<Derived>,
-                             Derived>
-struct ::std::formatter<Derived> { // NOLINT(cert-dcl58-cpp)
-  constexpr auto parse(::std::format_parse_context &ctx) const {
-    return ctx.begin();
-  }
+  requires is_base_of_v<::accat::auxilia::Printable<Derived>,
+                        Derived>
+struct formatter<Derived> { // NOLINT(cert-dcl58-cpp)
+  constexpr auto parse(format_parse_context &ctx) const { return ctx.begin(); }
   template <typename FormatContext>
-  auto format(const Derived &p, FormatContext &ctx) const {
-    return std::format_to(
+  constexpr auto format(const Derived &p, FormatContext &ctx) const {
+    return format_to(
         ctx.out(), "{}", p.to_string(::accat::auxilia::FormatPolicy::kDefault));
   }
 };
+} // namespace std

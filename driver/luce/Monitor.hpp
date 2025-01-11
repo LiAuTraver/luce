@@ -21,23 +21,25 @@
 namespace accat::luce {
 namespace message::repl {
 using namespace std::literals;
-using auxilia::raw;
+using namespace fmt::literals;
+using auxilia::operator""_raw;
 using enum fmt::color;
 using fmt::bg;
 using fmt::fg;
+using fmt::format;
 
 // NOLINTNEXTLINE
-static constexpr inline auto Help = raw(R"(
+static constexpr inline auto Help = R"(
 Available commands:
     - help: show this message
     - exit: exit the program
     - c: continue execution
-)");
+)"_raw;
 static const inline auto Welcome =
-    fmt::format(fg(dark_cyan), "Welcome to luce emulator!\n").append(raw(R"(
+    format(fg(dark_cyan), "Welcome to luce emulator!\n").append(R"(
     Type 'help' for help
     Type 'exit' to exit
-)"));
+)"_raw);
 } // namespace message::repl
 class Monitor : public Mediator {
   using paddr_t = isa::physical_address_t;

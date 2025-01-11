@@ -13,8 +13,8 @@ public:
   Image() = default;
   Image(std::vector<std::byte> binary_data,
         std::endian endianess = std::endian::native)
-      : binary_data_(std::move(binary_data)),
-        is_little_endian_(endianess == std::endian::little ? true : false) {}
+      : is_little_endian_(endianess == std::endian::little ? true : false),
+        binary_data_(std::move(binary_data)) {}
   ~Image() = default;
 
 public:

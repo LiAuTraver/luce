@@ -2,6 +2,7 @@ include_guard()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS YES)
 
+# sort targets into corresponding folders
 function(add_folder FOLDER_NAME)
   get_property(targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
 
@@ -18,8 +19,8 @@ function(add_folder FOLDER_NAME)
       endif()
 
       # a utility, put it in the Utility folder
-      # note: CMake does not allow two targets with the same name globally, 
-      #       it's safe to do so
+      # note: CMake does not allow two targets with the same name globally,
+      # it's safe to do so
       set_property(TARGET "${target}" PROPERTY FOLDER "${folder}")
     endif()
   endforeach()

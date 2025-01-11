@@ -27,10 +27,10 @@ Disassembler &Disassembler::operator=(Disassembler &&that) noexcept {
   return *this;
 }
 Disassembler::Disassembler(Mediator *parent) : Component(parent) {
-  llvm::InitializeAllTargetInfos();
-  llvm::InitializeAllTargets();
-  llvm::InitializeAllTargetMCs();
-  llvm::InitializeAllDisassemblers();
+  // llvm::InitializeAllTargetInfos();
+  // llvm::InitializeAllTargets();
+  // llvm::InitializeAllTargetMCs();
+  // llvm::InitializeAllDisassemblers();
 }
 auxilia::Status Disassembler::set_target(isa::instruction_set instructionSet) {
   if (instructionSet != isa::instruction_set::riscv32)

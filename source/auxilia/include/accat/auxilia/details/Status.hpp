@@ -1,3 +1,4 @@
+#pragma once
 // clang-format off
 //! @file Status.hpp
 //! @brief A class that represents the status of a function call.
@@ -6,7 +7,7 @@
 #ifndef ACCAT_AUXILIA_STATUS_HPP
 #define ACCAT_AUXILIA_STATUS_HPP
 
-#include "accat/auxilia/details/macros.hpp"
+#include "./macros.hpp"
 #include <type_traits>
 #ifdef ABSL_BASE_CONFIG_H_
 #warning "Abseil library detected. I recommend you to use the original Abseil library."
@@ -367,9 +368,6 @@ public:
   constexpr inline auto transform(this Self &&self, Func &&func) -> Status {
     return std::invoke(std::forward<Func>(func));
   }
-  constexpr inline auto as_status(this auto &&self) noexcept {
-    return static_cast<Status &&>(self);
-  }
 
 public:
   Code my_code = kOk;
@@ -413,8 +411,7 @@ public:
       : base_type(that), my_value(that.my_value) {}
   [[nodiscard]]
   StatusOr(StatusOr &&that) noexcept
-      : base_type(std::move(that).as_status()),
-        my_value(std::move(that.my_value)) {}
+      : base_type(std::move(that)), my_value(std::move(that.my_value)) {}
   [[nodiscard]]
   StatusOr &operator=(const StatusOr &that) {
     base_type::operator=(that);
@@ -451,8 +448,8 @@ public:
       -> decltype(auto) {
     return std::addressof(self.my_value);
   }
-  [[nodiscard]] [[gnu::flatten]]
-  inline constexpr base_type as_status(this auto &&self) noexcept {
+  [[nodiscard]] AC_FLATTEN inline constexpr base_type
+  as_status(this auto &&self) noexcept {
     return static_cast<base_type &&>(self);
   }
   inline auto reset(Ty &&value = {}) noexcept {
@@ -466,112 +463,112 @@ public:
 private:
   value_type my_value;
 };
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status OkStatus(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status OkStatus(
     const std::string_view message = "Ok"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kOk, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status Cancelled(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status Cancelled(
     const std::string_view message = "Cancelled"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kCancelled, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status UnknownError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status UnknownError(
     const std::string_view message = "Unknown"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kUnknown, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status InvalidArgumentError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status InvalidArgumentError(
     const std::string_view message = "Invalid argument"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kInvalidArgument, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status DeadlineExceededError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status DeadlineExceededError(
     const std::string_view message = "Deadline exceeded"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kDeadlineExceeded, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status NotFoundError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status NotFoundError(
     const std::string_view message = "Not found"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kNotFound, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status AlreadyExistsError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status AlreadyExistsError(
     const std::string_view message = "Already exists"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kAlreadyExists, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status PermissionDeniedError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status PermissionDeniedError(
     const std::string_view message = "Permission denied"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kPermissionDenied, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status ResourceExhaustedError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status ResourceExhaustedError(
     const std::string_view message = "Resource exhausted"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kResourceExhausted, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status FailedPreconditionError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status FailedPreconditionError(
     const std::string_view message = "Failed precondition"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kFailedPrecondition, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status AbortedError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status AbortedError(
     const std::string_view message = "Aborted"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kAborted, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status OutOfRangeError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status OutOfRangeError(
     const std::string_view message = "Out of range"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kOutOfRange, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status UnimplementedError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status UnimplementedError(
     const std::string_view message = "Unimplemented"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kUnimplemented, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status InternalError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status InternalError(
     const std::string_view message = "Internal"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kInternal, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status UnavailableError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status UnavailableError(
     const std::string_view message = "Unavailable"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kUnavailable, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status DataLossError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status DataLossError(
     const std::string_view message = "Data loss"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kDataLoss, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status UnauthenticatedError(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status UnauthenticatedError(
     const std::string_view message = "Unauthenticated"sv,
     const std::source_location &location = std::source_location::current()) {
   return {Status::kUnauthenticated, message, location};
 }
 
-[[gnu::flatten]] inline AC_CONSTEXPR20 Status ReturnMe(
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status ReturnMe(
     const std::string_view message = "Returning",
     const std::source_location &location = std::source_location::current()) {
-  return {Status::kReturning, "Returning", location};
+  return {Status::kReturning, message, location};
 }
 
 #define AC_RETURN_IF_NOT(_status_)                                             \
