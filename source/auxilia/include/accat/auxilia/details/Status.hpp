@@ -73,8 +73,8 @@
 
 // clang-format on
 
-#include "./config.hpp"
-#include "./format.hpp"
+#  include "./config.hpp"
+#  include "./format.hpp"
 EXPORT_AUXILIA
 namespace accat::auxilia {
 
@@ -244,6 +244,9 @@ public:
   ///   handle the returning status. Use with caution.
   kReturning = 21,
 
+  kParseError = 22,
+  kLexError = 23,
+
   /// kMovedFrom indicates that the status has been moved from.
   kMovedFrom = std::numeric_limits<uint8_t>::max()
   };
@@ -412,13 +415,11 @@ public:
   [[nodiscard]]
   StatusOr(StatusOr &&that) noexcept
       : base_type(std::move(that)), my_value(std::move(that.my_value)) {}
-  [[nodiscard]]
   StatusOr &operator=(const StatusOr &that) {
     base_type::operator=(that);
     my_value = that.my_value;
     return *this;
   }
-  [[nodiscard]]
   StatusOr &operator=(StatusOr &&that) noexcept {
     base_type::operator=(std::move(that));
     my_value = std::move(that.my_value);
@@ -571,13 +572,13 @@ AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status ReturnMe(
   return {Status::kReturning, message, location};
 }
 
-#define AC_RETURN_IF_NOT(_status_)                                             \
-  AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                              \
-  if (auto ac_utils_status_return_ = (_status_))                               \
-    ;                                                                          \
-  else {                                                                       \
-    return ac_utils_status_return_;                                            \
-  }
-#define return_if_not(_status_) AC_RETURN_IF_NOT(_status_)
+#  define AC_RETURN_IF_NOT(_status_)                                           \
+    AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                            \
+    if (auto ac_utils_status_return_ = (_status_))                             \
+      ;                                                                        \
+    else {                                                                     \
+      return ac_utils_status_return_;                                          \
+    }
+#  define return_if_not(_status_) AC_RETURN_IF_NOT(_status_)
 } // namespace accat::auxilia
 #endif

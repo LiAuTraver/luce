@@ -35,7 +35,7 @@
 #endif
 
 #ifdef __clang__
-#  define AC_FLATTEN [[clang::flatten]]
+#  define AC_FLATTEN
 #elif defined(_MSC_VER)
 #  define AC_FLATTEN __declspec("flatten")
 #elif defined(__GNUC__)
@@ -294,7 +294,7 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 /// @see <a
 /// href="https://learn.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview">MSVC
 /// Preprocessor</a>
-#  warning                                                                     \
+#  pragma message                                                              \
       "MSVC traditional preprocessor was used. no additional debug info will be provided. to enable MSVC's new preprocessor, add compiler flag `/Zc:preprocessor`."
 #  define dbg(_level_, _msg_, ...)                                             \
     AC_UTILS_DEBUG_LOGGING(_level_, _msg_ __VA_OPT__(, ) __VA_ARGS__)

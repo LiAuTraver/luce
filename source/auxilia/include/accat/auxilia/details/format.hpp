@@ -72,6 +72,7 @@ template <typename... Ts> match(Ts...) -> match<Ts...>;
 enum class FormatPolicy : uint8_t {
   kDefault = 0,
   kDetailed = 1,
+  kTokenOnly = 2,
 };
 /// @interface Printable
 /// @brief A class that represents a printable object; can be directly
@@ -95,9 +96,6 @@ private:
   [[nodiscard]] auto
   _to_string(const FormatPolicy &format_policy = FormatPolicy::kDefault) const
       -> string_type
-    requires requires(const Derived &d) {
-      { d.to_string(format_policy) } -> std::convertible_to<string_type>;
-    }
   {
     return static_cast<const Derived *>(this)->to_string(format_policy);
   }

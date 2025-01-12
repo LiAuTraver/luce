@@ -95,7 +95,7 @@ public:
       -> decltype(auto) {
     return my_variant.template emplace<Args>();
   }
-  constexpr auto &get() const { return my_variant; }
+  auto &get() const { return my_variant; }
   constexpr auto swap(Variant &that) noexcept(
       std::conjunction_v<std::is_nothrow_move_constructible<Types...>,
                          std::is_nothrow_swappable<Types...>>) -> Variant & {
@@ -121,7 +121,7 @@ private:
   variant_type my_variant{Monostate{}};
 
 private:
-  inline constexpr bool is_valid() const noexcept {
+  inline bool is_valid() const noexcept {
     auto ans = my_variant.index() != std::variant_npos;
     contract_assert(ans)
     return ans;
@@ -155,7 +155,7 @@ private:
   /// @brief get the value of the variant; a wrapper around @link std::get
   /// @endlink
   template <class Ty, class... MyTypes>
-  friend inline constexpr auto get(const Variant<MyTypes...> &v)
+  friend inline auto get(const Variant<MyTypes...> &v)
       -> decltype(auto);
 };
 /// @brief check if the variant holds a specific type;
@@ -165,7 +165,7 @@ inline constexpr bool holds_alternative(const Variant<MyTypes...> &v) noexcept {
   return std::holds_alternative<Ty>(v.get());
 }
 template <class Ty, class... MyTypes>
-inline constexpr auto get(const Variant<MyTypes...> &v) -> decltype(auto) {
+inline auto get(const Variant<MyTypes...> &v) -> decltype(auto) {
   return v.is_valid() ? std::get<Ty>(v.get()) : Ty{};
 }
 template <class Ty, class... MyTypes>
