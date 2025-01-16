@@ -3,6 +3,8 @@
 #include "./config.hpp"
 
 namespace accat::auxilia::id::details {
+// inline variables have a single definition shared across translation units,
+//    so we won’t generate duplicate IDs.
 inline std::atomic_uint32_t _current_id{0};
 inline std::unordered_set<uint32_t> _active_ids;
 inline std::mutex _id_mutex;

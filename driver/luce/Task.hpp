@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Pattern.hpp"
+#include "utils/Pattern.hpp"
 
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>

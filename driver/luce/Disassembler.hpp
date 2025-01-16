@@ -2,7 +2,7 @@
 
 #include <accat/auxilia/details/Status.hpp>
 
-#include "luce/Pattern.hpp"
+#include "utils/Pattern.hpp"
 #include "luce/isa/architecture.hpp"
 
 namespace llvm {

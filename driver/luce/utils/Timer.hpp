@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "config.hpp"
+#include "luce/config.hpp"
 #include <accat/auxilia/auxilia.hpp>
 namespace accat::luce {
 class Timer {
@@ -70,14 +70,14 @@ private:
   }
 
   // function for debugger to pause the timer
-  Timer& pause() {
+  Timer &pause() {
     precondition(current_frame_ != time_frame_type{}, "Timer is not started.")
     time_point_ = clock_type::now();
     return *this;
   }
 
   // function for debugger to resume the timer
-  Timer& resume() {
+  Timer &resume() {
     precondition(current_frame_ != time_frame_type{}, "Timer is not started.")
     auto &[startTime, endTime, elapsedTime] = current_frame_;
     // use it to store the resume timepoint

@@ -11,6 +11,7 @@
 #include <utility>
 
 namespace accat::luce {
+using namespace std::literals;
 using namespace fmt::literals;
 using enum fmt::color;
 using fmt::fg;
@@ -91,8 +92,7 @@ auxilia::Status Monitor::shuttle() {
   return {};
 }
 auxilia::Status Monitor::inspect(const std::string_view input) {
-  if (input == "exit") {
-    fmt::println("Goodbye!");
+  if (input == "exit" or input == "q") {
     return auxilia::ReturnMe("exit!");
   }
   if (input == "help") {

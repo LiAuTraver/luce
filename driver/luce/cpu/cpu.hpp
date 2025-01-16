@@ -3,12 +3,13 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
-#include "Pattern.hpp"
-#include "Timer.hpp"
+#include "luce/utils/Pattern.hpp"
+#include "luce/utils/Timer.hpp"
 #include "accat/auxilia/details/Status.hpp"
-#include "config.hpp"
-#include "Task.hpp"
-#include "isa/architecture.hpp"
+#include "luce/config.hpp"
+#include "luce/Task.hpp"
+#include "luce/isa/architecture.hpp"
+#include "mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/macros.hpp>
 #include <array>
@@ -22,9 +23,10 @@ namespace accat::luce {
 class Monitor;
 }
 namespace accat::luce {
-class CentralProcessingUnit : public Component {
+class CentralProcessingUnit :public Component {
   std::shared_ptr<Context> context_;
   std::optional<pid_t> task_id_;
+  MemoryManagementUnit mmu_;
 
   Timer cpu_timer_;
   enum class State : uint8_t {
@@ -54,11 +56,14 @@ public:
     task_id_ = taskid;
     return *this;
   }
-  constexpr auto is_vacant() const noexcept { return state_ == State::kVacant; }
+  constexpr auto is_vacant() const noexcept {
+    return state_ == State::kVacant;
+  }
   auto detach_context() noexcept -> CentralProcessingUnit &;
-  auxilia::Status execute();
-  auxilia::Status shuttle();
   auxilia::StatusOr<std::span<const std::byte>> fetch();
+  auxilia::Status execute();
+  auxilia::Status decode();
+  auxilia::Status shuttle();
 
 public:
   auto task_id() const noexcept {
@@ -66,6 +71,7 @@ public:
     return *task_id_;
     // return task_id_.value_or(std::numeric_limits<uint32_t>::max());
   }
+  Monitor *monitor() const noexcept;
 };
 
 /// @implements Component

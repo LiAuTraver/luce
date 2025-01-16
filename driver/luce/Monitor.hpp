@@ -5,12 +5,12 @@
 #include <fmt/xchar.h>
 #include <scn/scan.h>
 #include "MainMemory.hpp"
-#include "Pattern.hpp"
-#include "Timer.hpp"
+#include "utils/Pattern.hpp"
+#include "luce/utils/Timer.hpp"
 #include "config.hpp"
 #include "SystemBus.hpp"
 #include "Task.hpp"
-#include "cpu.hpp"
+#include "cpu/cpu.hpp"
 #include "isa/architecture.hpp"
 #include "Disassembler.hpp"
 
@@ -54,9 +54,12 @@ class Monitor : public Mediator {
   Task process;
   CPUs cpus;
   Timer timer;
+  Disassembler disassembler;
 
 public:
-  Monitor() : memory(this), bus(this), cpus(this) {}
+  Monitor() : memory(this), bus(this), cpus(this), disassembler(this) {
+    disassembler.set_target(isa::instruction_set::riscv32).ignore_error();
+  }
 
 public:
   virtual auxilia::Status notify(Component *sender, Event event) override;
@@ -73,6 +76,11 @@ public:
   auto fetch_from_main_memory(const vaddr_t addr, const size_t size)
       -> auxilia::StatusOr<std::span<const std::byte>> {
     return memory.read_n(addr, size);
+  }
+  auto decode_from_disassembler(const std::span<const std::byte> bytes)
+      -> auxilia::StatusOr<auxilia::string> {
+    // return disassembler.decode(bytes);
+    TODO(...)
   }
 
 public:

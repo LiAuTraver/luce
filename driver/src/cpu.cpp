@@ -1,7 +1,6 @@
-﻿#include "accat/auxilia/details/views.hpp"
-#include "deps.hh"
+﻿#include "deps.hh"
 
-#include "luce/cpu.hpp"
+#include "luce/cpu/cpu.hpp"
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include <cstddef>
@@ -9,11 +8,9 @@
 #include <span>
 #include <type_traits>
 #include "luce/Monitor.hpp"
-#include "luce/Pattern.hpp"
-#include "luce/isa/riscv32/isa.hpp"
 namespace accat::luce {
 CentralProcessingUnit::CentralProcessingUnit(Mediator *parent)
-    : Component(parent) {
+    : Component(parent), mmu_(this) {
   if (parent) {
     contract_assert(dynamic_cast<Monitor *>(parent), "Parent must be a Monitor")
   }
@@ -53,21 +50,36 @@ auxilia::Status CentralProcessingUnit::shuttle() {
   for (const auto i : std::views::iota(0ull, sizeof(instruction_t))) {
     context_->instruction_register[i] = bytes[i];
   }
+  // convert little-endian to big-endian for more human-readable output
   spdlog::info("Fetched instruction: {:#04x}",
                fmt::join(context_->instruction_register |
                              auxilia::ranges::views::invert_endianness,
                          " "));
-  // TODO()
+  decode();
+  return {};
+}
+auxilia::Status CentralProcessingUnit::decode() {
+    // TODO()
   if (std::ranges::equal(context_->instruction_register,
                          isa::signal::trap |
                              auxilia::ranges::views::invert_endianness)) {
     this->send(Event::kTaskFinished);
   }
+  
   return {};
 }
 auxilia::StatusOr<std::span<const std::byte>> CentralProcessingUnit::fetch() {
-  return static_cast<Monitor *>(mediator)->fetch_from_main_memory(
-      context_->program_counter,
-      sizeof(instruction_t) / sizeof(isa::minimal_addressable_unit_t));
+  auto translated = mmu_.virtual_to_physical(context_->program_counter);
+  auto num = sizeof(instruction_t) / sizeof(isa::minimal_addressable_unit_t);
+  if (auto res = this->monitor()->fetch_from_main_memory(translated, num)) {
+    return {mmu_.physical_to_virtual(*res)};
+  } else {
+    return {res.as_status()};
+  }
+}
+Monitor *CentralProcessingUnit::monitor() const noexcept {
+  precondition(dynamic_cast<Monitor *>(mediator), "Parent must be a Monitor")
+
+  return static_cast<Monitor *>(mediator);
 }
 } // namespace accat::luce

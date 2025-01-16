@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Pattern.hpp"
+#include "utils/Pattern.hpp"
 #include "config.hpp"
 #include "luce/MainMemory.hpp"
 #include <accat/auxilia/auxilia.hpp>

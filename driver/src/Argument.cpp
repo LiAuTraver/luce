@@ -1,8 +1,7 @@
 #include "deps.hh"
 
-#include "luce/Argument.hpp"
-
-#include "luce/ArgumentLoader.hpp"
+#include "luce/argument/Argument.hpp"
+#include "luce/argument/ArgumentLoader.hpp"
 
 #include <forward_list>
 #include <argparse/argparse.hpp>
@@ -21,12 +20,6 @@ std::span<Argument *> args() {
   return {args_array};
 }
 } // namespace program
-// namespace repl {
-// Flag continue_repl = {{"--continue-repl", "c"},
-//                       "Continue the REPL after running the program"};
-// Flag exit = {{"--exit", "q"}, "Exit the REPL after running the program"};
-// Single step = {{"--step", "si"}, "Step through the program", "1"};
-// } // namespace repl
 
 void Flag::add_to_parser(ArgumentLoader &parser) {
   parser->add_argument(names.first, names.second)

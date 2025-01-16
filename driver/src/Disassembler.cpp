@@ -27,10 +27,10 @@ Disassembler &Disassembler::operator=(Disassembler &&that) noexcept {
   return *this;
 }
 Disassembler::Disassembler(Mediator *parent) : Component(parent) {
-  // llvm::InitializeAllTargetInfos();
-  // llvm::InitializeAllTargets();
-  // llvm::InitializeAllTargetMCs();
-  // llvm::InitializeAllDisassemblers();
+  llvm::InitializeAllTargetInfos();
+  llvm::InitializeAllTargets();
+  llvm::InitializeAllTargetMCs();
+  llvm::InitializeAllDisassemblers();
 }
 auxilia::Status Disassembler::set_target(isa::instruction_set instructionSet) {
   if (instructionSet != isa::instruction_set::riscv32)
@@ -58,7 +58,7 @@ auxilia::Status Disassembler::set_target(isa::instruction_set instructionSet) {
 }
 Disassembler::~Disassembler() {
   delete triple;
-  delete target;
+  // delete target; // target is a pointer to a static object not a heap object
   delete register_info;
   delete target_options;
   delete asm_info;
@@ -67,7 +67,7 @@ Disassembler::~Disassembler() {
   delete context;
   delete disassembler;
   delete instruction_printer;
-  
+
   dbg_block
   {
     triple = nullptr;
@@ -83,8 +83,10 @@ Disassembler::~Disassembler() {
   };
 }
 Disassembler &Disassembler::_do_move_impl(Disassembler &&that) noexcept {
+
+  std::exchange(this->target, that.target);
+
   this->triple->~Triple();
-  this->target->~Target();
   this->register_info->~MCRegisterInfo();
   this->target_options->~MCTargetOptions();
   this->asm_info->~MCAsmInfo();
@@ -95,7 +97,6 @@ Disassembler &Disassembler::_do_move_impl(Disassembler &&that) noexcept {
   this->instruction_printer->~MCInstPrinter();
 
   triple = that.triple;
-  target = that.target;
   register_info = that.register_info;
   target_options = that.target_options;
   asm_info = that.asm_info;
@@ -106,7 +107,6 @@ Disassembler &Disassembler::_do_move_impl(Disassembler &&that) noexcept {
   instruction_printer = that.instruction_printer;
 
   that.triple = nullptr;
-  that.target = nullptr;
   that.register_info = nullptr;
   that.target_options = nullptr;
   that.asm_info = nullptr;

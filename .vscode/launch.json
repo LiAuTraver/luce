@@ -9,7 +9,9 @@
       "args": [
         // "--testing",
         "--log",
-        "${workspaceFolder}/luce.log"
+        "${workspaceFolder}/luce.log",
+        "--image",
+        "${workspaceFolder}/data/image.bin",
       ],
       "stopAtEntry": false,
       "cwd": "${command:cmake.launchTargetDirectory}",

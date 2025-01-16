@@ -1,6 +1,6 @@
 #include "deps.hh"
 
-#include "luce/ArgumentLoader.hpp"
+#include "luce/argument/ArgumentLoader.hpp"
 #include <spdlog/spdlog.h>
 #include <argparse/argparse.hpp>
 #include <iostream>

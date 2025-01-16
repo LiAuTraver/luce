@@ -49,7 +49,9 @@ void captsone_demo() {
     std::cerr << "Failed to initialize Capstone" << '\n';
     return;
   }
-  defer { cs_close(&handle); };
+  defer {
+    cs_close(&handle);
+  };
   cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON); // Enable instruction details
 
   // Disassemble the code buffer
@@ -76,7 +78,16 @@ void captsone_demo() {
   std::cout << std::endl;
   return;
 }
-
+// clang-format off
+llvm::ArrayRef<uint8_t> code = 
+    {
+    0x97, 0x02, 0x00, 0x00,
+    0x23, 0x88, 0x02, 0x00,
+    0x01, 0xC5, 0x02, 0x03,
+    0x73, 0x01, 0x10, 0x00,
+    0xef, 0xbe, 0xad, 0xde,
+    };
+// clang-format on
 AC_NO_SANITIZE_ADDRESS
 void llvm_mc_demo() {
   llvm::InitializeAllTargetInfos();
@@ -116,15 +127,6 @@ void llvm_mc_demo() {
       std::unique_ptr<llvm::MCInstPrinter>(target->createMCInstPrinter(
           triple, 0, *asm_info, *instruction_info, *mri));
 
-  // clang-format off
-  llvm::ArrayRef<uint8_t> code = {
-                                0x97, 0x02, 0x00, 0x00,
-                                0x23, 0x88, 0x02, 0x00,
-                                0x01, 0xC5, 0x02, 0x03,
-                                0x73, 0x01, 0x10, 0x00,
-                                0xef, 0xbe, 0xad, 0xde,
-                                };
-  // clang-format on
   uint64_t addr = 0x80000000; // Base address
   while (addr < 0x80000000 + code.size()) {
     auto inst = llvm::MCInst{};

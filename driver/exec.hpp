@@ -4,33 +4,47 @@
 #include <filesystem>
 #include <iostream>
 #include <luce/config.hpp>
+#include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <accat/auxilia/auxilia.hpp>
 #include <luce/isa/architecture.hpp>
 #include <string>
-#include "luce/ArgumentLoader.hpp"
+#include "luce/argument/Argument.hpp"
 
+namespace accat::luce {
+class ArgumentLoader;
+}
 namespace accat::luce {
 class ExecutionContext : public auxilia::Printable<ExecutionContext> {
 public:
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)
-    if (auto logFile = argument::program::log.value; !logFile.empty()) {
-      spdlog::info("log file: {}", std::filesystem::absolute(logFile));
-      auto console_sink =
-          std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-      auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-          std::move(logFile), true);
-      file_sink->set_level(spdlog::level::trace);
-      console_sink->set_level(spdlog::level::debug);
-      console_sink->set_pattern("[%^%l%$] %v");
-      spdlog::set_default_logger(std::make_shared<spdlog::logger>(
-          spdlog::logger{"luce", {console_sink, file_sink}}));
+
+    auto logFile = argument::program::log.value;
+    if (logFile.empty()) {
+      dbg(info, "no log file, only write to stdout")
       return;
     }
-    dbg(info, "no log file, only write to stdout")
+    spdlog::info("log file: {}", std::filesystem::absolute(logFile));
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+        std::move(logFile), false); // 'false' to append the log file
+    file_sink->set_level(spdlog::level::trace);
+    console_sink->set_level(spdlog::level::debug);
+    console_sink->set_pattern("[%^%l%$] %v");
+
+    {
+      auto temp_logger = spdlog::logger{"luce_loader", {file_sink}};
+      temp_logger.info("\n\n\n===--------------------LOG "
+                       "STARTING---------------------===");
+    }
+
+    spdlog::set_default_logger(std::make_shared<spdlog::logger>(
+        spdlog::logger{"luce", {console_sink, file_sink}}));
+
+    return;
   }
   static auto &InitializeContext(const ArgumentLoader &) {
     static ExecutionContext ctx;

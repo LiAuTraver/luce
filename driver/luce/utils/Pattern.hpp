@@ -9,10 +9,10 @@
 
 namespace accat::luce {
 /// @interface Mediator
-class Mediator;
+struct Mediator;
 
-/// @class Component
-class Component;
+/// @struct Component
+struct Component;
 /// @note for magic_enum to perform cast, the enum value must be explicitly
 /// defined in the enum class
 enum class Event : uint8_t {
@@ -40,7 +40,7 @@ consteval auto to_string_view(const Event event) noexcept {
   std::unreachable();
 }
 } // namespace event
-class Mediator {
+struct Mediator {
 public:
   constexpr Mediator() = default;
 
@@ -52,8 +52,8 @@ protected:
   virtual ~Mediator() = default;
 };
 
-class Component {
-  friend class Mediator;
+struct Component {
+  friend struct Mediator;
 
 protected:
   using pid_t = uint32_t;
@@ -73,25 +73,29 @@ public:
   }
   Component(const Component &) = delete;
   Component &operator=(const Component &) = delete;
-  constexpr pid_t id() const noexcept { return id_; }
+  constexpr pid_t id() const noexcept {
+    return id_;
+  }
   Component(Component &&that) noexcept
       : mediator(that.mediator), id_(that.id_) {
     spdlog::debug("Component with id {} moved.", id_);
     that.mediator = nullptr;
-    that.id_ = std::numeric_limits<pid_t>::max();
+    that.id_ = (std::numeric_limits<pid_t>::max)();
   }
   Component &operator=(Component &&that) noexcept {
     if (this != &that) {
       mediator = that.mediator;
       id_ = that.id_;
       that.mediator = nullptr;
-      that.id_ = std::numeric_limits<pid_t>::max();
+      that.id_ = (std::numeric_limits<pid_t>::max)();
     }
     return *this;
   }
 
 protected:
-  virtual ~Component() noexcept { auxilia::id::release(id_); }
+  virtual ~Component() noexcept {
+    auxilia::id::release(id_);
+  }
 
 private:
   pid_t id_ = auxilia::id::get();

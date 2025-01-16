@@ -1,4 +1,3 @@
-#include "accat/auxilia/details/macros.hpp"
 #include "deps.hh"
 
 #include <fmt/base.h>
@@ -15,13 +14,16 @@
 #include <luce/Task.hpp>
 #include <string_view>
 #include "exec.hpp"
-#include "luce/Argument.hpp"
-#include "luce/ArgumentLoader.hpp"
+#include "luce/argument/Argument.hpp"
+#include "luce/argument/ArgumentLoader.hpp"
 #include "luce/Image.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/isa/riscv32/isa.hpp"
 namespace accat::luce {
 LUCE_API int luce_main(const std::span<const std::string_view> args) {
+  int callback = 0;
+  constexpr auto defaultImagePath = R"(Z:/luce/data/image.bin)";
+
   auto program_arguments = argument::program::args();
   auto program_options = ArgumentLoader("luce", "1.0");
   program_options.load_arguments(program_arguments);
@@ -32,8 +34,10 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
     return res.raw_code();
   }
 
-  auto imageData =
-      auxilia::async(auxilia::read_raw_bytes<>, R"(Z:/luce/data/image.bin)");
+  auto imageData = auxilia::async(auxilia::read_raw_bytes<>,
+                                  argument::program::image.value.empty()
+                                      ? defaultImagePath
+                                      : argument::program::image.value);
 
   auto context = auxilia::async(std::bind(&ExecutionContext::InitializeContext,
                                           std::ref(program_options)));
@@ -55,8 +59,11 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
   }
 
   if (argument::program::batch.value == true)
-    return monitor.run().raw_code();
+    callback = monitor.run().raw_code();
+  else
+    callback = monitor.REPL().raw_code();
 
-  return monitor.REPL().raw_code();
+  spdlog::info("Goodbye!");
+  return callback;
 }
 } // namespace accat::luce
