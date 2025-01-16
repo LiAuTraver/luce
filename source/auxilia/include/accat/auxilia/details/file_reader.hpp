@@ -36,7 +36,10 @@ inline Status check_file(const std::filesystem::path &path) noexcept {
 #pragma warning(disable : 4702)
 EXPORT_AUXILIA
 namespace accat::auxilia {
-template <typename TargetType, std::endian Endianess = std::endian::native,
+
+#if __cpp_lib_ranges_chunk >= 202202L
+template <typename TargetType,
+          std::endian Endianess = std::endian::native,
           typename CharType = char>
 inline StatusOr<std::basic_string<CharType>>
 read_as_bytes(const std::filesystem::path &path) {
@@ -62,7 +65,9 @@ read_as_bytes(const std::filesystem::path &path) {
                         std::ranges::reverse);
   return {std::move(data)};
 }
-#pragma warning(pop)
+#  pragma warning(pop)
+#endif
+
 template <typename CharType = char>
 std::vector<std::byte> as_raw_bytes(const std::basic_string<CharType> &data) {
   // clang-format off
@@ -86,9 +91,12 @@ read_raw_bytes(const std::filesystem::path &path) {
 }
 
 /// @brief Asynchronously execute a function with the given arguments
-/// @note just a wrapper, but REAL async
-auto async(auto &&func, auto... args) -> decltype(auto)  {
-  return std::async(std::launch::async, std::forward<decltype(func)>(func),
+/// @note just a wrapper, but it's REAL async
+auto async(auto &&func, auto... args) -> decltype(auto)
+  requires std::invocable<decltype(func), decltype(args)...>
+{
+  return std::async(std::launch::async,
+                    std::forward<decltype(func)>(func),
                     std::forward<decltype(args)>(args)...);
 }
 } // namespace accat::auxilia
@@ -97,7 +105,8 @@ namespace accat::auxilia {
 /// @brief a simple file reader that reads the contents of a file
 /// @note the file reader is not thread-safe, and will consume a lot of memory
 /// if the file is too big.
-class file_reader {
+/// @deprecated preserved for compatibility reasons
+class [[deprecated]] file_reader {
 public:
   using path_t = path;
   using string_t = string;
@@ -105,7 +114,7 @@ public:
   using ostringstream_t = ostringstream;
 
 public:
-  inline explicit constexpr file_reader(path_t path_)
+  inline explicit AC_CONSTEXPR23 file_reader(path_t path_)
       : filePath(std::move(path_)) {}
   inline constexpr ~file_reader() = default;
 
@@ -119,7 +128,9 @@ public:
     buffer << file.rdbuf();
     return buffer.str();
   }
-  [[nodiscard]] inline path_t filepath() const { return filePath; }
+  [[nodiscard]] inline path_t filepath() const {
+    return filePath;
+  }
 
 private:
   const path_t filePath;

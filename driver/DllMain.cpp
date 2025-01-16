@@ -1,4 +1,5 @@
 ﻿#include "luce/config.hpp"
+
 #if defined(_WIN32) && defined(LUCE_DRIVER_BUILD_SHARED) &&                    \
     defined(DRIVER_EXPORTS)
 #  include <spdlog/spdlog.h>

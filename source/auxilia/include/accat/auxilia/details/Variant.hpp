@@ -70,7 +70,9 @@ public:
     })
                       : "invalid state"sv;
   }
-  auto index() const noexcept { return my_variant.index(); }
+  auto index() const noexcept {
+    return my_variant.index();
+  }
   template <typename... Args>
     requires requires {
       std::declval<variant_type>().template emplace<Args...>(
@@ -90,12 +92,13 @@ public:
   }
   template <typename Args>
     requires requires { std::declval<variant_type>().template emplace<Args>(); }
-  constexpr auto
-  emplace() noexcept(noexcept(my_variant.template emplace<Args>()))
-      -> decltype(auto) {
+  constexpr auto emplace() noexcept(
+      noexcept(my_variant.template emplace<Args>())) -> decltype(auto) {
     return my_variant.template emplace<Args>();
   }
-  auto &get() const { return my_variant; }
+  auto &get() const {
+    return my_variant;
+  }
   constexpr auto swap(Variant &that) noexcept(
       std::conjunction_v<std::is_nothrow_move_constructible<Types...>,
                          std::is_nothrow_swappable<Types...>>) -> Variant & {
@@ -123,26 +126,36 @@ private:
 private:
   inline bool is_valid() const noexcept {
     auto ans = my_variant.index() != std::variant_npos;
-    contract_assert(ans)
+    contract_assert(ans, "Invalid state");
     return ans;
   }
 
 public:
-  constexpr auto to_string(const FormatPolicy &format_policy) const
-      -> string_type {
+  constexpr auto
+  to_string(const FormatPolicy &format_policy) const -> string_type {
     if (format_policy == FormatPolicy::kDefault) {
       return typeid(decltype(*this)).name();
     } else if (format_policy == FormatPolicy::kDetailed) {
-      return typeid(decltype(*this)).raw_name();
+      return typeid(decltype(*this))
+#if _WIN32
+          .raw_name();
+#else
+          .name(); // g++ doesn't support raw_name()
+#endif
     }
     std::unreachable();
   }
-  constexpr auto to_string_view(const FormatPolicy &format_policy) const
-      -> string_view_type {
+  constexpr auto
+  to_string_view(const FormatPolicy &format_policy) const -> string_view_type {
     if (format_policy == FormatPolicy::kDefault) {
       return typeid(decltype(*this)).name();
     } else if (format_policy == FormatPolicy::kDetailed) {
-      return typeid(decltype(*this)).raw_name();
+      return typeid(decltype(*this))
+#if _WIN32
+          .raw_name();
+#else
+          .name();
+#endif
     }
     std::unreachable();
   }
@@ -155,8 +168,7 @@ private:
   /// @brief get the value of the variant; a wrapper around @link std::get
   /// @endlink
   template <class Ty, class... MyTypes>
-  friend inline auto get(const Variant<MyTypes...> &v)
-      -> decltype(auto);
+  friend inline auto get(const Variant<MyTypes...> &v) -> decltype(auto);
 };
 /// @brief check if the variant holds a specific type;
 ///  a wrapper around @link std::holds_alternative @endlink

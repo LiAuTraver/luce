@@ -15,10 +15,9 @@
 namespace accat::luce {
 class ExecutionContext : public auxilia::Printable<ExecutionContext> {
 public:
-  static auto &InitializeContext(const ArgumentLoader &) {
-    static ExecutionContext ctx;
+  void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)
-    if (auto logFile = argument::log.value; !logFile.empty()) {
+    if (auto logFile = argument::program::log.value; !logFile.empty()) {
       spdlog::info("log file: {}", std::filesystem::absolute(logFile));
       auto console_sink =
           std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -29,9 +28,20 @@ public:
       console_sink->set_pattern("[%^%l%$] %v");
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(
           spdlog::logger{"luce", {console_sink, file_sink}}));
-    } else {
-      dbg(info, "no log file, only write to stdout")
+      return;
     }
+    dbg(info, "no log file, only write to stdout")
+  }
+  static auto &InitializeContext(const ArgumentLoader &) {
+    static ExecutionContext ctx;
+    ctx.initLog();
+    defer {
+      // just for testing purposes for argument parsing
+      if (argument::program::testing.value) {
+        spdlog::info("Testing mode enabled, exiting immediately");
+        std::exit(EXIT_SUCCESS);
+      }
+    };
     return ctx;
   }
 

@@ -19,7 +19,8 @@ private:
 #endif
 public:
   using polymorphic_allocator_t = accat::auxilia::MemoryPool;
-  inline AC_CONSTEXPR20 explicit init(int *argc, char ***argv) {
+  inline AC_CONSTEXPR20 explicit init(const int *const argc,
+                                      const char *const *const *const argv) {
     if constexpr (is_debug) {
       if (!is_command_present(argc, argv, "-l", "--log")) {
         add_command(argc, argv, "--log=luce.log");
@@ -37,7 +38,9 @@ public:
   std::pmr::vector<std::string_view> args;
 
 private:
-  void add_command(int *&argc, char ***&argv, const std::string_view &command) {
+  void add_command(const int *const &argc,
+                   const char *const *const *const &argv,
+                   const std::string_view &command) {
     auto stack_allocator = polymorphic_allocator_t::FromSize(
         (*argc + 2) * sizeof(std::string_view));
     args = std::pmr::vector<std::string_view>{&stack_allocator};

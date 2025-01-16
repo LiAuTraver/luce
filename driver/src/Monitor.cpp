@@ -25,7 +25,9 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
                  fmt::join(isa::signal::trap, ""));
     // currently the sender here was surely a CPU, so we cast it
     auto cpu = static_cast<CentralProcessingUnit *>(sender);
-    defer { cpu->detach_context(); };
+    defer {
+      cpu->detach_context();
+    };
     // find the task and mark it as terminated
     if (process.id() != cpu->task_id()) {
       spdlog::error(
@@ -45,9 +47,22 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
   }
   return {};
 }
+auxilia::Status Monitor::run() {
+  precondition(process.state == Task::State::kNew,
+               "No program loaded or the program has already running")
+  cpus.attach_context(process.context(), process.id());
+  while (process.state != Task::State::kTerminated) {
+    if (auto res = cpus.execute_shuttle(); !res) {
+      return res;
+    }
+  }
+  return {};
+}
 auxilia::Status Monitor::REPL() {
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
+
+  cpus.attach_context(process.context(), process.id());
 
   fmt::println("{}", message::repl::Welcome);
 
@@ -160,9 +175,9 @@ auxilia::Status Monitor::execute_n(const size_t steps) {
   return _do_execute_n_unchecked(steps);
 }
 auxilia::Status
-Monitor::_do_run_new_task_unchecked(const std::span<const std::byte> bytes,
-                                    paddr_t start_addr,
-                                    paddr_t block_size) {
+Monitor::_do_register_task_unchecked(const std::span<const std::byte> bytes,
+                                     const paddr_t start_addr,
+                                     const paddr_t block_size) {
   return_if_not(memory.load_program(bytes, start_addr, block_size))
 
   process = Task(this);
@@ -182,7 +197,6 @@ Monitor::_do_run_new_task_unchecked(const std::span<const std::byte> bytes,
            .heap_break = start_addr + block_size,
            .heap = {}},
       .mapped_regions = {}}; // currently ignore mapped regions
-  cpus.attach_context(process.context(), process.id());
   return {};
 }
 } // namespace accat::luce

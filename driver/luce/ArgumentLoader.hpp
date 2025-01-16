@@ -4,7 +4,6 @@
 #include <vector>
 #include <span>
 #include "Argument.hpp"
-#include "accat/auxilia/details/macros.hpp"
 
 /// @brief forward declaration, reduce compile time
 namespace argparse {
@@ -21,11 +20,15 @@ public:
   ~ArgumentLoader();
 
 public:
-  ArgumentLoader &load_arguments();
+  ArgumentLoader &load_arguments(std::span<argument::Argument *>);
   auxilia::Status parse_arguments(std::span<const std::string_view>);
   auto get(this auto &&self, auto &&...args) {
-    return self->program.template get<decltype(args)...>(
+    return self.program->template get<decltype(args)...>(
         std::forward<decltype(args)>(args)...);
+  }
+  auto operator->() noexcept {
+    precondition(program, "program is nullptr");
+    return program;
   }
 
 private:

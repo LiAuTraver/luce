@@ -1,12 +1,16 @@
 {
   "version": "0.2.0",
-  "configurations": [  
+  "configurations": [
     {
       "name": "debug current target",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${command:cmake.launchTargetPath}",
-      "args": [],
+      "args": [
+        // "--testing",
+        "--log",
+        "${workspaceFolder}/luce.log"
+      ],
       "stopAtEntry": false,
       "cwd": "${command:cmake.launchTargetDirectory}",
       "environment": [],

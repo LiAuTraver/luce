@@ -3,6 +3,7 @@
 #include <fmt/ranges.h>
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/format.hpp>
+#include <luce/config.hpp>
 #include <bit>
 #include <cstddef>
 #include <span>
@@ -20,22 +21,23 @@ public:
 public:
   auto to_string(const auxilia::FormatPolicy &format_policy =
                      auxilia::FormatPolicy::kDefault) const -> string_type {
-    return fmt::format("[Image: size = {}, endianess = {}, bytes = {}]",
-                       binary_data_.size(),
-                       is_little_endian_ ? "little" : "big",
-                       raw_string(format_policy));
+    return fmt::format(
+        "[Image: size = {size}, endianess = {endianess}, bytes = {bytes}]",
+        "size"_a = binary_data_.size(),
+        "endianess"_a = is_little_endian_ ? "little" : "big",
+        "bytes"_a = raw_string(format_policy));
   }
-  string_type raw_string(const auxilia::FormatPolicy format_policy =
-                             auxilia::FormatPolicy::kDetailed) const {
+  auto raw_string(const auxilia::FormatPolicy format_policy =
+                      auxilia::FormatPolicy::kDetailed) const -> string_type {
     auto isDetailed = format_policy == auxilia::FormatPolicy::kDetailed;
     auto isTrivialImage = binary_data_.size() < 20;
 
-    return fmt::format("{:#04x}",
-                       fmt::join(isTrivialImage ? binary_data_
-                                 : isDetailed
-                                     ? binary_data_
-                                     : std::span(binary_data_).first(20),
-                                 " "));
+    return fmt::format("{rawStr:#04x}",
+                       "rawStr"_a =
+                           fmt::join(isTrivialImage || isDetailed
+                                         ? binary_data_
+                                         : std::span(binary_data_).first(20),
+                                     " "));
   }
   bool is_little_endian() const noexcept { return is_little_endian_; }
   auto bytes_view() const noexcept -> std::span<const std::byte> {

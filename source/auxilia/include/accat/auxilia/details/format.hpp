@@ -58,8 +58,8 @@ void println(FILE *f, const auto &, std::format_string<T...> fmt, T &&...args) {
 namespace accat::auxilia {
 template <Variantable... Ts> class Variant;
 enum class FormatPolicy : uint8_t;
-template <typename Derived> class Printable;
-template <typename Derived> class Viewable;
+template <typename Derived> struct Printable;
+template <typename Derived> struct Viewable;
 template <typename Ty>
   requires std::is_arithmetic_v<std::remove_cvref_t<Ty>>
 bool is_integer(Ty &&value) noexcept {
@@ -78,7 +78,7 @@ enum class FormatPolicy : uint8_t {
 /// @brief A class that represents a printable object; can be directly
 /// printed via `std::cout` or `fmt::print`.
 /// @note use public inheritance to make fmt::print work.
-template <typename Derived> class AC_NOVTABLE Printable {
+template <typename Derived> struct AC_NOVTABLE Printable {
 public:
   using string_type = string;
 
@@ -95,8 +95,7 @@ protected:
 private:
   [[nodiscard]] auto
   _to_string(const FormatPolicy &format_policy = FormatPolicy::kDefault) const
-      -> string_type
-  {
+      -> string_type {
     return static_cast<const Derived *>(this)->to_string(format_policy);
   }
 
@@ -114,7 +113,7 @@ private:
 };
 
 /// @interface Viewable
-template <typename Derived> class AC_NOVTABLE Viewable {
+template <typename Derived> struct AC_NOVTABLE Viewable {
 public:
   using string_view_type = std::string_view;
 

@@ -42,7 +42,6 @@ import std;
 #  include <ranges>
 #  include <source_location>
 #  include <sstream>
-#  include <stacktrace>
 #  include <stdexcept>
 #  include <string>
 #  include <string_view>

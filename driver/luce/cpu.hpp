@@ -88,15 +88,6 @@ public:
   auxilia::Status execute_shuttle() {
     if (cpu.is_vacant()) {
       if (auto res = cpu.execute(); !res) {
-        // if (res.code() == auxilia::Status::Code::kReturning) {
-        //   if (event::to_string_view(Event::kTaskFinished) == res.message()) {
-        //     spdlog::info("Hit good ol' deadbeef, program finished!");
-        //     return {};
-        //   }
-        //   spdlog::error("Unknown event: {}", res.message());
-        //   return res;
-        // }
-        // error, return as is
         return res;
       }
     }

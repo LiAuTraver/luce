@@ -16,7 +16,7 @@ namespace accat::auxilia::detail {
 template <typename Ty>
   requires std::is_integral_v<Ty>
 #ifdef __SIZEOF_INT128__
-  || std::is_same_v<Ty, __uint128_t>
+           || std::is_same_v<Ty, __uint128_t>
 #endif
 struct _random_integer_generator {
   /**
@@ -40,17 +40,17 @@ struct _random_integer_generator {
    * @return A random integer of type Ty within the specified range.
    * @pre min must be less than max.
    */
-  inline Ty operator()(Ty min, Ty max) const;
+  inline Ty operator()(Ty (min), Ty (max)) const;
 };
 
 template <typename Ty>
   requires std::is_integral_v<Ty>
 #ifdef __SIZEOF_INT128__
-  || std::is_same_v<Ty, __uint128_t>
+           || std::is_same_v<Ty, __uint128_t>
 #endif
 inline Ty _random_integer_generator<Ty>::operator()() const {
-  static std::uniform_int_distribution<Ty> dist(std::numeric_limits<Ty>::min(),
-                                                std::numeric_limits<Ty>::max());
+  static std::uniform_int_distribution<Ty> dist(
+      (std::numeric_limits<Ty>::min)(), (std::numeric_limits<Ty>::max)());
   static std::random_device rd;
   static std::mt19937 gen(rd());
   return dist(gen);
@@ -59,18 +59,17 @@ inline Ty _random_integer_generator<Ty>::operator()() const {
 template <typename Ty>
   requires std::is_integral_v<Ty>
 #ifdef __SIZEOF_INT128__
-  || std::is_same_v<Ty, __uint128_t>
+           || std::is_same_v<Ty, __uint128_t>
 #endif
-inline Ty _random_integer_generator<Ty>::operator()(const Ty min,
-                                                    const Ty max) const {
-  contract_assert(min < max, "min must be less than max");
-  return (((*this).operator()()) % (max - min)) + min;
+inline Ty _random_integer_generator<Ty>::operator()(const Ty (min),
+                                                    const Ty (max)) const {
+  contract_assert((min) < (max), "min must be less than max");
+  return (((*this).operator()()) % ((max) - (min))) + (min);
 }
 /// @brief A random integer generator for 8-bit unsigned integers.
 /// @relates _random_integer_generator
 /// @note uint8_t cannot be used for <random> distributions.
-template<>
-struct _random_integer_generator<uint8_t> {
+template <> struct _random_integer_generator<uint8_t> {
   /// @note for more precise random number, here uses 256 instead of 255
   inline uint8_t operator()() const {
     static std::uniform_int_distribution<uint16_t> dist(0, 256);
@@ -79,9 +78,9 @@ struct _random_integer_generator<uint8_t> {
     return static_cast<uint8_t>(dist(gen));
   }
 
-  inline uint8_t operator()(const uint8_t min, const uint8_t max) const {
-    contract_assert(min < max, "min must be less than max");
-    return (((*this)() % (max - min)) + min);
+  inline uint8_t operator()(const uint8_t (min), const uint8_t (max)) const {
+    contract_assert((min) < (max), "min must be less than max");
+    return (((*this)() % ((max) - (min))) + (min));
   }
 };
 } // namespace accat::auxilia::detail

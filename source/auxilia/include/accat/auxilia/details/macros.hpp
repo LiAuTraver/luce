@@ -2,6 +2,10 @@
 
 #include "./variadic-inl.h"
 
+#if defined(min) || defined(max)
+#  error "Bad user. Bad code."
+#endif
+
 #if defined(AC_CPP_DEBUG)
 /// @def AC_UTILS_DEBUG_ENABLED
 /// @note only defined in debug mode; never define it when submitting
@@ -64,8 +68,9 @@
 
 /// @note GNU on Windows seems failed to perform linking for
 /// `stacktrace` and `spdlog`.
-#if defined(AC_UTILS_DEBUG_ENABLED)
-#  if __has_include(<fmt/format.h>)
+#if defined(AC_UTILS_DEBUG_ENABLED) && defined(_WIN32)
+#  include <stacktrace>
+#  if __has_include(<fmt/core.h>)
 #    define AC_UTILS_STACKTRACE                                                \
       (::std::format("\n{}", ::std::stacktrace::current()))
 #  else
@@ -148,26 +153,68 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #endif
 #ifdef __clang__
 #  define AC_FORCEINLINE [[clang::always_inline]]
-#  define AC_UTILS_DEBUG_BREAK __builtin_debugtrap();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __PRETTY_FUNCTION__
 // Visual Studio's intellisense cannot recognize `elifdef` yet.
 // Use the old, good `#elif` here.
 #elif defined(__GNUC__)
 #  define AC_FORCEINLINE [[gnu::always_inline]]
-#  define AC_UTILS_DEBUG_BREAK __builtin_trap();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
 #  define AC_FORCEINLINE [[msvc::forceinline]]
-#  define AC_UTILS_DEBUG_BREAK __debugbreak();
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __FUNCSIG__
 #  pragma warning(disable : 4716) // must return a value
 #  pragma warning(disable : 4530) // /EHsc
 #else
 #  include <csignal>
 #  define AC_FORCEINLINE inline
-#  define AC_UTILS_DEBUG_BREAK raise(SIGTRAP);
 #  define AC_UTILS_DEBUG_FUNCTION_NAME __func__
 #endif
+#ifdef __clang__
+#  define AC_UTILS_DEBUG_BREAK_IMPL_ __builtin_debugtrap();
+#elif defined(__GNUC__)
+#  define AC_UTILS_DEBUG_BREAK_IMPL_ __builtin_trap();
+#elif defined(_MSC_VER)
+#  define AC_UTILS_DEBUG_BREAK_IMPL_ __debugbreak();
+#else
+#  define AC_UTILS_DEBUG_BREAK_IMPL_ raise(SIGTRAP);
+#endif
+
+extern "C"
+#ifdef _WIN32
+    __declspec(dllimport) int __stdcall IsDebuggerPresent();
+#elif defined(__linux__)
+#  include <sys/ptrace.h>
+#  include <errno.h>
+    static inline bool
+    IsDebuggerPresent() noexcept {
+  if (ptrace(PTRACE_TRACEME, 0, 0, 0) == -1) {
+    if (errno == EPERM) {
+      return true; // debugger is attached
+    } else {
+      // error happened
+      return false;
+    }
+  }
+  return false; // no debugger
+}
+#else
+#  warning "IsDebuggerPresent() is not implemented for this platform."
+    static inline bool
+    IsDebuggerPresent() noexcept {
+  return false;
+}
+#endif
+
+#define AC_UTILS_DEBUG_BREAK                                                   \
+  do {                                                                         \
+    if (::IsDebuggerPresent()) {                                               \
+      AC_UTILS_DEBUG_BREAK_IMPL_                                               \
+    } else {                                                                   \
+      fprintf(stderr,                                                          \
+              "Fatal: program exits abnormally. please consult debugger.\n");  \
+      ::std::abort();                                                          \
+    }                                                                          \
+  } while (false);
 #ifdef AC_UTILS_DEBUG_ENABLED
 #  define AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                      \
     switch (0)                                                                 \
@@ -177,19 +224,6 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  define AC_UTILS_FUNCTION_NAME AC_UTILS_DEBUG_FUNCTION_NAME
 #  define AC_UTILS_LINE (::std::source_location::current().line())
 #  define AC_UTILS_COLUMN (::std::source_location::current().column())
-#  define AC_UTILS_RUNTIME_DEBUG_RAISE AC_UTILS_DEBUG_BREAK
-#  define AC_UTILS_PRINT_ERROR_MSG_IMPL_SINGLE(x)                              \
-    spdlog::critical("in file {0}, line {2} column {3},\n"                     \
-                     "           function {1},\n"                              \
-                     "           Constraints not satisfied:\n"                 \
-                     "           Expect `{4}` to be true.\n"                   \
-                     "Stacktrace:{5}",                                         \
-                     AC_UTILS_FILENAME,                                        \
-                     AC_UTILS_FUNCTION_NAME,                                   \
-                     AC_UTILS_LINE,                                            \
-                     AC_UTILS_COLUMN,                                          \
-                     #x,                                                       \
-                     AC_UTILS_STACKTRACE);
 #  define AC_UTILS_PRINT_ERROR_MSG_IMPL_WITH_MSG(x, _msg_)                     \
     spdlog::critical("in file {0}, line {2} column {3},\n"                     \
                      "           function {1},\n"                              \
@@ -204,56 +238,25 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
                      #x,                                                       \
                      (_msg_),                                                  \
                      AC_UTILS_STACKTRACE);
-#  define AC_UTILS_PRINT_ERROR_MSG_IMPL_1(x)                                   \
-    AC_UTILS_PRINT_ERROR_MSG_IMPL_SINGLE(x)
-#  define AC_UTILS_PRINT_ERROR_MSG_IMPL_2(x, y)                                \
-    AC_UTILS_PRINT_ERROR_MSG_IMPL_WITH_MSG(x, y)
-#  define AC_UTILS_PRINT_ERROR_MSG(...)                                        \
-    do {                                                                       \
-      AC_UTILS_PRINT_ERROR_MSG_IMPL(__VA_ARGS__ __VA_OPT__(, ) 2,              \
-                                    1)(__VA_ARGS__);                           \
-      AC_UTILS_RUNTIME_DEBUG_RAISE                                             \
-    } while (false);
-#  define AC_UTILS_PRINT_ERROR_MSG_IMPL(_1, _2, N, ...)                        \
-    AC_UTILS_PRINT_ERROR_MSG_IMPL_##N
-#  define AC_UTILS_RUNTIME_REQUIRE_IMPL_SATISFY(x)                             \
+
+#  define AC_UTILS_RUNTIME_REQUIRE_IMPL_WITH_MSG(_cond_, _msg_)                \
     AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                            \
-    if ((x))                                                                   \
+    if ((_cond_))                                                              \
       ;                                                                        \
     else {                                                                     \
-      AC_UTILS_PRINT_ERROR_MSG(x)                                              \
-    } //! <- do NOT add entraneous semicolon here, it'll confuse the
-      //! preprocessor sometimes.
-#  define AC_UTILS_RUNTIME_REQUIRE_IMPL_WITH_MSG(x, _msg_)                     \
-    AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                            \
-    if ((x))                                                                   \
-      ;                                                                        \
-    else {                                                                     \
-      AC_UTILS_PRINT_ERROR_MSG(x, _msg_)                                       \
+      AC_UTILS_PRINT_ERROR_MSG_IMPL_WITH_MSG(_cond_, _msg_)                    \
+      AC_UTILS_DEBUG_BREAK                                                     \
     }
 
-#  define AC_UTILS_RUNTIME_REQUIRE_IMPL_1(_x_)                                 \
-    AC_UTILS_RUNTIME_REQUIRE_IMPL_SATISFY(_x_)
-#  define AC_UTILS_RUNTIME_REQUIRE_IMPL_2(_x_, _y_)                            \
-    AC_UTILS_RUNTIME_REQUIRE_IMPL_WITH_MSG(_x_, _y_)
-#  define AC_UTILS_RUNTIME_REQUIRE_IMPL(...)                                   \
-    AC_UTILS_VFUNC(AC_UTILS_RUNTIME_REQUIRE_IMPL __VA_OPT__(, ) __VA_ARGS__)
+#  define AC_UTILS_RUNTIME_REQUIRE_IMPL(_cond_, ...)                           \
+    AC_UTILS_RUNTIME_REQUIRE_IMPL_WITH_MSG(                                    \
+        _cond_ __VA_OPT__(, fmt::format(__VA_ARGS__)))
 
-#  ifdef AC_UTILS_USE_BOOST_CONTRACT
-#    define AC_UTILS_RUNTIME_ASSERT(...)                                       \
-      AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__);
-#    define AC_UTILS_PRECONDITION(...)                                         \
-      AC_UTILS_VFUNC(AC_UTILS_PRECONDITION_IMPL __VA_OPT__(, ) __VA_ARGS__)
-#    define AC_UTILS_POSTCONDITION(...)                                        \
-      AC_UTILS_VFUNC(AC_UTILS_POSTCONDITION_IMPL __VA_OPT__(, ) __VA_ARGS__)
-#  else
-#    define AC_UTILS_RUNTIME_ASSERT(_arg_, ...)                                \
-      AC_UTILS_RUNTIME_REQUIRE_IMPL(_arg_ __VA_OPT__(, ) __VA_ARGS__);
-#    define AC_UTILS_PRECONDITION(...)                                         \
-      AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
-#    define AC_UTILS_POSTCONDITION(...)                                        \
-      AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
-#  endif
+#  define AC_UTILS_RUNTIME_ASSERT(_cond_, ...)                                 \
+    AC_UTILS_RUNTIME_REQUIRE_IMPL(_cond_ __VA_OPT__(, ) __VA_ARGS__);
+
+#  define AC_UTILS_PRECONDITION(...) AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
+#  define AC_UTILS_POSTCONDITION(...) AC_UTILS_RUNTIME_REQUIRE_IMPL(__VA_ARGS__)
 #  define AC_UTILS_NOEXCEPT_IF(...) // nothing
 #  define AC_UTILS_NOEXCEPT         // nothing
 #else
@@ -282,10 +285,7 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
     AC_UTILS_DEBUG_LOGGING_SETUP(_exec_, _log_level_, "Debug mode enabled")    \
     return nullptr;                                                            \
   }();
-// ::std::cout << ::std::unitbuf;                                             \
-// ::std::cerr << ::std::unitbuf;                                             \
-// ::std::cout << ::std::flush;                                               \
-// ::std::cerr << ::std::flush;                                               \
+
 // clang-format off
 #if (defined(_MSVC_TRADITIONAL) && _MSVC_TRADITIONAL) && !defined(__clang__)
 /// @brief MSVC traditional preprocessor
@@ -326,9 +326,8 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  define AC_UTILS_TODO_(...)                                                  \
     AC_UTILS_DEBUG_LOGGING(critical, "TODO: " #__VA_ARGS__);
 #else
-#  include <iostream>
 #  define AC_UTILS_TODO_(...)                                                  \
-    ::std::cerr << std::format("TODO: " #__VA_ARGS__) << ::std::endl;          \
+    fprintf(stderr, "TODO: " #__VA_ARGS__ "\n");                               \
     AC_UTILS_DEBUG_BREAK
 #endif
 /// @def TODO mimic from kotlin's `TODO` function, which throws an
@@ -341,6 +340,12 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #  pragma warning(disable : 4244) // conversion from 'int' to 'char' warning
 #else
 #  define AC_CONSTEXPR20 constexpr
+#endif
+
+#if __cpp_constexpr >= 202300L
+#  define AC_CONSTEXPR23 constexpr
+#else
+#  define AC_CONSTEXPR23
 #endif
 
 #ifdef _WIN32
@@ -362,7 +367,9 @@ struct _utils_defer_helper_struct_ {};
 template <class Fun_> struct _utils_deferrer_ {
   Fun_ f_;
   inline constexpr _utils_deferrer_(Fun_ f) : f_(f) {}
-  inline constexpr ~_utils_deferrer_() { f_(); }
+  inline constexpr ~_utils_deferrer_() {
+    f_();
+  }
 };
 EXPORT_AUXILIA
 template <class Fun_>

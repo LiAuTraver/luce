@@ -9,8 +9,8 @@ extern "C" {
 #pragma warning(disable : 6011)
 #pragma warning(disable : 6387)
 #ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 // ReSharper disable All
 static inline char **new_argv = nullptr;
@@ -22,7 +22,7 @@ static inline void cleanup_for_new_args() {
   free(new_argv);
 }
 static bool is_command_present(const int *const argc,
-                               char ***argv,
+                               const char *const *const *const argv,
                                const char *const short_cmd,
                                const char *const long_cmd) {
   for (int i = 0; i < *argc; i++)
@@ -51,7 +51,7 @@ static void add_command_if_not_present(int *const argc,
   atexit(cleanup_for_new_args);
 }
 #ifdef __clang__
-#pragma clang diagnostic pop
+#  pragma clang diagnostic pop
 #endif
 #pragma warning(pop)
 #ifdef __cplusplus

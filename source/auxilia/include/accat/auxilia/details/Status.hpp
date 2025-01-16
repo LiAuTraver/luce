@@ -248,7 +248,7 @@ public:
   kLexError = 23,
 
   /// kMovedFrom indicates that the status has been moved from.
-  kMovedFrom = std::numeric_limits<uint8_t>::max()
+  kMovedFrom = (std::numeric_limits<uint8_t>::max)()
   };
   // clang-format on
 
@@ -430,7 +430,8 @@ public:
 public:
   [[nodiscard]]
   inline value_type value(this auto &&self) {
-    contract_assert(self.ok() or self.code() == Status::kReturning)
+    contract_assert(self.ok() or self.code() == Status::kReturning,
+                    "Cannot dereference a status that is not OK.");
     return self.my_value;
   }
   [[nodiscard]]

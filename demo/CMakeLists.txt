@@ -2,7 +2,7 @@ project(demo
   LANGUAGES C CXX # C needed for LLVM
   DESCRIPTION "playground, for testing purposes"
 )
-
+find_package(concurrencpp CONFIG REQUIRED)
 include(${LUCE_PROJECT_ROOT_DIR}/cmake/folders.cmake)
 include(${LUCE_PROJECT_ROOT_DIR}/cmake/dependencies.cmake)
 include(${LUCE_PROJECT_ROOT_DIR}/cmake/llvm.cmake)
@@ -32,6 +32,7 @@ add_executable(demo3
 )
 target_link_libraries(demo3 PUBLIC
   external_deps
+  concurrencpp::concurrencpp
 )
 target_precompile_headers(demo3 PUBLIC
   ${LUCE_EXTERNAL_DEPS_PCH}

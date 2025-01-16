@@ -15,8 +15,11 @@
 #include "Disassembler.hpp"
 
 #include <accat/auxilia/auxilia.hpp>
+#include <cstddef>
 #include <iostream>
 #include <ranges>
+#include <span>
+#include <type_traits>
 #include <utility>
 namespace accat::luce {
 namespace message::repl {
@@ -57,35 +60,42 @@ public:
 
 public:
   virtual auxilia::Status notify(Component *sender, Event event) override;
+  auxilia::Status run();
   auxilia::Status REPL();
   auxilia::Status shuttle();
   auxilia::Status inspect(std::string_view);
   auxilia::StatusOr<auxilia::string> read();
   auxilia::Status execute_n(size_t);
-  auto run_new_task(const std::ranges::range auto &, paddr_t, paddr_t)
+  auto register_task(const std::ranges::range auto &, paddr_t, paddr_t)
       -> auxilia::Status;
 
 public:
-  auto fetch_from_main_memory(vaddr_t addr, size_t size)
+  auto fetch_from_main_memory(const vaddr_t addr, const size_t size)
       -> auxilia::StatusOr<std::span<const std::byte>> {
     return memory.read_n(addr, size);
   }
 
 public:
-  // auxilia::Status register_process(Task &&task) {
-  //   process = std::move(task);
-  //   return this->set_as_parent(&process);
-  // }
 private:
-  auxilia::Status
-      _do_run_new_task_unchecked(std::span<const std::byte>, paddr_t, paddr_t);
-  auxilia::Status _do_execute_n_unchecked(size_t);
+  auto _do_register_task_unchecked(std::span<const std::byte>, paddr_t, paddr_t)
+      -> auxilia::Status;
+  auto _do_execute_n_unchecked(size_t) -> auxilia::Status;
 };
-auxilia::Status Monitor::run_new_task(const std::ranges::range auto &program,
-                                      const paddr_t start_addr,
-                                      paddr_t block_size) {
-  auto dataSpan = std::span{program};
-  auto bytes = std::as_bytes(dataSpan);
+auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
+                                       const paddr_t start_addr,
+                                       paddr_t block_size) {
+  std::span<const std::byte> bytes;
+  if constexpr (std::same_as<std::remove_cvref_t<decltype(program)>,
+                             std::span<std::byte>>) {
+    bytes = program;
+  } else if constexpr (std::same_as<
+                           std::ranges::range_value_t<decltype(program)>,
+                           const std::byte>) {
+    bytes = std::span{program};
+  } else {
+    auto dataSpan = std::span{program};
+    bytes = std::as_bytes(dataSpan);
+  }
   block_size = std::min(block_size, isa::physical_memory_size);
 
   contract_assert(bytes.size() > 0 && bytes.size() <= block_size,
@@ -93,7 +103,7 @@ auxilia::Status Monitor::run_new_task(const std::ranges::range auto &program,
   contract_assert(start_addr + bytes.size() <= isa::physical_memory_end,
                   "Out of memory bounds")
   // add `this` for intellisenese (template intellisense was too poor)
-  return this->_do_run_new_task_unchecked(bytes, start_addr, block_size);
+  return this->_do_register_task_unchecked(bytes, start_addr, block_size);
 }
 } // namespace accat::luce
 /*utils::Status Monitor::initDisassembler(CtxRef) {

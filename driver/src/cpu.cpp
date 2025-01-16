@@ -1,10 +1,16 @@
-﻿#include "deps.hh"
+﻿#include "accat/auxilia/details/views.hpp"
+#include "deps.hh"
 
 #include "luce/cpu.hpp"
 #include <spdlog/spdlog.h>
+#include <algorithm>
+#include <cstddef>
+#include <ranges>
+#include <span>
 #include <type_traits>
 #include "luce/Monitor.hpp"
 #include "luce/Pattern.hpp"
+#include "luce/isa/riscv32/isa.hpp"
 namespace accat::luce {
 CentralProcessingUnit::CentralProcessingUnit(Mediator *parent)
     : Component(parent) {
@@ -28,7 +34,9 @@ auxilia::Status CentralProcessingUnit::execute() {
 
   auto executeShuttle = [&]() {
     state_ = State::kRunning;
-    defer { state_ = State::kVacant; };
+    defer {
+      state_ = State::kVacant;
+    };
     return shuttle();
   };
   auto [res, elapsed] = cpu_timer_.measure(executeShuttle);
@@ -46,9 +54,13 @@ auxilia::Status CentralProcessingUnit::shuttle() {
     context_->instruction_register[i] = bytes[i];
   }
   spdlog::info("Fetched instruction: {:#04x}",
-               fmt::join(context_->instruction_register, " "));
+               fmt::join(context_->instruction_register |
+                             auxilia::ranges::views::invert_endianness,
+                         " "));
   // TODO()
-  if (context_->instruction_register == isa::signal::trap) {
+  if (std::ranges::equal(context_->instruction_register,
+                         isa::signal::trap |
+                             auxilia::ranges::views::invert_endianness)) {
     this->send(Event::kTaskFinished);
   }
   return {};

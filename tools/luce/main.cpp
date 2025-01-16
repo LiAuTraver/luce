@@ -7,9 +7,11 @@
 
 #include "init-inl.hpp"
 
-int main(int argc, char **argv, [[maybe_unused]] char **envp) {
-  accat::luce::init X{&argc, &argv};
+int main(const int argc,
+         const char *const *const argv,
+         [[maybe_unused]] const char *const *const envp) {
+  accat::luce::init _{&argc, &argv};
 
   // argument modernization done. now invoke the main function.
-  return accat::luce::luce_main({X.args});
+  return accat::luce::luce_main({_.args});
 }

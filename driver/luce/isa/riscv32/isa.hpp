@@ -10,6 +10,7 @@ using physical_address_t = std::uint32_t;
 using minimal_addressable_unit_t = std::uint8_t;
 using instruction_size_t = std::uint32_t;
 inline static constexpr physical_address_t physical_base_address = 0x80000000;
+inline static constexpr virtual_address_t virtual_base_address = 0x80000000;
 // inline static constexpr physical_address_t physical_memory_size = 0x8000000;
 // // 128MB
 inline static constexpr physical_address_t physical_memory_size =

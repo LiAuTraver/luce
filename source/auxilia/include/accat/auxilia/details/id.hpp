@@ -19,7 +19,8 @@ inline auto get() {
   do {
     id = details::_current_id.fetch_add(1);
   } while (!details::_do_insert(id).second &&
-           details::_active_ids.size() != std::numeric_limits<uint32_t>::max());
+           details::_active_ids.size() !=
+               (std::numeric_limits<uint32_t>::max)());
 
   return id;
 }

@@ -8,7 +8,15 @@ namespace accat::auxilia {
   std::abort();
 }
 inline void *dynamic_alloc(const size_t size) {
-  if (auto ptr = _malloca(size))
+  if (auto ptr =
+#if defined(_malloca)
+          _malloca(size)
+#elif defined(alloca)
+          alloca(size)
+#else
+          malloc(size)
+#endif
+  )
     return ptr;
   alloc_failed();
 }
