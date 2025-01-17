@@ -64,10 +64,14 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		tools\assets\assets.vcxitems*{0750eab4-6807-4edb-8c15-296ed1ffa662}*SharedItemsImports = 9
 		deps.vcxitems*{0fefe1f8-916e-4181-a1a6-b277bd16062a}*SharedItemsImports = 4
+		source\auxilia\auxilia.vcxitems*{0fefe1f8-916e-4181-a1a6-b277bd16062a}*SharedItemsImports = 4
 		deps.vcxitems*{55f3c414-245a-49bf-bc4c-3112750d2452}*SharedItemsImports = 4
+		source\auxilia\auxilia.vcxitems*{55f3c414-245a-49bf-bc4c-3112750d2452}*SharedItemsImports = 4
 		deps.vcxitems*{5712fbee-2853-4e85-87a5-7d5ffea544f8}*SharedItemsImports = 4
+		source\auxilia\auxilia.vcxitems*{5712fbee-2853-4e85-87a5-7d5ffea544f8}*SharedItemsImports = 4
 		source\auxilia\auxilia.vcxitems*{5ae05cbd-1d27-41c2-9ab0-accf40a1e84c}*SharedItemsImports = 9
 		deps.vcxitems*{b53cd05d-3675-4eb0-801f-4a082ad069e5}*SharedItemsImports = 4
+		source\auxilia\auxilia.vcxitems*{b53cd05d-3675-4eb0-801f-4a082ad069e5}*SharedItemsImports = 4
 		deps.vcxitems*{ea3baa90-1518-4497-aae0-92c4aa95b172}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,4 @@
-﻿#include "accat/auxilia/details/format.hpp"
+﻿#include "accat/auxilia/details/views.hpp"
 #include "deps.hh"
 
 #include <fmt/color.h>
@@ -8,6 +8,7 @@
 #include <accat/auxilia/details/macros.hpp>
 #include <functional>
 #include <luce/Monitor.hpp>
+#include <string>
 #include <utility>
 
 namespace accat::luce {
@@ -22,8 +23,10 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
     spdlog::warn("nothing to do");
     break;
   case Event::kTaskFinished: {
-    spdlog::info("Hit good ol' {:x}, program finished!",
-                 fmt::join(isa::signal::trap, ""));
+    spdlog::info(
+        "Hit good ol' {:x}, program finished!",
+        fmt::join(isa::signal::trap | auxilia::ranges::views::invert_endianness,
+                  ""));
     // currently the sender here was surely a CPU, so we cast it
     auto cpu = static_cast<CentralProcessingUnit *>(sender);
     defer {
@@ -118,11 +121,15 @@ auxilia::Status Monitor::inspect(const std::string_view input) {
   return {};
 }
 auxilia::StatusOr<auxilia::string> Monitor::read() {
+  std::string input;
   for (;;) {
-    std::string input;
-    fmt::print(stdout, fg(cyan), "(luce) ");
+    std::string raw_input;
+    if (input.empty())
+      fmt::print(stdout, fg(cyan), "(luce) ");
+    else
+      fmt::print(stdout, fg(cyan), ">>> ");
 
-    if (!std::getline(std::cin, input)) {
+    if (!std::getline(std::cin, raw_input)) {
       if (std::cin.eof()) {
         fmt::println("\nGoodbye!");
         return {auxilia::ReturnMe("End of input")};
@@ -139,7 +146,7 @@ auxilia::StatusOr<auxilia::string> Monitor::read() {
     }
     // clang-format off
     // trim input
-    auto trimmed_input = input 
+    auto trimmed_input = raw_input 
         | std::ranges::views::drop_while(auxilia::isspacelike) 
         | std::ranges::views::reverse 
         | std::ranges::views::drop_while(auxilia::isspacelike) 
@@ -147,9 +154,17 @@ auxilia::StatusOr<auxilia::string> Monitor::read() {
         | std::ranges::to<std::string>()
     ;
     // clang-format on
-    if (trimmed_input.empty())
+    if (trimmed_input.empty() && input.empty())
       continue;
-    return {std::move(trimmed_input)};
+    else if (trimmed_input.starts_with('#'))
+      continue;
+    else if (trimmed_input.ends_with('\\')) {
+      trimmed_input.pop_back();
+      input += std::move(trimmed_input);
+      continue;
+    }
+    input += std::move(trimmed_input);
+    return {std::move(input)};
   }
 }
 auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {

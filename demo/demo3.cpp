@@ -155,7 +155,7 @@ public:
   /// @note not a shared resource, like a plain `future::get()`,
   /// which cannot be called multiple times
   auto get() {
-    precondition(handle_, "Generator::get() called twice");
+    precondition(handle_, "Generator::get() called twice")
 
     if (handle_) {
 
@@ -208,11 +208,11 @@ int main() {
     std::cout << i << " ";
   }
   std::cout << "\ntypeof myRange: " << typeid(myRange).name() << "\n"
-            << typeid(myRange).hash_code() << std::endl;
-  std::cout << std::endl;
+            << typeid(myRange).hash_code() << '\n';
+  std::cout << '\n';
 
   auto g = fibTask.get(); // shall not call it before the coroutine is done
-  std::cout << "fibTask.get(): " << g << std::endl;
+  std::cout << "fibTask.get(): " << g << '\n';
 
   return 0;
 }

@@ -1,6 +1,7 @@
 ﻿#include "deps.hh"
 
 #include "luce/cpu/cpu.hpp"
+#include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>
 #include <cstddef>
@@ -51,21 +52,20 @@ auxilia::Status CentralProcessingUnit::shuttle() {
     context_->instruction_register[i] = bytes[i];
   }
   // convert little-endian to big-endian for more human-readable output
-  spdlog::info("Fetched instruction: {:#04x}",
+  spdlog::info("Fetched instruction: {:#04x} (in big-endian: 0x{:02x})",
+               fmt::join(context_->instruction_register, " "),
                fmt::join(context_->instruction_register |
                              auxilia::ranges::views::invert_endianness,
-                         " "));
+                         ""));
   decode();
   return {};
 }
 auxilia::Status CentralProcessingUnit::decode() {
-    // TODO()
-  if (std::ranges::equal(context_->instruction_register,
-                         isa::signal::trap |
-                             auxilia::ranges::views::invert_endianness)) {
+  // TODO()
+  if (std::ranges::equal(context_->instruction_register, isa::signal::trap)) {
     this->send(Event::kTaskFinished);
   }
-  
+
   return {};
 }
 auxilia::StatusOr<std::span<const std::byte>> CentralProcessingUnit::fetch() {

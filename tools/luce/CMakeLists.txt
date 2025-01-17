@@ -10,7 +10,7 @@ add_executable(luce)
 target_sources(luce PUBLIC
   alter_args-inl.h
   init-inl.hpp
-  main.cpp
+  luce_emulator.cpp
 )
 target_link_libraries(luce PUBLIC
 

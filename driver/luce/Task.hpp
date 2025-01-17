@@ -182,9 +182,9 @@ public:
       address_space;
 
 private:
-  friend class accat::auxilia::
+  friend struct accat::auxilia::
       Property<Task, State, Task &, &Task::get_state, &Task::set_state>;
-  friend class accat::auxilia::Property<Task,
+  friend struct accat::auxilia::Property<Task,
                                         const AddressSpace &,
                                         Task &,
                                         &Task::get_address_space,

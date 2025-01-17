@@ -8,6 +8,8 @@
 #include "./riscv32/isa.hpp"
 #include "./host.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-const-variable"
 namespace accat::luce::isa {
 
 enum class instruction_set : std::uint8_t {
@@ -33,8 +35,7 @@ using namespace riscv32;
 namespace riscv64 {
 using virtual_address_t = std::uint64_t;
 using minimal_addressable_unit_t = std::uint8_t;
-using instruction_size_t =
-    std::uint32_t; // Fixed: RISC-V uses 32-bit instructions
+using instruction_size_t = std::uint32_t;
 inline static constexpr virtual_address_t physical_base_address = 0x80000000;
 inline static constexpr std::size_t general_purpose_register_count = 32;
 inline static constexpr std::size_t instruction_alignment = 4;
@@ -57,8 +58,7 @@ inline static constexpr bool has_floating_point = true;
 namespace arm64 {
 using virtual_address_t = std::uint64_t;
 using minimal_addressable_unit_t = std::uint8_t;
-using instruction_size_t =
-    std::uint32_t; // Fixed: ARM64 uses 32-bit instructions
+using instruction_size_t = std::uint32_t;
 inline static constexpr virtual_address_t physical_base_address =
     0xFFFF000000000000; // Typical AArch64 base
 inline static constexpr std::size_t general_purpose_register_count =
@@ -91,3 +91,4 @@ inline static constexpr std::size_t instruction_alignment = 1;
 inline static constexpr bool has_floating_point = true;
 } // namespace x64
 } // namespace accat::luce::isa
+#pragma clang diagnostic pop

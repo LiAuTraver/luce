@@ -78,7 +78,9 @@ void captsone_demo() {
   std::cout << std::endl;
   return;
 }
-// clang-format off
+AC_NO_SANITIZE_ADDRESS
+void llvm_mc_demo() {
+  // clang-format off
 llvm::ArrayRef<uint8_t> code = 
     {
     0x97, 0x02, 0x00, 0x00,
@@ -87,9 +89,7 @@ llvm::ArrayRef<uint8_t> code =
     0x73, 0x01, 0x10, 0x00,
     0xef, 0xbe, 0xad, 0xde,
     };
-// clang-format on
-AC_NO_SANITIZE_ADDRESS
-void llvm_mc_demo() {
+  // clang-format on
   llvm::InitializeAllTargetInfos();
   llvm::InitializeAllTargets();
   llvm::InitializeAllTargetMCs();
@@ -139,6 +139,15 @@ void llvm_mc_demo() {
       instruction_printer->printInst(&inst, addr, "", *sti, llvm::outs());
       llvm::outs() << "\n";
       addr += size;
+
+      auto opCode = inst.getOpcode();
+      const auto& desc = instruction_info->get(opCode);
+      auto name = instruction_info->getName(opCode);
+      llvm::outs() << "  Opcode: " << opCode << "\n";
+      llvm::outs() << "  Name: " << name << "\n";
+      llvm::outs() << "  Description: " << desc.TSFlags << "\n";
+      // here we can access more information about the instruction...
+      // TODO
     } else {
       llvm::errs() << "Failed to disassemble instruction at "
                    << llvm::format_hex(addr, 10) << "\n"

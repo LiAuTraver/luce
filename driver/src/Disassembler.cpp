@@ -20,11 +20,10 @@ Disassembler::Disassembler(Disassembler &&that) noexcept
   _do_move_impl(std::move(that));
 }
 Disassembler &Disassembler::operator=(Disassembler &&that) noexcept {
-  if (this != std::addressof(that)) {
-    Component::operator=(std::move(that));
-    _do_move_impl(std::move(that));
-  }
-  return *this;
+  if (this == std::addressof(that))
+    return *this;
+  Component::operator=(std::move(that));
+  return _do_move_impl(std::move(that));
 }
 Disassembler::Disassembler(Mediator *parent) : Component(parent) {
   llvm::InitializeAllTargetInfos();
@@ -54,7 +53,7 @@ auxilia::Status Disassembler::set_target(isa::instruction_set instructionSet) {
   instruction_printer = target->createMCInstPrinter(
       *triple, 0, *asm_info, *instruction_info, *register_info);
 
-  return auxilia::OkStatus();
+  return {};
 }
 Disassembler::~Disassembler() {
   delete triple;

@@ -324,7 +324,7 @@ public:
     return my_code;
   }
   [[nodiscard]]
-  std::underlying_type_t<Code> raw_code() const noexcept {
+  auto raw_code() const noexcept {
     return static_cast<std::underlying_type_t<Code>>(my_code);
   }
   [[nodiscard]] string_view message() const { return my_message; }

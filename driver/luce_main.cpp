@@ -21,7 +21,7 @@
 #include "luce/isa/riscv32/isa.hpp"
 namespace accat::luce {
 LUCE_API int luce_main(const std::span<const std::string_view> args) {
-  int callback = 0;
+  auto callback = 0;
   constexpr auto defaultImagePath = R"(Z:/luce/data/image.bin)";
 
   auto program_arguments = argument::program::args();
@@ -31,21 +31,22 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
   if (auto res = program_options.parse_arguments(args); !res) {
     fmt::print(stderr, fmt::fg(fmt::color::fire_brick), "Error: ");
     fmt::println(stderr, "{err_msg}", "err_msg"_a = res.message());
-    return res.raw_code();
+    callback = res.raw_code();
+    return callback;
   }
+  auto context = auxilia::async(std::bind(&ExecutionContext::InitializeContext,
+                                          std::ref(program_options)));
 
   auto imageData = auxilia::async(auxilia::read_raw_bytes<>,
                                   argument::program::image.value.empty()
                                       ? defaultImagePath
                                       : argument::program::image.value);
 
-  auto context = auxilia::async(std::bind(&ExecutionContext::InitializeContext,
-                                          std::ref(program_options)));
-
   auto maybeBytes = imageData.get();
   if (!maybeBytes) {
     spdlog::error("Failed to read image: {}", maybeBytes.message());
-    return EXIT_FAILURE;
+    callback = EXIT_FAILURE;
+    return callback;
   }
 
   auto image = Image{*std::move(maybeBytes), std::endian::little};
@@ -55,7 +56,8 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
           image.bytes_view(), isa::virtual_base_address, 0x100);
       !res) {
     spdlog::error("Failed to load program: {}", res.message());
-    return EXIT_FAILURE;
+    callback = EXIT_FAILURE;
+    return callback;
   }
 
   if (argument::program::batch.value == true)
@@ -64,6 +66,7 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
     callback = monitor.REPL().raw_code();
 
   spdlog::info("Goodbye!");
+
   return callback;
 }
 } // namespace accat::luce

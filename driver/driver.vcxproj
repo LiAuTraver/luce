@@ -20,24 +20,32 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exec.hpp" />
+    <ClInclude Include="luce\argument\Argument.hpp" />
+    <ClInclude Include="luce\argument\ArgumentLoader.hpp" />
     <ClInclude Include="luce\config.hpp" />
-    <ClInclude Include="luce\cpu.hpp" />
+    <ClInclude Include="luce\cpu\cpu.hpp" />
+    <ClInclude Include="luce\cpu\mmu.hpp" />
+    <ClInclude Include="luce\Disassembler.hpp" />
     <ClInclude Include="luce\Image.hpp" />
     <ClInclude Include="luce\isa\architecture.hpp" />
     <ClInclude Include="luce\isa\host.hpp" />
     <ClInclude Include="luce\isa\riscv32\isa.hpp" />
+    <ClInclude Include="luce\isa\riscv32\opcode.hpp" />
     <ClInclude Include="luce\MainMemory.hpp" />
     <ClInclude Include="luce\Monitor.hpp" />
-    <ClInclude Include="luce\Pattern.hpp" />
     <ClInclude Include="luce\Task.hpp" />
-    <ClInclude Include="luce\Timer.hpp" />
+    <ClInclude Include="luce\utils\Pattern.hpp" />
+    <ClInclude Include="luce\utils\Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="luce_main.cpp" />
+    <ClCompile Include="src\Argument.cpp" />
+    <ClCompile Include="src\ArgumentLoader.cpp" />
     <ClCompile Include="src\cpu.cpp" />
+    <ClCompile Include="src\Disassembler.cpp" />
     <ClCompile Include="src\MainMemory.cpp" />
     <ClCompile Include="src\Monitor.cpp" />
     <ClCompile Include="src\Task.cpp" />
@@ -86,6 +94,7 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
     <Import Project="..\deps.vcxitems" Label="Shared" />
+    <Import Project="..\source\auxilia\auxilia.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />

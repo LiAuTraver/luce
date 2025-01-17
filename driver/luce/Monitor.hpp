@@ -4,6 +4,7 @@
 #include <fmt/compile.h>
 #include <fmt/xchar.h>
 #include <scn/scan.h>
+#include <spdlog/spdlog.h>
 #include "MainMemory.hpp"
 #include "utils/Pattern.hpp"
 #include "luce/utils/Timer.hpp"
@@ -58,7 +59,12 @@ class Monitor : public Mediator {
 
 public:
   Monitor() : memory(this), bus(this), cpus(this), disassembler(this) {
-    disassembler.set_target(isa::instruction_set::riscv32).ignore_error();
+    if (auto res = disassembler.set_target(isa::instruction_set::riscv32))
+      return;
+    else {
+      spdlog::critical("Failed to initialize disassembler: {}", res.message());
+      dbg_break
+    }
   }
 
 public:
@@ -94,7 +100,9 @@ auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
                                        paddr_t block_size) {
   std::span<const std::byte> bytes;
   if constexpr (std::same_as<std::remove_cvref_t<decltype(program)>,
-                             std::span<std::byte>>) {
+                             std::span<std::byte>> ||
+                std::same_as<std::remove_cvref_t<decltype(program)>,
+                             std::span<const std::byte>>) {
     bytes = program;
   } else if constexpr (std::same_as<
                            std::ranges::range_value_t<decltype(program)>,

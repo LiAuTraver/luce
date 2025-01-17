@@ -1,4 +1,4 @@
-//===- main.cpp - luce emulator main entry point ---------*- C++ -*-===//
+//===------------ luce emulator main entry point ---------*- C++ -*-===//
 //
 // Part of the Luce project.
 // Licensed under the Apache License v2.0.

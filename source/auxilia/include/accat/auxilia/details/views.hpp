@@ -4,7 +4,8 @@
 
 namespace accat::auxilia::ranges::views::detail {
 struct _invert_endianness_fn {
-  template <std::ranges::viewable_range R> auto operator()(R &&r) const {
+  template <std::ranges::viewable_range R>
+  auto operator()(R &&r) const {
     // clang-format off
     return std::forward<R>(r) 
               | std::views::chunk(2) 
@@ -29,4 +30,4 @@ inline constexpr detail::_invert_endianness_fn invert_endianness;
 
 namespace accat::auxilia::ranges {
 using namespace views;
-}
+} // namespace accat::auxilia::ranges
