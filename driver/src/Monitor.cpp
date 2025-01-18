@@ -7,7 +7,7 @@
 #include <accat/auxilia/details/Status.hpp>
 #include <accat/auxilia/details/macros.hpp>
 #include <functional>
-#include <luce/Monitor.hpp>
+#include "luce/Monitor.hpp"
 #include <string>
 #include <utility>
 
@@ -24,25 +24,34 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
     break;
   case Event::kTaskFinished: {
     spdlog::info(
-        "Hit good ol' {:x}, program finished!",
-        fmt::join(isa::signal::trap | auxilia::ranges::views::invert_endianness,
-                  ""));
+        "Hit good ol' {trapBytes:x}, program finished!",
+        "trapBytes"_a = fmt::join(
+            isa::signal::trap | auxilia::ranges::views::invert_endianness, ""));
     // currently the sender here was surely a CPU, so we cast it
     auto cpu = static_cast<CentralProcessingUnit *>(sender);
     defer {
       cpu->detach_context();
     };
+    dbg_block
+    {
+      if (process.id() != cpu->task_id()) {
+        spdlog::error(
+            "Task id mismatch: {lpid} != {rpid}; should not happen; currently "
+            "we just have excatly one task",
+            "lpid"_a = process.id(),
+            "rpid"_a = cpu->task_id());
+        dbg_break
+        // return auxilia::InternalError("Task id mismatch");
+      }
+    };
     // find the task and mark it as terminated
-    if (process.id() != cpu->task_id()) {
-      spdlog::error(
-          "Task id mismatch: {lpid} != {rpid}; should not happen; currently "
-          "we just have excatly one task",
-          "lpid"_a = process.id(),
-          "rpid"_a = cpu->task_id());
-      dbg_break
-      return auxilia::InternalError("Task id mismatch");
-    }
     process.state = Task::State::kTerminated;
+    break;
+  }
+  case Event::kRestartTask: {
+    spdlog::info("Restarting task");
+    process.restart();
+    cpus.attach_context(process.context(), process.id());
     break;
   }
   default:
@@ -57,6 +66,8 @@ auxilia::Status Monitor::run() {
   cpus.attach_context(process.context(), process.id());
   while (process.state != Task::State::kTerminated) {
     if (auto res = cpus.execute_shuttle(); !res) {
+      spdlog::error("Error: {}", res.message());
+      dbg(error, res.stacktrace());
       return res;
     }
   }
@@ -77,96 +88,26 @@ auxilia::Status Monitor::REPL() {
         return {};
       }
       // error, return as is
+      spdlog::error("Error: {}", res.message());
+      dbg(error, res.stacktrace());
       return res;
     }
   }
 }
 auxilia::Status Monitor::shuttle() {
-  auto maybe_input = read();
+  auto maybe_input = replObserver.read();
   if (!maybe_input) {
     return maybe_input.as_status();
   }
   auto input = *std::move(maybe_input);
 
-  if (auto res = inspect(input); !res) {
+  if (auto res = replObserver.inspect(input); !res) {
     return res;
   }
 
   return {};
 }
-auxilia::Status Monitor::inspect(const std::string_view input) {
-  if (input == "exit" or input == "q") {
-    return auxilia::ReturnMe("exit!");
-  }
-  if (input == "help") {
-    fmt::print(message::repl::Help);
-    return {};
-  }
-  if (input == "c") {
-    return execute_n(1);
-  }
-  if (input.starts_with("si")) {
-    auto maybe_steps = scn::scan<size_t>(input, "si [{}]");
-    if (maybe_steps.has_value()) {
-      auto [steps] = std::move(maybe_steps)->values();
-      return execute_n(steps);
-    }
-    auxilia::println(stderr,
-                     fg(crimson),
-                     "luce: error: {err_msg}",
-                     "err_msg"_a = maybe_steps.error().msg());
-    return {};
-  }
-  auxilia::println(stderr, fg(crimson), "luce: unknown command '{}'", input);
-  return {};
-}
-auxilia::StatusOr<auxilia::string> Monitor::read() {
-  std::string input;
-  for (;;) {
-    std::string raw_input;
-    if (input.empty())
-      fmt::print(stdout, fg(cyan), "(luce) ");
-    else
-      fmt::print(stdout, fg(cyan), ">>> ");
 
-    if (!std::getline(std::cin, raw_input)) {
-      if (std::cin.eof()) {
-        fmt::println("\nGoodbye!");
-        return {auxilia::ReturnMe("End of input")};
-      }
-
-      if (std::cin.fail()) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        auxilia::println(stderr, fg(crimson), "Input error, please try again");
-        continue;
-      }
-      contract_assert(0, "unreachable")
-      continue;
-    }
-    // clang-format off
-    // trim input
-    auto trimmed_input = raw_input 
-        | std::ranges::views::drop_while(auxilia::isspacelike) 
-        | std::ranges::views::reverse 
-        | std::ranges::views::drop_while(auxilia::isspacelike) 
-        | std::ranges::views::reverse 
-        | std::ranges::to<std::string>()
-    ;
-    // clang-format on
-    if (trimmed_input.empty() && input.empty())
-      continue;
-    else if (trimmed_input.starts_with('#'))
-      continue;
-    else if (trimmed_input.ends_with('\\')) {
-      trimmed_input.pop_back();
-      input += std::move(trimmed_input);
-      continue;
-    }
-    input += std::move(trimmed_input);
-    return {std::move(input)};
-  }
-}
 auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   // TODO: implement this
   for ([[maybe_unused]] const auto _ : std::views::iota(0ull, steps)) {

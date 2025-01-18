@@ -65,7 +65,10 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
   else
     callback = monitor.REPL().raw_code();
 
-  spdlog::info("Goodbye!");
+  if (callback == 0)
+    spdlog::info("Goodbye!");
+  else
+    spdlog::error("Program exited abnormally. Check the code.");
 
   return callback;
 }

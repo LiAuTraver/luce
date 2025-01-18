@@ -120,7 +120,7 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 } // namespace accat::auxilia::detail
 #  define AC_UTILS_DEBUG_BLOCK                                                 \
     ::accat::auxilia::detail::_dbg_block_helper_struct_{}                      \
-        *[&]() // NOLINT(bugprone-macro-parentheses)
+        *[&]() -> void // NOLINT(bugprone-macro-parentheses)
 
 #  define AC_UTILS_DEBUG_ONLY(...) __VA_ARGS__
 /// @note detect if gtest was included, if so, emit a different message.

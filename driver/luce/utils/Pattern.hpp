@@ -20,6 +20,7 @@ enum class Event : uint8_t {
   kLoadProgram = 1,
   kRunTask = 2,
   kTaskFinished = 3,
+  kRestartTask = 4,
   // todo: add more events
 };
 namespace event {

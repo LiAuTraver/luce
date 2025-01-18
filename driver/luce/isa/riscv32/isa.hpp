@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 namespace accat::luce::isa::riscv32 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-const-variable"
 using virtual_address_t = std::uint32_t;
 using physical_address_t = std::uint32_t;
 using minimal_addressable_unit_t = std::uint8_t;
@@ -31,5 +33,5 @@ namespace signal {
 inline static constexpr auto trap = std::array{
     std::byte{0xef}, std::byte{0xbe}, std::byte{0xad}, std::byte{0xde}};
 }
-
+#pragma clang diagnostic pop
 } // namespace accat::luce::isa::riscv32

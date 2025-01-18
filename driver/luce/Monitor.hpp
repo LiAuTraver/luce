@@ -6,6 +6,7 @@
 #include <scn/scan.h>
 #include <spdlog/spdlog.h>
 #include "MainMemory.hpp"
+#include "replWatcher.hpp"
 #include "utils/Pattern.hpp"
 #include "luce/utils/Timer.hpp"
 #include "config.hpp"
@@ -57,8 +58,12 @@ class Monitor : public Mediator {
   Timer timer;
   Disassembler disassembler;
 
+  replWatcher replObserver;
+
 public:
-  Monitor() : memory(this), bus(this), cpus(this), disassembler(this) {
+  Monitor()
+      : memory(this), bus(this), cpus(this), disassembler(this),
+        replObserver(this) {
     if (auto res = disassembler.set_target(isa::instruction_set::riscv32))
       return;
     else {
@@ -72,8 +77,6 @@ public:
   auxilia::Status run();
   auxilia::Status REPL();
   auxilia::Status shuttle();
-  auxilia::Status inspect(std::string_view);
-  auxilia::StatusOr<auxilia::string> read();
   auxilia::Status execute_n(size_t);
   auto register_task(const std::ranges::range auto &, paddr_t, paddr_t)
       -> auxilia::Status;
@@ -99,20 +102,20 @@ auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
                                        const paddr_t start_addr,
                                        paddr_t block_size) {
   std::span<const std::byte> bytes;
-  if constexpr (std::same_as<std::remove_cvref_t<decltype(program)>,
-                             std::span<std::byte>> ||
-                std::same_as<std::remove_cvref_t<decltype(program)>,
-                             std::span<const std::byte>>) {
+
+  using myType = std::remove_cvref_t<decltype(program)>;
+  using myValueType = std::ranges::range_value_t<myType>;
+  if constexpr (std::same_as<myType, std::span<std::byte>> ||
+                std::same_as<myType, std::span<const std::byte>>) {
     bytes = program;
-  } else if constexpr (std::same_as<
-                           std::ranges::range_value_t<decltype(program)>,
-                           const std::byte>) {
+  } else if constexpr (std::same_as<myValueType, const std::byte> ||
+                       std::same_as<myValueType, std::byte>) {
     bytes = std::span{program};
   } else {
     auto dataSpan = std::span{program};
     bytes = std::as_bytes(dataSpan);
   }
-  block_size = std::min(block_size, isa::physical_memory_size);
+  block_size = (std::min)(block_size, isa::physical_memory_size);
 
   contract_assert(bytes.size() > 0 && bytes.size() <= block_size,
                   "Invalid block size")

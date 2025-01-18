@@ -36,7 +36,7 @@ MainMemory::write(isa::physical_address_t addr,
     return auxilia::OutOfRangeError("Memory access violation");
   }
   memory[addr] = static_cast<std::byte>(value);
-  return auxilia::OkStatus();
+  return {};
 }
 
 auxilia::Status MainMemory::fill(const isa::physical_address_t start,
@@ -47,7 +47,7 @@ auxilia::Status MainMemory::fill(const isa::physical_address_t start,
   }
   std::ranges::fill_n(
       memory.begin() + start, size, static_cast<std::byte>(value));
-  return auxilia::OkStatus();
+  return {};
 }
 auto MainMemory::load_program(const std::span<const std::byte> bytes,
                               const isa::physical_address_t start_addr,
@@ -67,7 +67,7 @@ auto MainMemory::load_program(const std::span<const std::byte> bytes,
                    auxilia::rand_u8);
   }
 
-  return auxilia::OkStatus();
+  return {};
 }
 auto MainMemory::generate(const isa::physical_address_t start,
                           const size_t size,
@@ -78,6 +78,6 @@ auto MainMemory::generate(const isa::physical_address_t start,
   std::ranges::generate_n(memory.begin() + start, size, [&] {
     return static_cast<std::byte>(std::invoke(generator));
   });
-  return auxilia::OkStatus();
+  return {};
 }
 } // namespace accat::luce

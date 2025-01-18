@@ -1,5 +1,5 @@
 project(driver 
-    LANGUAGES CXX 
+    LANGUAGES C CXX
     DESCRIPTION "shared items between luce project"
 )
 

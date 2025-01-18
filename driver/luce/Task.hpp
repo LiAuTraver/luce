@@ -34,6 +34,15 @@ public:
   enum class PrivilegeLevel : uint8_t { kUser = 0, kSupervisor, kMachine };
 
 public:
+  void restart() {
+    program_counter = 0x0;
+    stack_pointer = 0x0;
+    instruction_register = {};
+    memory_bounds = {};
+    general_purpose_registers.fill({});
+    privilege_level = PrivilegeLevel::kUser;
+  }
+
 public:
   vaddr_t program_counter = 0x0;
   vaddr_t stack_pointer = 0x0;
@@ -121,7 +130,15 @@ public:
   void resume() {}
   /// @brief (forcefully) terminate the task
   void terminate() {}
-  void restart() {}
+  void restart() {
+    context_->restart();
+    context_->program_counter = address_space_.static_regions.text_segment.start;
+    state_ = State::kNew;
+    time_slice_ = 0;
+    total_cpu_time_ = 0;
+    creation_time_ = clock_type::now();
+    last_run_time_ = creation_time_;
+  }
 
 private:
   // Core task data
@@ -139,7 +156,7 @@ private:
   uint8_t priority_{0};
   uint32_t time_slice_{0};
   time_point creation_time_;
-  time_point last_run_time_;
+  time_point last_run_time_ = creation_time_;
   uint64_t total_cpu_time_{0};
 
   // Resource management
@@ -155,7 +172,9 @@ private:
 
   /// properties
 private:
-  State get_state() const noexcept { return state_; }
+  State get_state() const noexcept {
+    return state_;
+  }
   Task &set_state(const State &newState) noexcept {
     state_ = newState;
     return *this;
@@ -185,9 +204,9 @@ private:
   friend struct accat::auxilia::
       Property<Task, State, Task &, &Task::get_state, &Task::set_state>;
   friend struct accat::auxilia::Property<Task,
-                                        const AddressSpace &,
-                                        Task &,
-                                        &Task::get_address_space,
-                                        &Task::set_address_space>;
+                                         const AddressSpace &,
+                                         Task &,
+                                         &Task::get_address_space,
+                                         &Task::set_address_space>;
 };
 } // namespace accat::luce

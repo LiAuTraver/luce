@@ -34,7 +34,7 @@ using ifstream = ::std::ifstream;
 using ostringstream = ::std::ostringstream;
 using namespace ::std::string_view_literals;
 using namespace ::std::string_literals;
-constexpr auto isspacelike = [](const char &c) noexcept -> bool {
+constexpr auto isspacelike = [](const char &c) constexpr noexcept -> bool {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 };
 inline consteval const char *raw(const char *str) {

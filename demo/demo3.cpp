@@ -200,19 +200,134 @@ Generator<int> fibonacci() {
   co_return a;
 }
 
-int main() {
-  auto fibTask = fibonacci();
-  std::cout << "Fibonacci sequence:\n";
-  auto myRange = fibTask | std::views::take(10);
-  for (auto i : myRange) {
-    std::cout << i << " ";
-  }
-  std::cout << "\ntypeof myRange: " << typeid(myRange).name() << "\n"
-            << typeid(myRange).hash_code() << '\n';
-  std::cout << '\n';
 
-  auto g = fibTask.get(); // shall not call it before the coroutine is done
-  std::cout << "fibTask.get(): " << g << '\n';
+// int main() {
+//   auto fibTask = fibonacci();
+//   std::cout << "Fibonacci sequence:\n";
+//   auto myRange = fibTask | std::views::take(10);
+//   for (auto i : myRange) {
+//     std::cout << i << " ";
+//   }
+//   std::cout << "\ntypeof myRange: " << typeid(myRange).name() << "\n"
+//             << typeid(myRange).hash_code() << '\n';
+//   std::cout << '\n';
 
-  return 0;
+//   auto g = fibTask.get(); // shall not call it before the coroutine is done
+//   std::cout << "fibTask.get(): " << g << '\n';
+
+//   return 0;
+// }
+
+#include <coroutine>
+#include <iostream>
+#include <string>
+
+class MyCoro {
+public:
+    struct promise_type {
+        std::string currentValue;
+        std::suspend_always yield_value(const std::string& value) {
+            currentValue = value;
+            return {};
+        }
+        MyCoro get_return_object() {
+            return MyCoro(std::coroutine_handle<promise_type>::from_promise(*this));
+        }
+        std::suspend_always initial_suspend() { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        void unhandled_exception() { std::terminate(); }
+        void return_void() {}
+    };
+
+    MyCoro(std::coroutine_handle<promise_type> h) : coro(h) {}
+    ~MyCoro() { if (coro) coro.destroy(); }
+    bool move_next() {
+        if (!coro.done()) coro.resume();
+        return !coro.done();
+    }
+    std::string current_value() const {
+        return coro.promise().currentValue;
+    }
+private:
+    std::coroutine_handle<promise_type> coro;
+};
+
+MyCoro handleUserInput() {
+    std::string line;
+    while (true) {
+        if (!std::getline(std::cin, line)) {
+            co_return;
+        }
+        co_yield line;
+    }
 }
+
+// int main() {
+//     MyCoro coro = handleUserInput();
+//     while (coro.move_next()) {
+//         std::cout << "You entered: " << coro.current_value() << std::endl;
+//     }
+//     return 0;
+// }
+
+#include <iostream>
+#include <coroutine>
+#include <optional>
+
+struct DataFeeder {
+    std::optional<int> data;
+
+    bool await_ready() { return false; }
+    void await_suspend(std::coroutine_handle<> handle) {
+        // Simulate waiting for data
+        std::cout << "Coroutine suspended, waiting for data...\n";
+        // After data is available, resume the coroutine
+        if (data) {
+            handle.resume();
+        }
+    }
+
+    int await_resume() {
+        std::cout << "Data received: " << *data << "\n";
+        return *data;
+    }
+};
+
+struct MyCoroutine {
+    struct promise_type;
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    struct promise_type {
+        MyCoroutine get_return_object() { return MyCoroutine{handle_type::from_promise(*this)}; }
+        std::suspend_always initial_suspend() { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        void return_void() {}
+        void unhandled_exception() {}
+    };
+
+    handle_type h;
+
+    MyCoroutine(handle_type h) : h(h) {}
+    ~MyCoroutine() { if (h) h.destroy(); }
+
+    void run() {
+        h.resume();
+    }
+};
+
+MyCoroutine my_coroutine(DataFeeder& feeder) {
+    int result = co_await feeder;
+    std::cout << "Coroutine finished, result: " << result << "\n";
+}
+
+int main() {
+    DataFeeder feeder;
+    auto coro = my_coroutine(feeder);
+
+    // Simulating the feeding of data
+    feeder.data = 42; // Data is now available
+    coro.run(); // This will resume the coroutine
+
+    return 0;
+}
+
