@@ -6,7 +6,6 @@
 #include <scn/scan.h>
 #include <spdlog/spdlog.h>
 #include "MainMemory.hpp"
-#include "replWatcher.hpp"
 #include "utils/Pattern.hpp"
 #include "luce/utils/Timer.hpp"
 #include "config.hpp"
@@ -58,12 +57,9 @@ class Monitor : public Mediator {
   Timer timer;
   Disassembler disassembler;
 
-  replWatcher replObserver;
-
 public:
   Monitor()
-      : memory(this), bus(this), cpus(this), disassembler(this),
-        replObserver(this) {
+      : memory(this), bus(this), cpus(this), disassembler(this){
     if (auto res = disassembler.set_target(isa::instruction_set::riscv32))
       return;
     else {
@@ -76,7 +72,6 @@ public:
   virtual auxilia::Status notify(Component *sender, Event event) override;
   auxilia::Status run();
   auxilia::Status REPL();
-  auxilia::Status shuttle();
   auxilia::Status execute_n(size_t);
   auto register_task(const std::ranges::range auto &, paddr_t, paddr_t)
       -> auxilia::Status;

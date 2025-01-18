@@ -8,7 +8,11 @@
 #include <accat/auxilia/details/macros.hpp>
 #include <functional>
 #include "luce/Monitor.hpp"
+#include <iostream>
+#include <ostream>
+#include <ranges>
 #include <string>
+#include <syncstream>
 #include <utility>
 
 namespace accat::luce {
@@ -49,6 +53,9 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
     break;
   }
   case Event::kRestartTask: {
+    precondition(sender == nullptr,
+                 "currently no sender is expected to send "
+                 "this event, except from the REPL")
     spdlog::info("Restarting task");
     process.restart();
     cpus.attach_context(process.context(), process.id());
@@ -73,17 +80,19 @@ auxilia::Status Monitor::run() {
   }
   return {};
 }
+
+extern auto repl(Monitor *)
+    -> ::accat::auxilia::Generator<::accat::auxilia::Status>;
+
 auxilia::Status Monitor::REPL() {
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
 
   cpus.attach_context(process.context(), process.id());
 
-  fmt::println("{}", message::repl::Welcome);
-
-  for (;;) {
-    if (auto [res, elapsed] = timer.measure(std::bind(&Monitor::shuttle, this));
-        !res) {
+  auto replCoro = repl(this);
+  for (auto res : replCoro | std::views::common) {
+    if (!res) {
       if (res.code() == auxilia::Status::Code::kReturning) {
         return {};
       }
@@ -93,19 +102,13 @@ auxilia::Status Monitor::REPL() {
       return res;
     }
   }
-}
-auxilia::Status Monitor::shuttle() {
-  auto maybe_input = replObserver.read();
-  if (!maybe_input) {
-    return maybe_input.as_status();
-  }
-  auto input = *std::move(maybe_input);
 
-  if (auto res = replObserver.inspect(input); !res) {
-    return res;
-  }
-
-  return {};
+  spdlog::error("REPL exited unexpectedly. The program may be unresponsive.");
+  std::osyncstream(std::cout) << std::flush;
+  auto lastRes = replCoro.get(); // infinite loop, so this is unreachable
+  spdlog::error("Error: {}", lastRes.message());
+  dbg(error, lastRes.stacktrace());
+  return lastRes;
 }
 
 auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {

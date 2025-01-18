@@ -1,17 +1,22 @@
 #include "deps.hh"
 
 #include "luce/config.hpp"
-#include "luce/replWatcher.hpp"
 #include "luce/Monitor.hpp"
 #include <fmt/color.h>
 #include "accat/auxilia/details/Status.hpp"
 #include "luce/utils/Pattern.hpp"
 #include <string>
+#include <string_view>
+#include <iostream>
+#include <ranges>
+#include <scn/scan.h>
 
 namespace accat::luce {
 using fmt::fg;
 using enum fmt::color;
-auxilia::StatusOr<std::string> replWatcher::read() {
+
+namespace {
+auxilia::StatusOr<std::string> read(Monitor *) {
   std::string input;
   for (;;) {
     std::string raw_input;
@@ -58,7 +63,7 @@ auxilia::StatusOr<std::string> replWatcher::read() {
     return {std::move(input)};
   }
 }
-auxilia::Status replWatcher::inspect(std::string_view input) {
+auxilia::Status inspect(std::string_view input, Monitor *monitor) {
   if (input == "exit" or input == "q") {
     return auxilia::ReturnMe("exit!");
   }
@@ -67,17 +72,17 @@ auxilia::Status replWatcher::inspect(std::string_view input) {
     return {};
   }
   if (input == "r") {
-    return this->send(Event::kRestartTask);
+    return monitor->notify(nullptr, Event::kRestartTask);
   }
 
   if (input == "c") {
-    return this->monitor()->execute_n(1);
+    return monitor->execute_n(1);
   }
   if (input.starts_with("si")) {
     auto maybe_steps = scn::scan<size_t>(input, "si [{}]");
     if (maybe_steps.has_value()) {
       auto [steps] = std::move(maybe_steps)->values();
-      return this->monitor()->execute_n(steps);
+      return monitor->execute_n(steps);
     }
     auxilia::println(stderr,
                      fg(crimson),
@@ -91,7 +96,24 @@ auxilia::Status replWatcher::inspect(std::string_view input) {
                    "inputCmd"_a = input);
   return {};
 }
-Monitor *replWatcher::monitor() const noexcept {
-  return static_cast<Monitor *>(mediator);
+} // namespace
+auxilia::Generator<auxilia::Status> repl(Monitor *monitor) {
+  precondition(monitor, "Monitor must not be nullptr")
+
+  fmt::println("{}", message::repl::Welcome);
+
+  for (;;) {
+    auto maybe_input = read(monitor);
+    if (!maybe_input) {
+      co_yield {maybe_input.as_status()};
+    }
+    auto input = *std::move(maybe_input);
+    if (auto res = inspect(input, monitor); !res) {
+      co_yield res;
+    }
+    // nothing to do
+    co_yield {};
+  }
+  co_return auxilia::InternalError("unreachable; repl exited unexpectedly");
 }
 } // namespace accat::luce
