@@ -15,6 +15,10 @@ struct Mediator;
 struct Component;
 /// @note for magic_enum to perform cast, the enum value must be explicitly
 /// defined in the enum class
+/// @todo `procedual programming(switch enum) makes it clear, but also makes the
+/// program unmaintainable` -- Scott Meyers, More Effective C++.
+///       but currently I have no time to refactor this to use
+/// polymorphism/visitor pattern.
 enum class Event : uint8_t {
   kNone = 0,
   kLoadProgram = 1,
@@ -35,6 +39,8 @@ consteval auto to_string_view(const Event event) noexcept {
     return "kRunTask"sv;
   case Event::kTaskFinished:
     return "kTaskFinished"sv;
+  case Event::kRestartTask:
+    return "kRestartTask"sv;
   default:
     return "kUnknown"sv;
   }
@@ -74,7 +80,7 @@ public:
   }
   Component(const Component &) = delete;
   Component &operator=(const Component &) = delete;
-  constexpr pid_t id() const noexcept {
+  constexpr pid_t id() const noexcept /* final */ {
     return id_;
   }
   Component(Component &&that) noexcept

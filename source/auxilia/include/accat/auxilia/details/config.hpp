@@ -5,11 +5,14 @@ namespace accat::auxilia {
 class Monostate;
 /// @brief a concept that checks if the types are variantable for my custom
 /// @link Variant @endlink class,
-/// where the first type must be @link Monostate @endlink
+/// where the first type must be @link Monostate @endlink or its derived class
 /// @tparam Types the types to check
 template <typename... Types>
 concept Variantable = requires {
-  std::is_same_v<std::tuple_element_t<0, std::tuple<Types...>>, Monostate>;
+  (std::is_same_v<std::tuple_element_t<0, std::tuple<Types...>>, Monostate> ||
+   std::is_base_of_v<Monostate,
+                     std::tuple_element_t<0, std::tuple<Types...>>>) &&
+      (std::is_default_constructible_v<Types> && ...);
 };
 /// @brief represents a value that can be stored in a
 /// @link StatusOr @endlink object

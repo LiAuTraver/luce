@@ -32,12 +32,17 @@ using fmt::bg;
 using fmt::fg;
 using fmt::format;
 
-// NOLINTNEXTLINE
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-const-variable"
 static constexpr inline auto Help = R"(
 Available commands:
     - help: show this message
     - exit: exit the program
     - c: continue execution
+    - si [steps]: step n instructions
+    - r: restart the program
+    - info r: show registers
+    - info w: show watchpoints
 )"_raw;
 static const inline auto Welcome =
     format(fg(dark_cyan), "Welcome to luce emulator!\n").append(R"(
@@ -119,6 +124,7 @@ auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
   // add `this` for intellisenese (template intellisense was too poor)
   return this->_do_register_task_unchecked(bytes, start_addr, block_size);
 }
+#pragma clang diagnostic pop
 } // namespace accat::luce
 /*utils::Status Monitor::initDisassembler(CtxRef) {
   constexpr auto cs_arch = CS_ARCH_RISCV;

@@ -62,8 +62,10 @@
 
 #if __cpp_static_call_operator >= 202207L
 #  define AC_STATIC_CALL_OPERATOR static
+#  define AC_CONST_CALL_OPERATOR
 #else
 #  define AC_STATIC_CALL_OPERATOR
+#  define AC_CONST_CALL_OPERATOR const
 #endif
 
 /// @note GNU on Windows seems failed to perform linking for
@@ -119,8 +121,8 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 }
 } // namespace accat::auxilia::detail
 #  define AC_UTILS_DEBUG_BLOCK                                                 \
-    ::accat::auxilia::detail::_dbg_block_helper_struct_{}                      \
-        *[&]() -> void // NOLINT(bugprone-macro-parentheses)
+    ::accat::auxilia::detail::_dbg_block_helper_struct_{} *[&]()               \
+        -> void // NOLINT(bugprone-macro-parentheses)
 
 #  define AC_UTILS_DEBUG_ONLY(...) __VA_ARGS__
 /// @note detect if gtest was included, if so, emit a different message.
@@ -210,8 +212,9 @@ extern "C"
     if (::IsDebuggerPresent()) {                                               \
       AC_UTILS_DEBUG_BREAK_IMPL_                                               \
     } else {                                                                   \
-      fprintf(stderr,                                                          \
-              "Fatal: program exits abnormally. please consult debugger.\n");  \
+      ::std::fprintf(                                                          \
+          stderr,                                                              \
+          "Fatal: program exits abnormally. please consult debugger.\n");      \
       ::std::abort();                                                          \
     }                                                                          \
   } while (false);
@@ -227,7 +230,7 @@ extern "C"
 #  define AC_UTILS_PRINT_ERROR_MSG_IMPL_WITH_MSG(x, _msg_)                     \
     spdlog::critical("in file {0}, line {2} column {3},\n"                     \
                      "           function {1},\n"                              \
-                     "           Constraints not satisfied:\n"                 \
+                     "Constraints not satisfied:\n"                            \
                      "           Expect `{4}` to be true.\n"                   \
                      "Additional message: {5}\n"                               \
                      "Stacktrace:{6}",                                         \
@@ -250,7 +253,7 @@ extern "C"
 
 #  define AC_UTILS_RUNTIME_REQUIRE_IMPL(_cond_, ...)                           \
     AC_UTILS_RUNTIME_REQUIRE_IMPL_WITH_MSG(                                    \
-        _cond_ __VA_OPT__(, fmt::format(__VA_ARGS__)))
+        _cond_ __VA_OPT__(, ::fmt::format(__VA_ARGS__)))
 
 #  define AC_UTILS_RUNTIME_ASSERT(_cond_, ...)                                 \
     AC_UTILS_RUNTIME_REQUIRE_IMPL(_cond_ __VA_OPT__(, ) __VA_ARGS__);
@@ -316,7 +319,8 @@ extern "C"
 
 #ifdef AC_UTILS_DEBUG_ENABLED
 #  define AC_UTILS_TODO_(...)                                                  \
-    AC_UTILS_RUNTIME_ASSERT(false, "Not implemented: " #__VA_ARGS__);
+    AC_UTILS_RUNTIME_ASSERT(false, "Not implemented: " #__VA_ARGS__);          \
+    std::abort(); // shut up the warning 'not all control paths return a value'
 // if exception was disabled, do nothing.
 #elif defined(__cpp_exceptions) && __cpp_exceptions
 #  include <stdexcept>
@@ -363,30 +367,32 @@ namespace accat::auxilia::detail {
 /// @see
 /// https://stackoverflow.com/questions/32432450/what-is-standard-defer-finalizer-implementation-in-c
 EXPORT_AUXILIA
-struct _utils_defer_helper_struct_ {};
-template <class Fun_> struct _utils_deferrer_ {
+struct _accat_utils_defer_helper_struct_ {};
+template <class Fun_> struct _accat_utils_deferrer_ {
   Fun_ f_;
-  inline constexpr _utils_deferrer_(Fun_ f) : f_(f) {}
-  inline constexpr ~_utils_deferrer_() {
+  inline constexpr _accat_utils_deferrer_(Fun_ f) : f_(f) {}
+  inline constexpr ~_accat_utils_deferrer_() {
     f_();
   }
 };
 EXPORT_AUXILIA
 template <class Fun_>
 AC_STATIC_CALL_OPERATOR inline AC_CONSTEXPR20 auto
-operator*(_utils_defer_helper_struct_, Fun_ f_) -> _utils_deferrer_<Fun_> {
+operator*(_accat_utils_defer_helper_struct_, Fun_ f_)
+    -> _accat_utils_deferrer_<Fun_> {
   return {f_};
 }
 } // namespace accat::auxilia::detail
 #define AC_DEFER                                                               \
-  const auto AC_UTILS_EXPAND_COUNTER(_utils_defer_block_at) =                  \
-      ::accat::auxilia::detail::_utils_defer_helper_struct_{} *[&]()
+  const auto AC_UTILS_EXPAND_COUNTER(_accat_utils_defer_block_at) =            \
+      ::accat::auxilia::detail::_accat_utils_defer_helper_struct_{} *[&]()
 #ifdef defer
 #  warning "defer was already defined. please check the code."
 #  pragma pop_macro("defer")
 #endif
 #define defer AC_DEFER
-#define postcondition AC_DEFER
+#define postcondition(...) AC_DEFER{AC_UTILS_RUNTIME_ASSERT(__VA_ARGS__)};
+#define interface AC_INTERFACE
 
 /// @def AC_BITMASK_OPS
 /// @brief define the basic bitmask operations for the given bitmask

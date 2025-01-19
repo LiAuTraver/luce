@@ -15,6 +15,7 @@ namespace accat::auxilia {
 template <Variantable... Types>
 class Variant : public Printable<Variant<Types...>>,
                 public Viewable<Variant<Types...>> {
+  using monostate_like_type = std::tuple_element_t<0, std::tuple<Types...>>;
   using self_type = Variant<Types...>;
 
 public:
@@ -31,12 +32,12 @@ public:
 
   Variant(const Variant &) = default;
   Variant(Variant &&that) noexcept : my_variant(std::move(that.my_variant)) {
-    that.my_variant.template emplace<Monostate>();
+    that.my_variant.template emplace<monostate_like_type>();
   }
   Variant &operator=(const Variant &) = default;
   Variant &operator=(Variant &&that) noexcept {
     my_variant = std::move(that.my_variant);
-    that.my_variant.template emplace<Monostate>();
+    that.my_variant.template emplace<monostate_like_type>();
     return *this;
   }
   ~Variant() = default;
@@ -44,7 +45,7 @@ public:
 public:
   auto set(Variant &&that = {}) noexcept -> Variant & {
     my_variant = std::move(that.my_variant);
-    that.my_variant.template emplace<Monostate>();
+    that.my_variant.template emplace<monostate_like_type>();
     return *this;
   }
   template <typename Callable>
@@ -92,8 +93,9 @@ public:
   }
   template <typename Args>
     requires requires { std::declval<variant_type>().template emplace<Args>(); }
-  constexpr auto emplace() noexcept(
-      noexcept(my_variant.template emplace<Args>())) -> decltype(auto) {
+  constexpr auto
+  emplace() noexcept(noexcept(my_variant.template emplace<Args>()))
+      -> decltype(auto) {
     return my_variant.template emplace<Args>();
   }
   auto &get() const {
@@ -106,8 +108,8 @@ public:
     return *this;
   }
   constexpr auto clear(this auto &&self) noexcept(noexcept(
-      self.my_variant.template emplace<Monostate>())) -> decltype(auto) {
-    self.my_variant.template emplace<Monostate>();
+      self.my_variant.template emplace<monostate_like_type>())) -> decltype(auto) {
+    self.my_variant.template emplace<monostate_like_type>();
     return self;
   }
   constexpr auto empty() const noexcept -> bool {
@@ -121,7 +123,7 @@ public:
   }
 
 private:
-  variant_type my_variant{Monostate{}};
+  variant_type my_variant{monostate_like_type{}};
 
 private:
   inline bool is_valid() const noexcept {
@@ -131,8 +133,8 @@ private:
   }
 
 public:
-  constexpr auto
-  to_string(const FormatPolicy &format_policy) const -> string_type {
+  constexpr auto to_string(const FormatPolicy &format_policy) const
+      -> string_type {
     if (format_policy == FormatPolicy::kDefault) {
       return typeid(decltype(*this)).name();
     } else if (format_policy == FormatPolicy::kDetailed) {
@@ -145,8 +147,8 @@ public:
     }
     std::unreachable();
   }
-  constexpr auto
-  to_string_view(const FormatPolicy &format_policy) const -> string_view_type {
+  constexpr auto to_string_view(const FormatPolicy &format_policy) const
+      -> string_view_type {
     if (format_policy == FormatPolicy::kDefault) {
       return typeid(decltype(*this)).name();
     } else if (format_policy == FormatPolicy::kDetailed) {

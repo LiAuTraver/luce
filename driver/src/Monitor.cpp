@@ -1,9 +1,9 @@
-﻿#include "accat/auxilia/details/views.hpp"
-#include "deps.hh"
+﻿#include "deps.hh"
 
 #include <fmt/color.h>
 #include <fmt/xchar.h>
 #include <spdlog/spdlog.h>
+#include "accat/auxilia/details/views.hpp"
 #include <accat/auxilia/details/Status.hpp>
 #include <accat/auxilia/details/macros.hpp>
 #include <functional>
@@ -15,13 +15,17 @@
 #include <syncstream>
 #include <utility>
 
+namespace accat::luce::inline tr2::repl{
+extern auto repl(Monitor *)
+    -> ::accat::auxilia::Generator<::accat::auxilia::Status>;
+}
+
 namespace accat::luce {
 using namespace std::literals;
 using namespace fmt::literals;
 using enum fmt::color;
 using fmt::fg;
 auxilia::Status Monitor::notify(Component *sender, Event event) {
-  // todo: implement
   switch (event) {
   case Event::kNone:
     spdlog::warn("nothing to do");
@@ -80,17 +84,13 @@ auxilia::Status Monitor::run() {
   }
   return {};
 }
-
-extern auto repl(Monitor *)
-    -> ::accat::auxilia::Generator<::accat::auxilia::Status>;
-
 auxilia::Status Monitor::REPL() {
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
 
   cpus.attach_context(process.context(), process.id());
 
-  auto replCoro = repl(this);
+  auto replCoro = tr2::repl::repl(this);
   for (auto res : replCoro | std::views::common) {
     if (!res) {
       if (res.code() == auxilia::Status::Code::kReturning) {
@@ -105,10 +105,8 @@ auxilia::Status Monitor::REPL() {
 
   spdlog::error("REPL exited unexpectedly. The program may be unresponsive.");
   std::osyncstream(std::cout) << std::flush;
-  auto lastRes = replCoro.get(); // infinite loop, so this is unreachable
-  spdlog::error("Error: {}", lastRes.message());
-  dbg(error, lastRes.stacktrace());
-  return lastRes;
+  dbg_break
+  return auxilia::InternalError("REPL exited unexpectedly");
 }
 
 auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {
