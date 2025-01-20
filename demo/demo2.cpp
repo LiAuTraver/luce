@@ -1,3 +1,4 @@
+#include <fstream>
 #include <ranges>
 #include <array>
 #include <cstddef>
@@ -5,6 +6,7 @@
 #include <iterator>
 #include <vector>
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <fmt/ranges.h>
 
 #include <ranges>
@@ -18,15 +20,15 @@
 
 #include <accat/auxilia/auxilia.hpp>
 
+#include "accat/auxilia/details/format.hpp"
+#include "luce/debugging/Lexer.hpp"
+
 int main() {
-  auto bytes = std::vector<std::byte>{
-      std::byte{0xDE}, std::byte{0xAD}, std::byte{0xBE}, std::byte{0xEF}};
-
-  auto reversed = bytes | accat::auxilia::ranges::invert_endianness |
-                  std::ranges::to<std::vector<std::byte>>();
-  assert(bytes == reversed);
-
-  fmt::println("Original: {:#04x}", fmt::join(bytes, " "));
-  fmt::println("Reversed: {:#04x}", fmt::join(reversed, " "));
-  return 0;
+  accat::luce::Lexer lexer;
+  auto expression = "0x80100000+   ($a0 +5)*4 - *(  $t1 + 8) + number";
+  auto res = lexer.load(expression);
+  auto coro = lexer.lex();
+  for (auto& token : coro) {
+    fmt::print("{} ", token.to_string(accat::auxilia::FormatPolicy::kTokenOnly));
+  } 
 }

@@ -6,6 +6,7 @@
 #include <scn/scan.h>
 #include <spdlog/spdlog.h>
 #include "MainMemory.hpp"
+#include "debugging/Debugger.hpp"
 #include "utils/Pattern.hpp"
 #include "luce/utils/Timer.hpp"
 #include "config.hpp"
@@ -61,10 +62,12 @@ class Monitor : public Mediator {
   CPUs cpus;
   Timer timer;
   Disassembler disassembler;
+  Debugger debugger;
 
 public:
   Monitor()
-      : memory(this), bus(this), cpus(this), disassembler(this){
+      : memory(this), bus(this), cpus(this), disassembler(this),
+        debugger(this) {
     if (auto res = disassembler.set_target(isa::instruction_set::riscv32))
       return;
     else {

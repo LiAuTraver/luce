@@ -145,8 +145,9 @@ operator*(_dbg_block_helper_struct_, Fun_ f_) noexcept(noexcept(f_()))
 #else
 #  define AC_UTILS_DEBUG_LOGGING(...) (void)0;
 #endif
-/// @note magic_enum seems to require __PRETTY_FUNCTION__ to be defined
-#if !defined(__PRETTY_FUNCTION__)
+/// @note magic_enum seems to require __PRETTY_FUNCTION__ to be defined; also
+/// language server clangd does not work.
+#if !defined(__PRETTY_FUNCTION__) && !defined(__INTELLISENSE__)
 #  if defined(__FUNCSIG__)
 #    define __PRETTY_FUNCTION__ __FUNCSIG__
 #  else
@@ -306,8 +307,7 @@ extern "C"
 #else
 /// @def contract_assert(condition, message)
 /// @note idea borrowed from c++2c's contract programming proposal. See
-///  <a
-///  href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2961r2.pdf">P2961R2</a>
+///  <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2961r2.pdf">P2961R2</a>
 #  define contract_assert(...) AC_UTILS_RUNTIME_ASSERT(__VA_ARGS__)
 #  define precondition(...) AC_UTILS_PRECONDITION(__VA_ARGS__)
 // clang-format on
@@ -377,8 +377,7 @@ template <class Fun_> struct _accat_utils_deferrer_ {
 };
 EXPORT_AUXILIA
 template <class Fun_>
-AC_STATIC_CALL_OPERATOR inline AC_CONSTEXPR20 auto
-operator*(_accat_utils_defer_helper_struct_, Fun_ f_)
+inline AC_CONSTEXPR20 auto operator*(_accat_utils_defer_helper_struct_, Fun_ f_)
     -> _accat_utils_deferrer_<Fun_> {
   return {f_};
 }
