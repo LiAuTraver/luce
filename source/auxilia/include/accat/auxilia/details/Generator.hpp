@@ -4,6 +4,7 @@
 #include <coroutine>
 #include <optional>
 #include <type_traits>
+#include <utility>
 #include "./Status.hpp"
 
 namespace accat::auxilia {
@@ -30,6 +31,7 @@ public:
 
 private:
   template <typename Derived> struct promise_type_base {
+    friend struct iterator;
     ~promise_type_base() {}
 #if defined(__cpp_exceptions) || defined(_CPPUNWIND)
     std::exception_ptr exception;
@@ -57,14 +59,16 @@ private:
       exception = std::current_exception();
     }
 
+  private:
     void _rethrow_if_exception() {
       if (exception) {
         std::rethrow_exception(exception);
       }
     }
 
+  public:
 #else
-    void unhandled_exception() noexcept {}
+    void unhandled_exception()/* const, but for ABI compatibility, we don't add it */ noexcept {}
 #endif
 
     using CharAlloc = typename std::allocator_traits<
@@ -192,9 +196,9 @@ public:
 #if defined(__cpp_exceptions) || defined(_CPPUNWIND)
     handle_.promise()._rethrow_if_exception();
 #endif
-    // return the final value(moved, for someone who don't understand: RVO and
-    // NRVO only suited for local variables. we didn't return a local
-    // variable, nor do we expect the `get` called multiple times)
+    // return the final value (RVO and NRVO only suited for local variables. we
+    // didn't return a local variable, nor do we expect the `get` called
+    // multiple times)
     return std::move(handle_.promise().final_return_value);
   }
 
@@ -205,7 +209,8 @@ public:
       return std::nullopt;
 
     handle_.resume();
-    return std::make_optional(std::move(*handle_.promise().current_value));
+    return std::make_optional(
+        std::move(*const_cast<YieldType *>(handle_.promise().current_value)));
   }
 
 private:

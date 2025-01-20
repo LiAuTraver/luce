@@ -1,5 +1,6 @@
 #pragma once
 #include <fmt/format.h>
+#include <compare>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -13,7 +14,7 @@
 #include <magic_enum/magic_enum.hpp>
 #include "accat/auxilia/details/format.hpp"
 
-namespace accat::luce {
+namespace accat::luce::repl {
 using namespace std::literals;
 struct Token : auxilia::Printable<Token> {
   enum class Type : uint8_t {
@@ -21,7 +22,7 @@ struct Token : auxilia::Printable<Token> {
     kMonostate = 0,
     // Single-character tokens.
     kLeftParen, kRightParen, kLeftBrace, kRightBrace, kComma, 
-    kDot, kMinus, kPlus, kSemicolon, kSlash, kAmpersand, kAsterisk,
+    kDot, kMinus, kPlus, kSemicolon, kSlash, kAmpersand, kStar,
     // One or two character tokens.
     kBang, kBangEqual, kEqual, kEqualEqual, 
     kGreater, kGreaterEqual, kLess, kLessEqual,
@@ -49,9 +50,11 @@ struct Token : auxilia::Printable<Token> {
       return *this;
     return _do_move(std::move(that));
   }
-  ~Token() noexcept {
+  AC_CONSTEXPR20 ~Token() noexcept {
     if (type_ == Type::kLexError)
       error_message_.~string_type();
+    // trivially destructible, no need to destroy explicitly
+    // ...
   }
 
 public:
@@ -70,21 +73,24 @@ public:
                  "error_message() called on a non-error token")
     return error_message_;
   }
-  Type type() const noexcept {
+  constexpr Type type() const noexcept {
     return type_;
   }
-  uint_least32_t line() const noexcept {
+  constexpr bool is_type(const Type type) const noexcept {
+    return type_ == type;
+  }
+  constexpr uint_least32_t line() const noexcept {
     return line_;
   }
   auto to_string(const auxilia::FormatPolicy &format_policy =
-                     auxilia::FormatPolicy::kDefault) const -> std::string {
-    auto name = magic_enum::enum_name(type_);
+                     auxilia::FormatPolicy::kDefault) const -> string_type {
     auto str = string_type{};
     if (format_policy == auxilia::FormatPolicy::kDefault) {
+      auto name = magic_enum::enum_name(type_);
       str = fmt::format(
-          "type: {}, {}, line: {}", name, _format_lexeme(format_policy), line_);
+          "type: {}, {}, line: {}", name, _do_format(format_policy), line_);
     } else if (format_policy == auxilia::FormatPolicy::kTokenOnly) {
-      str = _format_lexeme(format_policy);
+      str = _do_format(format_policy);
     } else {
       dbg_break
       return "not implemented";
@@ -99,20 +105,44 @@ protected:
       : type_(type), number_(number), line_(line) {}
 
 public:
-  static auto Number(const long double value,
-                     const uint_least32_t line) noexcept {
+  static AC_CONSTEXPR20 auto Number(const long double value,
+                                    const uint_least32_t line) noexcept {
     return Token{Type::kNumber, value, line};
   }
-  static auto Lexeme(const Type type,
-                     const std::string_view lexeme,
-                     const uint_least32_t line) noexcept {
+  static AC_CONSTEXPR20 auto Lexeme(const Type type,
+                                    const std::string_view lexeme,
+                                    const uint_least32_t line) noexcept {
     return Token{type, lexeme, line};
   }
-  static auto Error(std::string &&message, const uint_least32_t line) noexcept {
+  static AC_CONSTEXPR20 auto Error(std::string &&message,
+                                   const uint_least32_t line) noexcept {
     return Token{Type::kLexError, std::move(message), line};
   }
   static auto eof(const uint_least32_t line) noexcept {
     return Token{Type::kEndOfFile, ""sv, line};
+  }
+
+public:
+  auto operator<=>(const Token &that) const
+      noexcept(noexcept(lexeme_ <=> that.lexeme_)) -> std::partial_ordering {
+    if (this == std::addressof(that))
+      return std::partial_ordering::equivalent;
+    if (type_ != that.type_)
+      return type_ <=> that.type_;
+    switch (type_) {
+    case Type::kLexError:
+      return std::partial_ordering::unordered;
+    case Type::kNumber:
+      return number_ <=> that.number_;
+    case Type::kMonostate:
+      return std::partial_ordering::equivalent;
+    default:
+      return lexeme_ <=> that.lexeme_;
+    }
+  }
+  auto operator!=(const Token &that) const
+      noexcept(noexcept(this->operator<=>(that))) -> bool {
+    return *this <=> that != std::partial_ordering::equivalent;
   }
 
 private:
@@ -132,7 +162,7 @@ private:
     case Type::kLexError: // non-trivially destructible
       error_message_.~string_type();
       break;
-    case Type::kNumber: // trivially destructible, no need to destroy explicitly
+    case Type::kNumber: // trivially destructible
       [[fallthrough]];
     case Type::kMonostate: // ditto
       [[fallthrough]];
@@ -145,7 +175,7 @@ private:
 
     switch (that.type_) {
     case Type::kLexError: // horrible! :(
-      new (std::addressof(error_message_))
+      ::new (std::addressof(error_message_))
           string_type(std::move(that.error_message_));
       break;
     case Type::kNumber:
@@ -160,7 +190,7 @@ private:
     that.type_ = Type::kMonostate;
     return *this;
   }
-  auto _format_lexeme(const auxilia::FormatPolicy format_policy) const
+  auto _do_format(const auxilia::FormatPolicy format_policy) const
       -> string_type {
     auto str = string_type{};
     if (format_policy == auxilia::FormatPolicy::kDefault) {
@@ -171,18 +201,18 @@ private:
       else if (type_ == Type::kMonostate)
         str = "monostate"s;
       else
-        str = fmt::format("lexeme: '{}'", lexeme_);
+        str = fmt::format("lexeme: '{}'", magic_enum::enum_name(type_));
     } else if (format_policy == auxilia::FormatPolicy::kTokenOnly) {
       if (type_ == Type::kNumber)
         str = fmt::format("{}", number_);
       else if (type_ == Type::kLexError)
-        str = fmt::format("{}", error_message_);
+        str = error_message_;
       else if (type_ == Type::kMonostate)
         str = "monostate"s;
       else
-        str = fmt::format("{}", lexeme_);
+        str = magic_enum::enum_name(type_);
     }
     return str;
   }
-};
+} inline AC_CONSTEXPR20 nulltok{};
 } // namespace accat::luce

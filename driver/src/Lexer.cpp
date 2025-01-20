@@ -2,35 +2,37 @@
 #include <charconv>
 #include <locale>
 #include <utility>
+#include "accat/auxilia/details/Status.hpp"
 #include "deps.hh"
 
-#include "luce/debugging/Lexer.hpp"
+#include "luce/repl/Lexer.hpp"
 
-namespace accat::luce {
+namespace accat::luce::repl {
 using auxilia::operator""s;
 using auxilia::operator""sv;
+using enum Lexer::token_type_t;
 inline static constexpr auto tolerable_chars = "_`$"sv;
 // inline static constexpr auto conditional_tolerable_chars = "@$#"sv;
 inline static constexpr auto whitespace_chars = " \t\r"sv;
 inline static constexpr auto newline_chars = "\n\v\f"sv;
 inline static const auto keywords =
     std::unordered_map<std::string_view, Token::Type>{
-        {"and"sv, {Token::Type::kAnd}},
-        {"class"sv, {Token::Type::kClass}},
-        {"else"sv, {Token::Type::kElse}},
-        {"false"sv, {Token::Type::kFalse}},
-        {"for"sv, {Token::Type::kFor}},
-        {"fun"sv, {Token::Type::kFun}},
-        {"if"sv, {Token::Type::kIf}},
-        {"nil"sv, {Token::Type::kNil}},
-        {"or"sv, {Token::Type::kOr}},
-        {"print"sv, {Token::Type::kPrint}},
-        {"return"sv, {Token::Type::kReturn}},
-        {"super"sv, {Token::Type::kSuper}},
-        {"this"sv, {Token::Type::kThis}},
-        {"true"sv, {Token::Type::kTrue}},
-        {"var"sv, {Token::Type::kVar}},
-        {"while"sv, {Token::Type::kWhile}},
+        {"and"sv, {kAnd}},
+        {"class"sv, {kClass}},
+        {"else"sv, {kElse}},
+        {"false"sv, {kFalse}},
+        {"for"sv, {kFor}},
+        {"fun"sv, {kFun}},
+        {"if"sv, {kIf}},
+        {"nil"sv, {kNil}},
+        {"or"sv, {kOr}},
+        {"print"sv, {kPrint}},
+        {"return"sv, {kReturn}},
+        {"super"sv, {kSuper}},
+        {"this"sv, {kThis}},
+        {"true"sv, {kTrue}},
+        {"var"sv, {kVar}},
+        {"while"sv, {kWhile}},
     };
 template <typename Predicate>
 bool Lexer::advance_if(Predicate &&predicate)
@@ -46,9 +48,7 @@ Lexer::Lexer(Lexer &&other) noexcept
     : head(std::exchange(other.head, 0)),
       cursor(std::exchange(other.cursor, 0)),
       contents(std::move(const_cast<string_type &>(other.contents))),
-      // lexeme_views(std::move(other.lexeme_views)),
       current_line(std::exchange(other.current_line, 1)),
-      // tokens(std::move(other.tokens)),
       error_count(std::exchange(other.error_count, 0)) {}
 Lexer &Lexer::operator=(Lexer &&other) noexcept {
   if (this == &other)
@@ -57,9 +57,7 @@ Lexer &Lexer::operator=(Lexer &&other) noexcept {
   cursor = std::exchange(other.cursor, 0);
   const_cast<string_type &>(contents) =
       std::move(const_cast<string_type &>(other.contents));
-  // lexeme_views = std::move(other.lexeme_views);
   current_line = std::exchange(other.current_line, 1);
-  // tokens = std::move(other.tokens);
   error_count = std::exchange(other.error_count, 0);
 
   return *this;
@@ -96,19 +94,15 @@ Lexer::status_t Lexer::load(string_type &&str) {
   if (not contents.empty())
     return auxilia::AlreadyExistsError("Content already loaded");
   const_cast<string_type &>(contents) = std::move(str);
-  // tokens.clear();
-  // lexeme_views.clear();
   return {};
 }
 
-auto Lexer::lex() -> auxilia::Generator<Lexer::token_t, uint_least32_t> {
+auto Lexer::lex() -> generator_t {
   while (not is_at_end()) {
     head = cursor;
     if (auto token = next_token(); token.type() != kMonostate) {
       co_yield token;
     }
-    // else, skip the token and continue
-    // continue;
   }
   co_yield add_token(kEndOfFile);
   co_return error_count;
@@ -120,35 +114,35 @@ Lexer::token_t Lexer::add_identifier_and_keyword() {
     // a normal identifier
     return add_token(kIdentifier);
   }
-  switch (it->second) {
-  case kTrue:
-    return add_token(kTrue);
-    break;
-  case kFalse:
-    return add_token(kFalse);
-    break;
-  default:
-    dbg(trace, "keyword: {}", value)
-    return add_token(it->second);
-  }
-  std::unreachable();
+  // switch (it->second) {
+  // case kTrue:
+  //   return add_token(kTrue);
+  //   break;
+  // case kFalse:
+  //   return add_token(kFalse);
+  //   break;
+  // default:
+  //   dbg(trace, "keyword: {}", value)
+  //   return add_token(it->second);
+  // }
+  // std::unreachable();
+  return add_token(it->second);
 }
 Lexer::token_t Lexer::add_number() {
   if (auto value = lex_number(false)) {
     return add_token(*value);
   }
-  // dbg(error, "invalid number.")
-  // return {};
-  return add_error_token("Invalid number: "s + contents.substr(head, cursor - head));
+  return add_error_token("Invalid number: "s +
+                         contents.substr(head, cursor - head));
 }
 Lexer::token_t Lexer::add_string() {
   // hard to do...
-  auto status = lex_string();
-  auto value = string_view_type(contents.data() + head + 1, cursor - head - 2);
-  if (status != auxilia::Status::kOk) {
-    return add_error_token("Unterminated string: "s + value.data());
+
+  if (auto status = lex_string(); !status.ok()) {
+    // not null-terminated, passing `data()` only will include the rest of the
+    // whole contents.
+    return add_error_token({status.message().data(), status.message().size()});
   }
-  dbg(trace, "string value: {}", value)
   return add_token(kString);
 }
 Lexer::token_t Lexer::add_comment() {
@@ -182,7 +176,7 @@ Lexer::token_t Lexer::next_token() {
   case ';':
     return add_token(kSemicolon);
   case '*':
-    return add_token(kAsterisk);
+    return add_token(kStar);
   case '&':
     return add_token(kAmpersand);
   case '!':
@@ -240,28 +234,22 @@ bool Lexer::is_at_end(const size_t offset) const {
 }
 Lexer::token_t Lexer::add_token(Token::Type type) {
   if (type == kEndOfFile) { // FIXME: lexeme bug at EOF(not critical)
-                            // tokens.emplace_back(type, "", current_line);
-                            // return;
     return token_t::eof(current_line);
   }
   auto lexeme = string_view_type(contents.data() + head, cursor - head);
   dbg(trace, "lexeme: {}", lexeme)
-  // tokens.emplace_back(type, lexeme, current_line);
-  // lexeme_views.emplace_back(lexeme);
   return token_t::Lexeme(type, lexeme, current_line);
 }
 Lexer::token_t Lexer::add_token(long double number) const {
   dbg(trace, "lexeme: {}", number)
   return token_t::Number(number, current_line);
-  // tokens.emplace_back(type, literal, current_line);
-  // lexeme_views.emplace_back(std::to_string(literal));
 }
-Lexer::token_t Lexer::add_error_token(string_type&& msg) {
+Lexer::token_t Lexer::add_error_token(string_type &&msg) {
   error_count++;
   // return {kLexError, msg, current_line};
   return token_t::Error(std::move(msg), current_line);
 }
-Lexer::status_t::Code Lexer::lex_string() {
+Lexer::status_t Lexer::lex_string() {
   while (peek() != '"' && !is_at_end()) {
     if (peek() == '\n')
       current_line++; // multiline string, of course we dont want act like C/C++
@@ -270,14 +258,14 @@ Lexer::status_t::Code Lexer::lex_string() {
     get();
   }
   if (is_at_end() && peek() != '"') {
-    dbg(error, "Unterminated string.")
-    return status_t::kInvalidArgument;
+    return auxilia::InvalidArgumentError("Unterminated string: "s +
+                                         contents.substr(head, cursor - head));
   }
   // "i am a string..."
   // 						      ^ cursor position
   else
     get(); // consume the closing quote.
-  return status_t::kOk;
+  return {};
 }
 auto Lexer::lex_number(const bool is_negative) -> std::optional<long double> {
   while (std::isdigit(peek(), std::locale())) {
@@ -303,9 +291,6 @@ auto Lexer::lex_number(const bool is_negative) -> std::optional<long double> {
 
   return to_number<long double>(value);
 }
-// auto Lexer::get_tokens() -> tokens_t & {
-//   return tokens;
-// }
 bool Lexer::ok() const noexcept {
   return !error_count;
 }

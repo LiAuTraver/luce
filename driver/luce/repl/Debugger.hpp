@@ -2,7 +2,7 @@
 
 #include "luce/utils/Pattern.hpp"
 
-namespace accat::luce {
+namespace accat::luce::repl {
 class Debugger : public Component {
 public:
   explicit Debugger(Mediator *parent = nullptr) : Component(parent) {}

@@ -360,7 +360,7 @@ extern "C"
 #  define AC_INTERFACE __interface
 #else
 #  define AC_NOVTABLE
-#  define AC_INTERFACE class
+#  define AC_INTERFACE struct
 #endif
 
 namespace accat::auxilia::detail {

@@ -1,5 +1,5 @@
 #pragma once
 
-#include "luce/debugging/Debugger.hpp"
+#include "luce/repl/Debugger.hpp"
 
 namespace accat::luce {}

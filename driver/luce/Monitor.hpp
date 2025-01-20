@@ -6,7 +6,7 @@
 #include <scn/scan.h>
 #include <spdlog/spdlog.h>
 #include "MainMemory.hpp"
-#include "debugging/Debugger.hpp"
+#include "repl/Debugger.hpp"
 #include "utils/Pattern.hpp"
 #include "luce/utils/Timer.hpp"
 #include "config.hpp"
@@ -62,7 +62,7 @@ class Monitor : public Mediator {
   CPUs cpus;
   Timer timer;
   Disassembler disassembler;
-  Debugger debugger;
+  repl::Debugger debugger;
 
 public:
   Monitor()
