@@ -41,7 +41,7 @@
 #ifdef __clang__
 #  define AC_FLATTEN
 #elif defined(_MSC_VER)
-#  define AC_FLATTEN __declspec("flatten")
+#  define AC_FLATTEN [[msvc::flatten]]
 #elif defined(__GNUC__)
 #  define AC_FLATTEN [[gnu::flatten]]
 #else

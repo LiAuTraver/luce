@@ -7,6 +7,8 @@
 #include <accat/auxilia/details/id.hpp>
 #include <utility>
 
+#include "luce/config.hpp"
+
 namespace accat::luce {
 /// @interface Mediator
 struct Mediator;
@@ -59,7 +61,7 @@ protected:
   virtual ~Mediator() = default;
 };
 
-struct Component {
+struct LUCE_API Component {
   friend struct Mediator;
 
 protected:

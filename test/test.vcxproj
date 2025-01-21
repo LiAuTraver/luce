@@ -101,15 +101,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dummy.cpp" />
-    <ClCompile Include="endian_test.cpp" />
-    <ClCompile Include="memory_load_test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\driver\driver.vcxproj">
       <Project>{55f3c414-245a-49bf-bc4c-3112750d2452}</Project>
       <Name>driver</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="endian.test.cpp" />
+    <ClCompile Include="expr.test.cpp" />
+    <ClCompile Include="memory.load.test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,17 +1,16 @@
 #include "deps.hh"
 
-#include <accat/auxilia/auxilia.hpp>
-#include <luce/MainMemory.hpp>
-
 #include <gtest/gtest.h>
 
-TEST(EndianTest, Test) {
-  auto littleEndianData =
-      *accat::auxilia::read_as_bytes<uint32_t>("Z:/luce/data/image.bin");
+#include "luce/MainMemory.hpp"
 
-  auto bigEndianData =
-      *accat::auxilia::read_as_bytes<uint32_t, std::endian::big>(
-          "Z:/luce/data/image-big_endian.bin");
+using namespace accat::auxilia;
+
+TEST(EndianTest, Test) {
+  auto littleEndianData = *read_as_bytes<uint32_t>("Z:/luce/data/image.bin");
+
+  auto bigEndianData = *read_as_bytes<uint32_t, std::endian::big>(
+      "Z:/luce/data/image-big-endian.bin");
 
   auto little_endian_byte_span =
       std::span{reinterpret_cast<const std::byte *>(littleEndianData.data()),

@@ -34,7 +34,8 @@ function(create_test_executable test_name)
   add_llvm_deps_for(${test_name})
 endfunction(create_test_executable)
 
-create_test_executable(endian_test endian_test.cpp)
-create_test_executable(memory_load_test memory_load_test.cpp)
+create_test_executable(endian.test endian.test.cpp)
+create_test_executable(memory.load.test memory.load.test.cpp)
+create_test_executable(expr.test expr.test.cpp)
 
 add_folder(Test)

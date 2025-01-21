@@ -18,7 +18,7 @@ public:
   using expr_ptr_t = std::shared_ptr<expression::Expr>;
 
 public:
-  explicit Parser(coro_t coro) : coro(std::move(coro)) {}
+  explicit Parser(coro_t&& coro) : coro(std::move(coro)) {}
   Parser(const Parser &) = delete;
   Parser(Parser &&) noexcept = default;
   Parser &operator=(const Parser &) = delete;
