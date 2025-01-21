@@ -59,28 +59,4 @@ bool Parser::inspect(Args &&...args) {
     return false;
   return (... || (peek().type() == args));
 }
-
-// const token_t &peek() {
-//   if (queued_tokens.empty()) {
-//     if (push()) {
-//       return queued_tokens.front();
-//     }
-//     return nulltok;
-//   }
-//   return queued_tokens.front();
-// }
-// uint_least32_t push(const size_t offset = 1) {
-//   auto count = offset;
-//   postcondition(
-//       count <= offset,
-//       "should not happen; you might have probably passed a negative value")
-//   while (count--) {
-//     if (auto token = coro.next()) {
-//       queued_tokens.emplace(std::move(*token));
-//     } else
-//       break;
-//   }
-//   return offset - count;
-// }
-
 } // namespace accat::luce

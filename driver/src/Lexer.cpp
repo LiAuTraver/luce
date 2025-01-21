@@ -3,9 +3,11 @@
 #include <locale>
 #include <utility>
 #include "accat/auxilia/details/Status.hpp"
+#include "accat/auxilia/details/macros.hpp"
 #include "deps.hh"
 
 #include "luce/repl/Lexer.hpp"
+#include <spdlog/spdlog.h>
 
 namespace accat::luce::repl {
 using auxilia::operator""s;
@@ -87,14 +89,13 @@ Lexer::status_t Lexer::load(const path_type &filepath) const {
   std::ostringstream buffer;
   buffer << file.rdbuf();
 
-  const_cast<string_type &>(contents) = buffer.str();
+  const_cast<string_type &>(contents) = std::move(buffer).str();
   return {};
 }
-Lexer::status_t Lexer::load(string_type &&str) {
-  if (not contents.empty())
-    return auxilia::AlreadyExistsError("Content already loaded");
+auto Lexer::load_string(const string_view_type str)-> Lexer & {
+  precondition(contents.empty(), "File already loaded")
   const_cast<string_type &>(contents) = std::move(str);
-  return {};
+  return *this;
 }
 
 auto Lexer::lex() -> generator_t {
@@ -107,26 +108,13 @@ auto Lexer::lex() -> generator_t {
   co_yield add_token(kEndOfFile);
   co_return error_count;
 }
-Lexer::token_t Lexer::add_identifier_and_keyword() {
+Lexer::token_t Lexer::add_identifier_or_keyword() {
   auto value = lex_identifier();
-  auto it = keywords.find(value);
-  if (it == keywords.end()) {
-    // a normal identifier
-    return add_token(kIdentifier);
+  if (keywords.contains(value)) {
+    return add_token(keywords.at(value));
   }
-  // switch (it->second) {
-  // case kTrue:
-  //   return add_token(kTrue);
-  //   break;
-  // case kFalse:
-  //   return add_token(kFalse);
-  //   break;
-  // default:
-  //   dbg(trace, "keyword: {}", value)
-  //   return add_token(it->second);
-  // }
-  // std::unreachable();
-  return add_token(it->second);
+  dbg(trace, "identifier: {}", value)
+  return add_token(kIdentifier);
 }
 Lexer::token_t Lexer::add_number() {
   if (auto value = lex_number(false)) {
@@ -205,7 +193,7 @@ Lexer::token_t Lexer::next_token() {
     }
     // finally, letters
     if (std::isalpha(c, std::locale()) or tolerable_chars.contains(c)) {
-      return add_identifier_and_keyword();
+      return add_identifier_or_keyword();
     }
     return add_error_token("Unexpected character: "s + c);
   }
@@ -306,4 +294,4 @@ Lexer::string_view_type Lexer::lex_identifier() {
   //       ^ cursor position
   return {contents.data() + head, cursor - head};
 }
-} // namespace accat::luce
+} // namespace accat::luce::repl

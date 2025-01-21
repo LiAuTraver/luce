@@ -6,15 +6,18 @@
 #include "./format.hpp"
 
 #include "./Monostate.hpp"
+#include "accat/auxilia/details/config.hpp"
 EXPORT_AUXILIA
 namespace accat::auxilia {
 /// @brief A simple variant wrapper class around @link std::variant @endlink for
 /// convenience when evaluating expressions, especially when the operation was
 /// `to_string` or check the type's name when debugging.
 /// @note exception-free variant wrapper
-template <Variantable... Types>
+template <typename... Types>
 class Variant : public Printable<Variant<Types...>>,
                 public Viewable<Variant<Types...>> {
+  static_assert(Variantable<Types...>, "Types must be variantable");
+  
   using monostate_like_type = std::tuple_element_t<0, std::tuple<Types...>>;
   using self_type = Variant<Types...>;
 
@@ -27,8 +30,16 @@ public:
   inline constexpr Variant() = default;
 
   template <typename Ty>
-    requires(!std::same_as<std::decay_t<Ty>, Variant>)
-  Variant(Ty &&value) : my_variant(std::forward<Ty>(value)) {}
+    requires(!std::same_as<std::decay_t<Ty>, Variant> &&
+             (std::is_same_v<std::decay_t<Ty>, Types> || ...))
+  Variant(Ty &&value) : my_variant(std::forward<Ty>(value)) {
+    static_assert(
+        (std::is_same_v<std::decay_t<Ty>, Types> || ...),
+        "The type of the value must be one of the types in the variant, "
+        "otherwise if the variant failed to construct, the error message will "
+        "be horrible and hard to find the cause. please use explicit type "
+        "constructor.");
+  }
 
   Variant(const Variant &) = default;
   Variant(Variant &&that) noexcept : my_variant(std::move(that.my_variant)) {
@@ -98,8 +109,8 @@ public:
       -> decltype(auto) {
     return my_variant.template emplace<Args>();
   }
-  auto &get() const {
-    return my_variant;
+  constexpr auto get(this auto &&self) noexcept {
+    return self.my_variant;
   }
   constexpr auto swap(Variant &that) noexcept(
       std::conjunction_v<std::is_nothrow_move_constructible<Types...>,
@@ -107,8 +118,9 @@ public:
     my_variant.swap(that.my_variant);
     return *this;
   }
-  constexpr auto clear(this auto &&self) noexcept(noexcept(
-      self.my_variant.template emplace<monostate_like_type>())) -> decltype(auto) {
+  constexpr auto clear(this auto &&self) noexcept(
+      noexcept(self.my_variant.template emplace<monostate_like_type>()))
+      -> decltype(auto) {
     self.my_variant.template emplace<monostate_like_type>();
     return self;
   }
@@ -117,9 +129,12 @@ public:
   }
   auto underlying_string(const FormatPolicy &format_policy =
                              FormatPolicy::kDefault) const -> string_type {
-    return this->visit([&](const auto &value) -> string_type {
-      return value.to_string(format_policy);
-    });
+    return this->visit([&](const auto &value) -> string_type
+                       //  requires requires {
+                       //    value.to_string(format_policy)
+                       //        ->std::template convertible_to<string_type>;
+                       //  }
+                       { return value.to_string(format_policy); });
   }
 
 private:

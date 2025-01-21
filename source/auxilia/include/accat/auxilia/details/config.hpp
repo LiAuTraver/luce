@@ -19,16 +19,15 @@ concept Variantable = requires {
 /// @tparam Ty the type of the value
 /// @remarks similiar to Microsoft's @link std::_SMF_control @endlink class,
 /// which was used in @link std::optional @endlink
-template <typename Ty>
-concept Storable = true;
 // FIXME: not working
-// std::conjunction_v<std::is_default_constructible<Ty>,
-//                                       std::is_nothrow_destructible<Ty>,
-//                                       std::is_nothrow_constructible<Ty>>;
+template <typename Ty>
+concept Storable = std::conjunction_v<std::is_default_constructible<Ty>,
+                                      std::is_nothrow_destructible<Ty>,
+                                      std::is_nothrow_constructible<Ty>>;
 
-template <Variantable...> class Variant;
+template <typename...> class Variant;
 class Status;
-template <Storable> class StatusOr;
+template <typename> class StatusOr;
 // class file_reader;
 using string = ::std::string;
 using string_view = ::std::string_view;
@@ -39,6 +38,9 @@ using namespace ::std::string_view_literals;
 using namespace ::std::string_literals;
 constexpr auto isspacelike = [](const char &c) constexpr noexcept -> bool {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+};
+constexpr auto isntspacelike = [](const char &c) constexpr noexcept -> bool {
+  return !isspacelike(c);
 };
 inline consteval const char *raw(const char *str) {
   while (str && *str && (*str == '\n')) {

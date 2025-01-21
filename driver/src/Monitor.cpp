@@ -15,7 +15,7 @@
 #include <syncstream>
 #include <utility>
 
-namespace accat::luce::inline tr2::repl{
+namespace accat::luce::repl{
 extern auto repl(Monitor *)
     -> ::accat::auxilia::Generator<::accat::auxilia::Status>;
 }
@@ -90,7 +90,7 @@ auxilia::Status Monitor::REPL() {
 
   cpus.attach_context(process.context(), process.id());
 
-  auto replCoro = tr2::repl::repl(this);
+  auto replCoro = repl::repl(this);
   for (auto res : replCoro | std::views::common) {
     if (!res) {
       if (res.code() == auxilia::Status::Code::kReturning) {

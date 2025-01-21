@@ -39,7 +39,7 @@ struct Token : auxilia::Printable<Token> {
   };
   Token() = default;
   Token(Type type, std::string_view lexeme, uint_least32_t line)
-      : type_(type), lexeme_(lexeme), line_(line) {}
+      : type_(type), lexeme_(std::string{lexeme}), line_(line) {}
   Token(const Token &) = delete;
   Token &operator=(const Token &) = delete;
   Token(Token &&that) noexcept {
@@ -51,10 +51,8 @@ struct Token : auxilia::Printable<Token> {
     return _do_move(std::move(that));
   }
   AC_CONSTEXPR20 ~Token() noexcept {
-    if (type_ == Type::kLexError)
-      error_message_.~string_type();
-    // trivially destructible, no need to destroy explicitly
-    // ...
+    if (type_ != Type::kNumber && type_ != Type::kMonostate)
+      lexeme_.~string_type();
   }
 
 public:
@@ -71,7 +69,7 @@ public:
   string_type error_message() const noexcept {
     precondition(type_ == Type::kLexError,
                  "error_message() called on a non-error token")
-    return error_message_;
+    return lexeme_;
   }
   constexpr Type type() const noexcept {
     return type_;
@@ -85,22 +83,20 @@ public:
   auto to_string(const auxilia::FormatPolicy &format_policy =
                      auxilia::FormatPolicy::kDefault) const -> string_type {
     auto str = string_type{};
-    if (format_policy == auxilia::FormatPolicy::kDefault) {
+    if (format_policy == auxilia::FormatPolicy::kBrief) {
+      str = _do_format(format_policy);
+    } else {
       auto name = magic_enum::enum_name(type_);
       str = fmt::format(
           "type: {}, {}, line: {}", name, _do_format(format_policy), line_);
-    } else if (format_policy == auxilia::FormatPolicy::kTokenOnly) {
-      str = _do_format(format_policy);
-    } else {
-      dbg_break
-      return "not implemented";
     }
+
     return str;
   }
 
 protected:
   Token(Type type, std::string &&error_message, uint_least32_t line)
-      : type_(type), error_message_(std::move(error_message)), line_(line) {}
+      : type_(type), lexeme_(std::move(error_message)), line_(line) {}
   Token(Type type, long double number, uint_least32_t line)
       : type_(type), number_(number), line_(line) {}
 
@@ -149,41 +145,28 @@ private:
   Type type_ = Type::kMonostate;
   union {
     std::monostate monostate_{};
-    std::string_view lexeme_;
+    string_type lexeme_;
     long double number_;
-    string_type error_message_;
   };
   uint_least32_t line_ = std::numeric_limits<uint_least32_t>::signaling_NaN();
 
 private:
   Token &_do_move(Token &&that) noexcept {
     // Destroy old active member
-    switch (type_) {
-    case Type::kLexError: // non-trivially destructible
-      error_message_.~string_type();
-      break;
-    case Type::kNumber: // trivially destructible
-      [[fallthrough]];
-    case Type::kMonostate: // ditto
-      [[fallthrough]];
-    default:
-      break;
-    }
+    if (type_ != Type::kNumber && type_ != Type::kMonostate)
+      lexeme_.~string_type();
 
     type_ = that.type_;
     line_ = that.line_;
 
     switch (that.type_) {
-    case Type::kLexError: // horrible! :(
-      ::new (std::addressof(error_message_))
-          string_type(std::move(that.error_message_));
-      break;
     case Type::kNumber:
       number_ = that.number_;
       break;
     case Type::kMonostate:
-      [[fallthrough]];
+      break;
     default:
+      ::new (std::addressof(lexeme_)) std::string(std::move(that.lexeme_));
       break;
     }
 
@@ -193,26 +176,26 @@ private:
   auto _do_format(const auxilia::FormatPolicy format_policy) const
       -> string_type {
     auto str = string_type{};
-    if (format_policy == auxilia::FormatPolicy::kDefault) {
-      if (type_ == Type::kNumber)
-        str = fmt::format("number: '{}'", number_);
-      else if (type_ == Type::kLexError)
-        str = fmt::format("error: '{}'", error_message_);
-      else if (type_ == Type::kMonostate)
-        str = "monostate"s;
-      else
-        str = fmt::format("lexeme: '{}'", magic_enum::enum_name(type_));
-    } else if (format_policy == auxilia::FormatPolicy::kTokenOnly) {
+    if (format_policy == auxilia::FormatPolicy::kBrief) {
       if (type_ == Type::kNumber)
         str = fmt::format("{}", number_);
       else if (type_ == Type::kLexError)
-        str = error_message_;
+        str = lexeme_;
       else if (type_ == Type::kMonostate)
         str = "monostate"s;
       else
         str = magic_enum::enum_name(type_);
+    } else {
+      if (type_ == Type::kNumber)
+        str = fmt::format("number: '{}'", number_);
+      else if (type_ == Type::kLexError)
+        str = fmt::format("error: '{}'", lexeme_);
+      else if (type_ == Type::kMonostate)
+        str = "monostate"s;
+      else
+        str = fmt::format("lexeme: '{}'", magic_enum::enum_name(type_));
     }
     return str;
   }
 } inline AC_CONSTEXPR20 nulltok{};
-} // namespace accat::luce
+} // namespace accat::luce::repl

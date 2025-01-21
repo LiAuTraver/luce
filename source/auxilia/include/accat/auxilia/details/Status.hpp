@@ -383,7 +383,7 @@ public:
 ///         it's designed to be as identical as possible to the
 ///         `absl::StatusOr` class.
 /// @tparam Ty the type of the value
-template <Storable Ty> class StatusOr : public Status {
+template <typename Ty> class StatusOr : public Status {
 public:
   using base_type = Status;
   using value_type = Ty;
@@ -571,6 +571,18 @@ AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status ReturnMe(
     const std::string_view message = "Returning",
     const std::source_location &location = std::source_location::current()) {
   return {Status::kReturning, message, location};
+}
+
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status ParseError(
+    const std::string_view message = "Parse error",
+    const std::source_location &location = std::source_location::current()) {
+  return {Status::kParseError, message, location};
+}
+
+AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status LexError(
+    const std::string_view message = "Lex error",
+    const std::source_location &location = std::source_location::current()) {
+  return {Status::kLexError, message, location};
 }
 
 #  define AC_RETURN_IF_NOT(_status_)                                           \

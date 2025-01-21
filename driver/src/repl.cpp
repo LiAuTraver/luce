@@ -7,10 +7,15 @@
 #include "luce/Monitor.hpp"
 #include <fmt/color.h>
 #include <fmt/format.h>
+#include <scn/scan.h>
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/details/macros.hpp>
 #include <accat/auxilia/details/Status.hpp>
 #include <accat/auxilia/details/views.hpp>
+#include "luce/repl/ExprVisitor.hpp"
+#include "luce/repl/Lexer.hpp"
+#include "luce/repl/Parser.hpp"
+#include "luce/repl/evaluation.hpp"
 #include "luce/utils/Pattern.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -27,8 +32,20 @@ namespace accat::luce {
 using fmt::fg;
 using enum fmt::color;
 using namespace std::literals;
+using auxilia::InvalidArgumentError;
+using auxilia::match;
+using auxilia::Monostate;
+using auxilia::Status;
+using auxilia::StatusOr;
+} // namespace accat::luce
+namespace accat::luce::repl {
+auto repl(Monitor *) -> auxilia::Generator<Status>;
+}
+namespace accat::luce::repl::command {
 namespace {
-auxilia::StatusOr<std::string> read(Monitor *) {
+auto read(Monitor *) -> StatusOr<std::string>;
+
+StatusOr<std::string> read(Monitor *) {
   std::string input;
   for (;;) {
     std::string raw_input;
@@ -73,13 +90,8 @@ auxilia::StatusOr<std::string> read(Monitor *) {
   }
 }
 } // namespace
-
-inline namespace tr2 {
-using auxilia::match;
-namespace repl::command {
-namespace {
 interface ICommand {
-  virtual auxilia::Status execute(Monitor * monitor) const = 0;
+  virtual Status execute(Monitor * monitor) const = 0;
 };
 
 struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
@@ -88,7 +100,7 @@ struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
   virtual ~Unknown() override = default;
 
   string_type command;
-  virtual auxilia::Status execute(Monitor *) const override final {
+  virtual Status execute(Monitor *) const override final {
     auxilia::println(stderr,
                      fg(crimson),
                      "luce: unknown command '{cmd}'. Type "
@@ -98,23 +110,23 @@ struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
   }
 };
 struct Help final : ICommand {
-  virtual auxilia::Status execute(Monitor *) const override final {
+  virtual Status execute(Monitor *) const override final {
     fmt::print(message::repl::Help);
     return {};
   }
 };
 struct Exit final : ICommand {
-  virtual auxilia::Status execute(Monitor *) const override final {
+  virtual Status execute(Monitor *) const override final {
     return auxilia::ReturnMe("exit!");
   }
 };
 struct Restart final : ICommand {
-  virtual auxilia::Status execute(Monitor *monitor) const override final {
+  virtual Status execute(Monitor *monitor) const override final {
     return monitor->notify(nullptr, Event::kRestartTask);
   }
 };
 struct Continue final : ICommand {
-  virtual auxilia::Status execute(Monitor *monitor) const override final {
+  virtual Status execute(Monitor *monitor) const override final {
     return monitor->execute_n(1);
   }
 };
@@ -122,25 +134,25 @@ struct Step final : ICommand {
   Step() = default;
   explicit Step(size_t steps) : steps(steps) {}
   size_t steps = 1;
-  virtual auxilia::Status execute(Monitor *monitor) const override final {
+  virtual Status execute(Monitor *monitor) const override final {
     return monitor->execute_n(steps);
   }
 };
 struct AddWatchPoint final : ICommand {
   // TODO: implement expression AST and expr parser
-  virtual auxilia::Status execute(Monitor *) const override final {
+  virtual Status execute(Monitor *) const override final {
     TODO(...)
   }
 };
 struct Info final : ICommand {
 private:
   struct Registers final : ICommand {
-    virtual auxilia::Status execute(Monitor *monitor) const override final {
+    virtual Status execute(Monitor *) const override final {
       TODO(...)
     }
   };
   struct WatchPoints final : ICommand {
-    virtual auxilia::Status execute(Monitor *monitor) const override final {
+    virtual Status execute(Monitor *) const override final {
       TODO(...)
     }
   };
@@ -148,115 +160,156 @@ private:
 public:
   using InfoType = auxilia::Variant<Unknown, Registers, WatchPoints>;
   InfoType infoType;
-  virtual auxilia::Status execute(Monitor *monitor) const override final {
+  virtual Status execute(Monitor *monitor) const override final {
     return infoType.visit(match{
-        [&](const auto &subCommand) -> auxilia::Status {
+        [&](const auto &subCommand) -> Status {
           return subCommand.execute(monitor);
         },
     });
   }
 };
 
-using command_t = auxilia::
-    Variant<Unknown, Help, Exit, Restart, Continue, Step, AddWatchPoint, Info>;
-
-auxilia::StatusOr<command_t> inspect(std::string_view input) {
-  if (input == "exit" or input == "q") {
-    return {Exit{}};
-  }
-  if (input == "help") {
-    return {Help{}};
-  }
-  if (input == "r") {
-    return {Restart{}};
-  }
-
-  if (input == "c") {
-    return {Continue{}};
-  }
-  if (input.starts_with("si")) {
-    if (auto begin = input.find_first_of('['); begin != std::string::npos) {
-      if (auto end = input.find_last_of(']'); end != std::string::npos) {
-        auto shouldBeSpaceOrNumber = input.substr(begin + 1, end - begin - 1) |
-                                     auxilia::ranges::views::trim;
-        if (shouldBeSpaceOrNumber.empty()) {
-          return {Step{1}};
-        }
-        auto steps = size_t{};
-        auto shouldBeNumberStr =
-            shouldBeSpaceOrNumber | std::ranges::to<std::string>();
-        if (auto [p, ec] = std::from_chars(shouldBeNumberStr.data(),
-                                           shouldBeNumberStr.data() +
-                                               shouldBeNumberStr.size(),
-                                           steps,
-                                           10);
-            ec == std::errc{}) {
-          return {Step{steps}};
-        } else {
-          return auxilia::InvalidArgumentError(
-              auxilia::format(fg(crimson),
-                              "{msg}.",
-                              "msg"_a = std::make_error_code(ec).message()));
-        }
-      }
-      // else, fallthrough(error)
+struct Print final : ICommand {
+  Print() = default;
+  Print(std::string expr) : expression(std::move(expr)) {}
+  virtual Status execute(Monitor *) const override final {
+    auto lexer = Lexer{};
+    auto coro = lexer.load_string(expression).lex();
+    auto parser = Parser{std::move(coro)};
+    auto res = parser.next_expression();
+    if (!res) {
+      auxilia::println(stderr,
+                       fg(crimson),
+                       "luce: error: {msg}",
+                       "msg"_a = res->to_string());
+      return {};
     }
-    return auxilia::InvalidArgumentError(auxilia::format(
-        fg(crimson),
-        "please provide a number of steps to execute(e.g., si [2] to execute 2 "
-        "steps)."));
+    auto eval = expression::Evaluator{};
+    auto res2 = res->accept(eval);
+    if (!res2) {
+      auxilia::println(
+          stderr, fg(crimson), "luce: error: {msg}", "msg"_a = res2.message());
+      return {};
+    }
+    auxilia::println(
+        stdout,
+        "{result}",
+        "result"_a = res2->underlying_string(auxilia::FormatPolicy::kBrief));
+    return {};
   }
-  if (input.starts_with("info")) {
-    // info r -> show registers
-    // info w -> show watchpoints (not implemented)
+  std::string expression;
+};
+
+using command_t = auxilia::Variant<Unknown,
+                                   Help,
+                                   Exit,
+                                   Restart,
+                                   Continue,
+                                   Step,
+                                   AddWatchPoint,
+                                   Info,
+                                   Print>;
+
+StatusOr<command_t> inspect(std::string_view input) {
+  // extract out the first command
+  auto it = std::ranges::find_if(input, auxilia::isspacelike);
+  std::string_view mainCommand;
+  if (it == input.end()) {
+    // input itself is the command with no arguments
+    mainCommand = input;
+  } else {
+    mainCommand = input.substr(0, it - input.begin());
+  }
+  if (mainCommand == "exit" or mainCommand == "q") {
+    if (it == input.end()) {
+      return {Exit{}};
+    }
+    return {InvalidArgumentError(
+        fmt::format(fg(crimson), "exit: command does not take arguments"))};
+  }
+  if (mainCommand == "help") {
+    if (it == input.end()) {
+      return {Help{}};
+    }
+    return {InvalidArgumentError(
+        fmt::format(fg(crimson), "help: command does not take arguments"))};
+  }
+  if (mainCommand == "r") {
+    if (it == input.end()) {
+      return {Restart{}};
+    }
+    return {InvalidArgumentError(
+        fmt::format(fg(crimson), "r: command does not take arguments"))};
+  }
+  if (mainCommand == "c") {
+    if (it == input.end()) {
+      return {Continue{}};
+    }
+    return {InvalidArgumentError(
+        fmt::format(fg(crimson), "c: command does not take arguments"))};
+  }
+  if (mainCommand == "si") {
+    if (auto maybe_number =
+            scn::scan<size_t>(input.substr(it - input.begin()), "[{}]")) {
+      auto [steps] = std::move(maybe_number)->values();
+      return {Step{steps}};
+    }
+    return {InvalidArgumentError(
+        fmt::format(fg(crimson), "si: requires [number] as argument"))};
+  }
+  if (mainCommand == "p") {
+    return {Print{input.substr(it - input.begin()).data()}};
+  }
+
+  if (mainCommand == "info") {
+    // if (it == input.end()) {
+    //   // return {Info{Info::Registers{}}};
+    // }
+    // if (auto subCommand = input.substr(it - input.begin());
+    //     subCommand == "r") {
+    //   // return {Info{Info::Registers{}}};
+    // }
+    // if (subCommand == "w") {
+    //   // return {Info{Info::WatchPoints{}}};
     TODO(...)
   }
-  if (input.starts_with("x")) {
-    // x
-    TODO()
-  }
-  if (input.starts_with("d")) {
-    // delete watchpoint
-    auto maybe_watchpoint = scn::scan<size_t>(input, "d {}");
-    if (maybe_watchpoint.has_value()) {
-      auto [watchpoint] = std::move(maybe_watchpoint)->values();
-    }
-    TODO();
-  }
-  if (input.starts_with("w")) {
+
+  if (mainCommand == "w") {
     // watchpoint: w EXPRESSION
-    TODO()
+    return {AddWatchPoint{}};
+  }
+
+  if (mainCommand == "d") {
+    // delete watchpoint
+    if (auto maybe_watchpoint =
+            scn::scan_int<size_t>(input.substr(it - input.begin()))) {
+      auto [watchpoint] = std::move(maybe_watchpoint)->values();
+      return {Unknown{std::string(input)}};
+    }
+    return {InvalidArgumentError(
+        fmt::format(fg(crimson), "d: requires 'number' as argument"))};
   }
 
   return {Unknown{std::string(input)}};
 }
-} // namespace
-} // namespace repl::command
-namespace repl {
-auto repl(Monitor *monitor) -> auxilia::Generator<auxilia::Status> {
+} // namespace accat::luce::repl::command
+namespace accat::luce::repl {
+auto repl(Monitor *monitor) -> auxilia::Generator<Status> {
   precondition(monitor, "Monitor must not be nullptr")
 
   fmt::println("{}", message::repl::Welcome);
 
   for (;;) {
-    auto maybe_input = read(monitor);
+    auto maybe_input = command::read(monitor);
     if (!maybe_input) {
       co_yield {maybe_input.as_status()};
     }
     auto input = *std::move(maybe_input);
-    // if (auto res = inspect(input, monitor); !res) {
-    //   co_yield res;
-    // }
-    // nothing to do
     if (auto res = command::inspect(input); res) {
       co_yield res->visit(match{
-          [&](const auto &cmd) -> auxilia::Status {
-            return cmd.execute(monitor);
-          },
+          [&](const auto &cmd) -> Status { return cmd.execute(monitor); },
       });
-    }
-    // else, no command found
-    else {
+    } else { // no command found or invalid command
       auxilia::println(stderr,
                        "{error} {msg}",
                        "error"_a = fmt::format(fg(crimson), "error:"),
@@ -266,110 +319,4 @@ auto repl(Monitor *monitor) -> auxilia::Generator<auxilia::Status> {
   }
   co_return;
 }
-} // namespace repl
-} // namespace tr2
-/// @deprecated use tr2::repl instead
-namespace tr1 {
-namespace {
-/// @deprecated use tr2::repl::command::inspect instead
-auxilia::Status inspect(std::string_view input, Monitor *monitor) {
-  if (input == "exit" or input == "q") {
-    return auxilia::ReturnMe("exit!");
-  }
-  if (input == "help") {
-    fmt::print(message::repl::Help);
-    return {};
-  }
-  if (input == "r") {
-    return monitor->notify(nullptr, Event::kRestartTask);
-  }
-
-  if (input == "c") {
-    return monitor->execute_n(1);
-  }
-  if (input.starts_with("si")) {
-    if (auto begin = input.find_first_of('['); begin != std::string::npos) {
-      if (auto end = input.find_last_of(']'); end != std::string::npos) {
-        auto shouldBeSpaceOrNumber = input.substr(begin + 1, end - begin - 1) |
-                                     auxilia::ranges::views::trim;
-        if (shouldBeSpaceOrNumber.empty()) {
-          return monitor->execute_n(1);
-        }
-        auto steps = size_t{};
-        auto shouldBeNumberStr =
-            shouldBeSpaceOrNumber | std::ranges::to<std::string>();
-        if (auto [p, ec] = std::from_chars(shouldBeNumberStr.data(),
-                                           shouldBeNumberStr.data() +
-                                               shouldBeNumberStr.size(),
-                                           steps,
-                                           10);
-            ec == std::errc{}) {
-          return monitor->execute_n(steps);
-
-        } else {
-          auxilia::println(stderr,
-                           fg(crimson),
-                           "luce: error: {msg}.",
-                           "msg"_a = std::make_error_code(ec).message());
-        }
-        return {};
-      }
-      // else, fallthrough(error)
-    }
-    auxilia::println(stderr,
-                     fg(crimson),
-                     "please provide a number of steps to execute(e.g., si "
-                     "[2] to execute 2 steps).");
-    return {};
-  }
-  if (input.starts_with("info")) {
-    // info r -> show registers
-    // info w -> show watchpoints (not implemented)
-    TODO(...)
-  }
-  if (input.starts_with("x")) {
-    // x
-    TODO()
-  }
-  if (input.starts_with("d")) {
-    // delete watchpoint
-    auto maybe_watchpoint = scn::scan<size_t>(input, "d {}");
-    if (maybe_watchpoint.has_value()) {
-      auto [watchpoint] = std::move(maybe_watchpoint)->values();
-    }
-    TODO();
-  }
-  if (input.starts_with("w")) {
-    // watchpoint: w EXPRESSION
-    TODO()
-  }
-
-  auxilia::println(stderr,
-                   fg(crimson),
-                   "luce: unknown command '{inputCmd}'",
-                   "inputCmd"_a = input);
-  return {};
-}
-} // namespace
-/// @deprecated use tr2::repl::repl instead
-auto repl(Monitor *monitor) -> auxilia::Generator<auxilia::Status, void> {
-  precondition(monitor, "Monitor must not be nullptr")
-
-  fmt::println("{}", message::repl::Welcome);
-
-  for (;;) {
-    auto maybe_input = read(monitor);
-    if (!maybe_input) {
-      co_yield {maybe_input.as_status()};
-    }
-    auto input = *std::move(maybe_input);
-    if (auto res = inspect(input, monitor); !res) {
-      co_yield res;
-    }
-    // nothing to do
-    co_yield {};
-  }
-  co_return;
-}
-} // namespace tr1
-} // namespace accat::luce
+} // namespace accat::luce::repl

@@ -62,6 +62,6 @@ inline constexpr detail::_invert_endianness_fn invert_endianness;
 inline constexpr detail::_trim_fn trim;
 } // namespace accat::auxilia::ranges::views
 
-namespace accat::auxilia::ranges {
-using namespace views;
+namespace accat::auxilia{
+namespace views = ranges::views;
 } // namespace accat::auxilia::ranges

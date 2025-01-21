@@ -106,11 +106,11 @@ namespace accat::auxilia::detail {
 EXPORT_AUXILIA
 struct _dbg_block_helper_struct_ {};
 template <class Fun_> struct _dbg_block_ {
-  inline constexpr _dbg_block_(Fun_ f) {
+  inline constexpr _dbg_block_(Fun_ f) noexcept(noexcept(f())) {
     (void)f();
     this->~_dbg_block_();
   }
-  inline constexpr ~_dbg_block_() = default;
+  inline constexpr ~_dbg_block_() noexcept = default;
 };
 EXPORT_AUXILIA
 template <class Fun_>
@@ -370,14 +370,15 @@ EXPORT_AUXILIA
 struct _accat_utils_defer_helper_struct_ {};
 template <class Fun_> struct _accat_utils_deferrer_ {
   Fun_ f_;
-  inline constexpr _accat_utils_deferrer_(Fun_ f) : f_(f) {}
-  inline constexpr ~_accat_utils_deferrer_() {
+  inline constexpr _accat_utils_deferrer_(Fun_ f) noexcept : f_(f) {}
+  inline constexpr ~_accat_utils_deferrer_() noexcept(noexcept(f_())) {
     f_();
   }
 };
 EXPORT_AUXILIA
 template <class Fun_>
-inline AC_CONSTEXPR20 auto operator*(_accat_utils_defer_helper_struct_, Fun_ f_)
+inline AC_CONSTEXPR20 auto operator*(_accat_utils_defer_helper_struct_,
+                                     Fun_ f_) noexcept
     -> _accat_utils_deferrer_<Fun_> {
   return {f_};
 }

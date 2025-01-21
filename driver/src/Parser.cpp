@@ -1,5 +1,6 @@
 #pragma once
 #include "luce/repl/Parser.hpp"
+#include <spdlog/spdlog.h>
 
 #include <memory>
 #include "luce/repl/Token.hpp"
@@ -79,11 +80,10 @@ auto Parser::unary() -> expr_ptr_t {
   if (inspect(kBang, // right-to-left associativity
               kMinus,
               kAmpersand,
-              kStar)) {  // kStar meaning 2: dereference
+              kStar)) { // kStar meaning 2: dereference
     auto op = consume();
     auto rhs = unary();
-    return std::make_shared<expression::Unary>(
-        std::move(op), std::move(rhs));
+    return std::make_shared<expression::Unary>(std::move(op), std::move(rhs));
   }
   return call();
 }
@@ -96,7 +96,7 @@ auto Parser::call() -> expr_ptr_t {
   return expr;
 }
 auto Parser::primary() -> expr_ptr_t {
-  if (inspect(kFalse,kTrue,kNil,kNumber,kString,kIdentifier)) {
+  if (inspect(kFalse, kTrue, kNil, kNumber, kString, kIdentifier)) {
     return std::make_shared<expression::Literal>(consume());
   }
   // groupings
@@ -104,12 +104,13 @@ auto Parser::primary() -> expr_ptr_t {
     consume();
     auto expr = next_expression();
     if (!inspect(kRightParen)) {
-      TODO(error handling)
+      dbg(trace, "expected ')' after expression")
+      return std::make_shared<expression::Undefined>(consume());
     }
     consume();
     return std::make_shared<expression::Grouping>(std::move(expr));
   }
-  return std::make_shared<expression::Unknown>(consume());
+  return std::make_shared<expression::Undefined>(consume());
 }
 bool Parser::is_at_end() {
   return peek() <=> nulltok == 0;
@@ -133,4 +134,4 @@ const Parser::token_t &Parser::peek(const size_t offset) {
   }
   return queued_tokens[offset];
 }
-} // namespace accat::luce
+} // namespace accat::luce::repl

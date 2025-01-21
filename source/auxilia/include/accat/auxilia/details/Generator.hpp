@@ -209,6 +209,10 @@ public:
       return std::nullopt;
 
     handle_.resume();
+
+    if (handle_.done()) {
+      return std::nullopt;
+    }
     return std::make_optional(
         std::move(*const_cast<YieldType *>(handle_.promise().current_value)));
   }

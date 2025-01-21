@@ -11,9 +11,9 @@
 #include <variant>
 #include <vector>
 #include <unordered_map>
+#include <accat/auxilia/auxilia.hpp>
+
 #include "luce/repl/Token.hpp"
-#include "accat/auxilia/details/config.hpp"
-#include "accat/auxilia/details/format.hpp"
 
 namespace accat::luce::repl {
 class Lexer {
@@ -40,8 +40,9 @@ public:
   /// @brief load the contents of the file
   /// @return OkStatus() if successful, NotFoundError() otherwise
   status_t load(const path_type &) const;
-  /// @copydoc load(const path_type &)
-  status_t load(string_type &&);
+  /// @brief load the contents of the string for lexing
+  /// @remark basicalkly used for unit testing
+  Lexer &load_string(const string_view_type);
   /// @brief lex the contents of the file
   /// @return OkStatus() if successful, NotFoundError() otherwise
   auto lex() -> generator_t;
@@ -53,14 +54,14 @@ public:
   auto error() const noexcept -> uint_least32_t;
 
 private:
-  token_t add_identifier_and_keyword();
+  token_t add_identifier_or_keyword();
   token_t add_number();
   token_t add_string();
   token_t add_comment();
   token_t next_token();
   token_t add_token(token_type_t);
   token_t add_token(long double) const;
-  token_t add_error_token(string_type&&);
+  token_t add_error_token(string_type &&);
   bool is_at_end(size_t = 0) const;
   auto lex_string() -> Lexer::status_t;
   auto lex_identifier() -> string_view_type;
@@ -94,6 +95,7 @@ private:
   bool advance_if(Predicate &&predicate)
     requires std::invocable<Predicate, char_t> &&
              std::convertible_to<Predicate, bool>;
+
 private:
   /// @brief head of a token
   size_type head = 0;
@@ -107,4 +109,4 @@ private:
   uint_least32_t error_count = 0;
 };
 
-} // namespace accat::luce
+} // namespace accat::luce::repl

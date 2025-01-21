@@ -56,7 +56,7 @@ void println(FILE *f, const auto &, std::format_string<T...> fmt, T &&...args) {
 } // namespace accat::auxilia
 
 namespace accat::auxilia {
-template <Variantable... Ts> class Variant;
+template <typename... Ts> class Variant;
 enum class FormatPolicy : uint8_t;
 template <typename Derived> struct Printable;
 template <typename Derived> struct Viewable;
@@ -72,7 +72,7 @@ template <typename... Ts> match(Ts...) -> match<Ts...>;
 enum class FormatPolicy : uint8_t {
   kDefault = 0,
   kDetailed = 1,
-  kTokenOnly = 2,
+  kBrief = 2,
 };
 /// @interface Printable
 /// @brief A class that represents a printable object; can be directly
