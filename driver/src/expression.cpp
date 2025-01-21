@@ -1,4 +1,5 @@
-#pragma once
+#include "deps.hh"
+
 #include "luce/repl/expression.hpp"
 #include "luce/repl/IVisitor.hpp"
 #include "luce/repl/evaluation.hpp"

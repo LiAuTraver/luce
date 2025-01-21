@@ -1,32 +1,27 @@
 //////////////////////////////////////////////////////////////////////////
-//! @file variadic-inl.h
-//! @brief Variadic macros for C and C++.
-//!
-//! This file provides macros to define and utilize variadic functions
-//! in C and C++. It enables overloading of functions based on the
-//! number of parameters provided.
-//!
-//! @note This is an internal header file, included by other library
-//! headers.
-//!
-//! @see
-//! https://stackoverflow.com/questions/11761703/overloading-macro-on-number-of-arguments
-//!
-//! @code
-//! // Example usage:
-//! #define foo(...) AC_UTILS_VFUNC(foo, ##__VA_ARGS__)
-//! // the `##` is used to remove the comma if no arguments are passed;
-//! //                       modern preprocessor will handle this
-//! automatically.
-//!
-//! void foo_0();
-//! void foo_1(int);
-//! void foo_2(int, int);
-//!
-//! foo();            // Calls foo_0()
-//! foo(42);          // Calls foo_1(42)
-//! foo(42, 43);      // Calls foo_2(42, 43)
-//! @endcode
+/// @file variadic-inl.h
+/// @brief Variadic macros for C and C++.
+///
+/// This file provides macros to define and utilize variadic functions
+/// in C and C++. It enables overloading of functions based on the
+/// number of parameters provided.
+///
+/// @note This is an internal header file, included by other library
+/// headers.
+///
+/// @see
+/// https://stackoverflow.com/questions/11761703/overloading-macro-on-number-of-arguments
+///
+/// @code
+/// Example usage:
+/// void foo_0();
+/// void foo_1(int);
+/// void foo_2(int, int);
+///
+/// foo();            // Calls foo_0()
+/// foo(42);          // Calls foo_1(42)
+/// foo(42, 43);      // Calls foo_2(42, 43)
+/// @endcode
 //////////////////////////////////////////////////////////////////////////
 #ifndef AC_UTILS_DETAILS_VARIADIC_H
 #define AC_UTILS_DETAILS_VARIADIC_H
@@ -78,7 +73,7 @@
 #if defined(__COUNTER__) && ((__COUNTER__ + 1) == (__COUNTER__ + 0))
 #  define AC_UTILS_COUNTER __COUNTER__
 #else
-#  define AC_UTILS_COUNTER __LINE__
+#  define AC_UTILS_COUNTER __LINE__##__COLUMN__
 #endif
 
 /// @def EXPAND_COUNTER_HELPER

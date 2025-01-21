@@ -315,7 +315,9 @@ public:
   inline AC_CONSTEXPR20 explicit operator bool() const noexcept {
     return this->ok();
   }
-  [[nodiscard]] constexpr bool ok() const noexcept { return my_code == kOk; }
+  [[nodiscard]] constexpr bool ok() const noexcept {
+    return my_code == kOk;
+  }
   [[nodiscard]] AC_CONSTEXPR20 bool is_return() const noexcept {
     return my_code == kReturning;
   }
@@ -327,9 +329,15 @@ public:
   auto raw_code() const noexcept {
     return static_cast<std::underlying_type_t<Code>>(my_code);
   }
-  [[nodiscard]] string_view message() const { return my_message; }
-  [[nodiscard]] std::source_location location() const { return my_location; }
-  [[nodiscard]] string stacktrace() const { return AC_UTILS_STACKTRACE; }
+  [[nodiscard]] string_view message() const {
+    return my_message;
+  }
+  [[nodiscard]] std::source_location location() const {
+    return my_location;
+  }
+  [[nodiscard]] string stacktrace() const {
+    return AC_UTILS_STACKTRACE;
+  }
   void ignore_error() const noexcept {
     if (ok())
       return;
@@ -587,10 +595,10 @@ AC_FORCEINLINE AC_FLATTEN static AC_CONSTEXPR20 Status LexError(
 
 #  define AC_RETURN_IF_NOT(_status_)                                           \
     AC_UTILS_AMBIGUOUS_ELSE_BLOCKER                                            \
-    if (auto ac_utils_status_return_ = (_status_))                             \
+    if (auto _ac_utils_status_return_ = (_status_))                            \
       ;                                                                        \
     else {                                                                     \
-      return ac_utils_status_return_;                                          \
+      return _ac_utils_status_return_;                                         \
     }
 #  define return_if_not(_status_) AC_RETURN_IF_NOT(_status_)
 } // namespace accat::auxilia

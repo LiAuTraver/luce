@@ -11,12 +11,7 @@
 #include "luce/Monitor.hpp"
 namespace accat::luce {
 CentralProcessingUnit::CentralProcessingUnit(Mediator *parent)
-    : Component(parent), mmu_(this) {
-  if (parent) {
-    contract_assert(dynamic_cast<Monitor *>(parent), "Parent must be a Monitor")
-  }
-  // else do nothing(allowed to be null)
-}
+    : Component(parent), mmu_(this) {}
 auto CentralProcessingUnit::detach_context() noexcept
     -> CentralProcessingUnit & {
   if (context_.use_count() == 1) {

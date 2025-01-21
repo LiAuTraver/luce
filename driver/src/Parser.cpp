@@ -1,8 +1,9 @@
-#pragma once
-#include "luce/repl/Parser.hpp"
-#include <spdlog/spdlog.h>
+#include "deps.hh"
 
+#include <spdlog/spdlog.h>
 #include <memory>
+
+#include "luce/repl/Parser.hpp"
 #include "luce/repl/Token.hpp"
 #include "luce/repl/expression.hpp"
 #include "luce/repl/evaluation.hpp"

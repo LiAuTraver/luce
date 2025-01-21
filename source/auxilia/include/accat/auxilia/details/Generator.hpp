@@ -25,8 +25,8 @@ class Generator {
   static_assert(!std::is_same_v<YieldType, void>,
                 "YieldType must not be void; why use a generator for void?");
 
-public:
   template <typename R, bool = std::is_void_v<R>> struct promise_type_impl;
+public:
   using promise_type = promise_type_impl<ReturnType>;
 
 private:
@@ -55,7 +55,7 @@ private:
     }
 
 #if defined(__cpp_exceptions) || defined(_CPPUNWIND)
-    void unhandled_exception() noexcept {
+    void unhandled_exception() /* non-const */ noexcept {
       exception = std::current_exception();
     }
 
@@ -84,7 +84,7 @@ private:
           my_alloc, static_cast<char *>(ptr), size);
     }
   };
-
+private:
   template <typename R>
   struct promise_type_impl<R, false> : public promise_type_base<promise_type> {
     static_assert(std::is_nothrow_move_constructible_v<R>,

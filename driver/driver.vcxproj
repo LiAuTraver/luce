@@ -33,6 +33,16 @@
     <ClInclude Include="luce\isa\riscv32\opcode.hpp" />
     <ClInclude Include="luce\MainMemory.hpp" />
     <ClInclude Include="luce\Monitor.hpp" />
+    <ClInclude Include="luce\repl\Debugger.hpp" />
+    <ClInclude Include="luce\repl\evaluation.hpp" />
+    <ClInclude Include="luce\repl\expression.hpp" />
+    <ClInclude Include="luce\repl\ExprVisitor.hpp" />
+    <ClInclude Include="luce\repl\interpreter.hpp" />
+    <ClInclude Include="luce\repl\IVisitor.hpp" />
+    <ClInclude Include="luce\repl\Lexer.hpp" />
+    <ClInclude Include="luce\repl\Parser.hpp" />
+    <ClInclude Include="luce\repl\repl_fwd.hpp" />
+    <ClInclude Include="luce\repl\Token.hpp" />
     <ClInclude Include="luce\Task.hpp" />
     <ClInclude Include="luce\utils\Pattern.hpp" />
     <ClInclude Include="luce\utils\Timer.hpp" />
@@ -45,9 +55,15 @@
     <ClCompile Include="src\Argument.cpp" />
     <ClCompile Include="src\ArgumentLoader.cpp" />
     <ClCompile Include="src\cpu.cpp" />
+    <ClCompile Include="src\Debugger.cpp" />
     <ClCompile Include="src\Disassembler.cpp" />
+    <ClCompile Include="src\expression.cpp" />
+    <ClCompile Include="src\ExprVisitor.cpp" />
+    <ClCompile Include="src\Lexer.cpp" />
     <ClCompile Include="src\MainMemory.cpp" />
     <ClCompile Include="src\Monitor.cpp" />
+    <ClCompile Include="src\Parser.cpp" />
+    <ClCompile Include="src\repl.cpp" />
     <ClCompile Include="src\Task.cpp" />
   </ItemGroup>
   <ItemGroup>

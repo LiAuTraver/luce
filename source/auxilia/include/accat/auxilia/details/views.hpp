@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ranges>
+
 #include "./config.hpp"
 
 namespace accat::auxilia::ranges::views::detail {
@@ -50,7 +51,7 @@ struct _trim_fn {
   template <std::ranges::viewable_range R>
   [[nodiscard]] friend constexpr auto operator|(R &&r, const _trim_fn &t)
       -> decltype(auto) {
-    return t(std::forward<R>(r));
+    return t.operator()(std::forward<R>(r));
   }
 };
 } // namespace accat::auxilia::ranges::views::detail
@@ -63,5 +64,5 @@ inline constexpr detail::_trim_fn trim;
 } // namespace accat::auxilia::ranges::views
 
 namespace accat::auxilia{
-namespace views = ranges::views;
+namespace views = ranges::views; // NOLINT(misc-unused-alias-decls)
 } // namespace accat::auxilia::ranges

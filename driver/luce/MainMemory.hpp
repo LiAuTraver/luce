@@ -87,11 +87,9 @@ public:
                     isa::physical_address_t,
                     bool = false) -> auxilia::Status;
 
-  auto fill(isa::physical_address_t, size_t, isa::minimal_addressable_unit_t)
-      -> auxilia::Status;
+  void fill(isa::physical_address_t, size_t, isa::minimal_addressable_unit_t);
 
-  auto generate(isa::physical_address_t, size_t, std::invocable auto &&)
-      -> auxilia::Status;
+  void generate(isa::physical_address_t, size_t, std::invocable auto &&);
 
   template <typename T>
   auxilia::StatusOr<T> read_typed(isa::physical_address_t addr) const {
@@ -104,7 +102,8 @@ public:
     // std::byte) is undefined behavior. currently my stl doesn't support it, so
     // we have to create a copy. when it's supported, we can use the
     // std::start_lifetime_as to avoid the copy.
-    //    Solution 2: use std::as_writable_bytes
+    
+    // Solution 2: use std::as_writable_bytes
     T value;
     auto bytes = std::as_writable_bytes(std::span{&value, 1});
     for (const auto i : std::views::iota(0ull, sizeof(T)))
@@ -113,6 +112,7 @@ public:
     return value;
     // Solution 3: use std::bit_cast
     // ...
+    
     // Solution 4: use placement new (more verbose)
     //    alignas(T) std::byte buffer[sizeof(T)];
     //    memcpy(buffer, memory.begin() + addr, sizeof(T));
@@ -120,6 +120,7 @@ public:
     //    T  result = *value;
     //    value->~T();
     //    return result;
+    
     // Solution 5: use union  (might not be strictly aligned)
     //    union {
     //      T value;
