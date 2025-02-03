@@ -28,7 +28,6 @@ concept Storable = std::conjunction_v<std::is_default_constructible<Ty>,
 template <typename...> class Variant;
 class Status;
 template <typename> class StatusOr;
-// class file_reader;
 using string = ::std::string;
 using string_view = ::std::string_view;
 using path = ::std::filesystem::path;
@@ -40,7 +39,7 @@ constexpr auto isspacelike = [](const char &c) constexpr noexcept -> bool {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 };
 constexpr auto isntspacelike = [](const char &c) constexpr noexcept -> bool {
-  return !isspacelike(c);
+  return not isspacelike(c);
 };
 inline consteval const char *raw(const char *str) {
   while (str && *str && (*str == '\n')) {

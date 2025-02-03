@@ -5,6 +5,7 @@
 #include "./config.hpp"
 
 namespace accat::auxilia::ranges::views::detail {
+#if defined (__cpp_lib_ranges_chunk_by) && __cpp_lib_ranges_chunk_by >= 202202L
 struct _invert_endianness_fn {
   template <std::ranges::viewable_range R>
   [[nodiscard]] AC_STATIC_CALL_OPERATOR constexpr auto
@@ -30,6 +31,7 @@ struct _invert_endianness_fn {
     return e.operator()(std::forward<R>(r));
   }
 };
+#endif
 
 struct _trim_fn {
   template <std::ranges::viewable_range R>
@@ -56,8 +58,10 @@ struct _trim_fn {
 };
 } // namespace accat::auxilia::ranges::views::detail
 namespace accat::auxilia::ranges::views {
+#if defined (__cpp_lib_ranges_chunk_by) && __cpp_lib_ranges_chunk_by >= 202202L
 /// @brief inverts the endianness of the given range(char-like elements)
 inline constexpr detail::_invert_endianness_fn invert_endianness;
+#endif
 /// @brief trims the leading and trailing whitespace-like characters
 /// from given range(char-like elements)
 inline constexpr detail::_trim_fn trim;

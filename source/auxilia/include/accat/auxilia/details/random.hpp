@@ -2,6 +2,12 @@
 
 #include "./config.hpp"
 
+namespace accat::auxilia {
+#ifdef __SIZEOF_INT128__
+using uint128_t = __uint128_t;
+#endif
+} // namespace accat::auxilia
+
 namespace accat::auxilia::detail {
 /**
  * @brief A random integer generator for integral types.
@@ -16,7 +22,7 @@ namespace accat::auxilia::detail {
 template <typename Ty>
   requires std::is_integral_v<Ty>
 #ifdef __SIZEOF_INT128__
-           || std::is_same_v<Ty, __uint128_t>
+           || std::is_same_v<Ty, uint128_t>
 #endif
 struct _random_integer_generator {
   /**
@@ -40,13 +46,13 @@ struct _random_integer_generator {
    * @return A random integer of type Ty within the specified range.
    * @pre min must be less than max.
    */
-  inline Ty operator()(Ty (min), Ty (max)) const;
+  inline Ty operator()(Ty(min), Ty(max)) const;
 };
 
 template <typename Ty>
   requires std::is_integral_v<Ty>
 #ifdef __SIZEOF_INT128__
-           || std::is_same_v<Ty, __uint128_t>
+           || std::is_same_v<Ty, uint128_t>
 #endif
 inline Ty _random_integer_generator<Ty>::operator()() const {
   static std::uniform_int_distribution<Ty> dist(
@@ -59,10 +65,10 @@ inline Ty _random_integer_generator<Ty>::operator()() const {
 template <typename Ty>
   requires std::is_integral_v<Ty>
 #ifdef __SIZEOF_INT128__
-           || std::is_same_v<Ty, __uint128_t>
+           || std::is_same_v<Ty, uint128_t>
 #endif
-inline Ty _random_integer_generator<Ty>::operator()(const Ty (min),
-                                                    const Ty (max)) const {
+inline Ty _random_integer_generator<Ty>::operator()(const Ty(min),
+                                                    const Ty(max)) const {
   contract_assert((min) < (max), "min must be less than max");
   return (((*this).operator()()) % ((max) - (min))) + (min);
 }
@@ -78,7 +84,7 @@ template <> struct _random_integer_generator<uint8_t> {
     return static_cast<uint8_t>(dist(gen));
   }
 
-  inline uint8_t operator()(const uint8_t (min), const uint8_t (max)) const {
+  inline uint8_t operator()(const uint8_t(min), const uint8_t(max)) const {
     contract_assert((min) < (max), "min must be less than max");
     return (((*this)() % ((max) - (min))) + (min));
   }
@@ -100,6 +106,6 @@ EXPORT_AUXILIA
 inline constexpr detail::_random_integer_generator<uint64_t> rand_u64;
 #if defined(__SIZEOF_INT128__)
 /// @brief A random integer generator for 128-bit unsigned integers.
-inline constexpr detail::_random_integer_generator<__uint128_t> rand_u128;
+inline constexpr detail::_random_integer_generator<uint128_t> rand_u128;
 #endif
 } // namespace accat::auxilia

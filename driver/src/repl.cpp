@@ -1,6 +1,3 @@
-#include "accat/auxilia/details/Monostate.hpp"
-#include "accat/auxilia/details/config.hpp"
-#include "accat/auxilia/details/format.hpp"
 #include "deps.hh"
 
 #include "luce/config.hpp"
@@ -9,9 +6,7 @@
 #include <fmt/format.h>
 #include <scn/scan.h>
 #include <spdlog/spdlog.h>
-#include <accat/auxilia/details/macros.hpp>
-#include <accat/auxilia/details/Status.hpp>
-#include <accat/auxilia/details/views.hpp>
+#include <accat/auxilia/auxilia.hpp>
 #include "luce/repl/ExprVisitor.hpp"
 #include "luce/repl/Lexer.hpp"
 #include "luce/repl/Parser.hpp"
@@ -27,6 +22,7 @@
 #include <iostream>
 #include <ranges>
 #include <utility>
+#include <variant>
 
 namespace accat::luce {
 using fmt::fg;
@@ -174,27 +170,24 @@ struct Print final : ICommand {
   Print(std::string expr) : expression(std::move(expr)) {}
   virtual Status execute(Monitor *) const override final {
     auto lexer = Lexer{};
-    auto coro = lexer.load_string(expression).lex();
-    auto parser = Parser{std::move(coro)};
-    auto res = parser.next_expression();
-    if (!res) {
-      auxilia::println(stderr,
-                       fg(crimson),
-                       "luce: error: {msg}",
-                       "msg"_a = res->to_string());
-      return {};
-    }
+    auto parser = Parser{lexer.load_string(expression).lex()};
     auto eval = expression::Evaluator{};
-    auto res2 = res->accept(eval);
-    if (!res2) {
-      auxilia::println(
-          stderr, fg(crimson), "luce: error: {msg}", "msg"_a = res2.message());
-      return {};
-    }
-    auxilia::println(
-        stdout,
-        "{result}",
-        "result"_a = res2->underlying_string(auxilia::FormatPolicy::kBrief));
+    parser.next_expression()
+        ->accept(eval)
+        .transform([](auto &&res) {
+          auxilia::println(stdout,
+                           "{result}",
+                           "result"_a = res.underlying_string(
+                               auxilia::FormatPolicy::kBrief));
+          return std::monostate{};
+        })
+        .transform_error([](auto &&res) {
+          auxilia::println(stderr,
+                           fg(crimson),
+                           "luce: error: {msg}",
+                           "msg"_a = res.message());
+          return std::monostate{};
+        });
     return {};
   }
   std::string expression;

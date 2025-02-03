@@ -65,7 +65,7 @@ auxilia::Status CentralProcessingUnit::decode() {
 }
 auxilia::StatusOr<std::span<const std::byte>> CentralProcessingUnit::fetch() {
   auto translated = mmu_.virtual_to_physical(context_->program_counter);
-  auto num = sizeof(instruction_t) / sizeof(isa::minimal_addressable_unit_t);
+  constexpr auto num = sizeof(instruction_t) / sizeof(isa::minimal_addressable_unit_t);
   if (auto res = this->monitor()->fetch_from_main_memory(translated, num)) {
     return {mmu_.physical_to_virtual(*res)};
   } else {

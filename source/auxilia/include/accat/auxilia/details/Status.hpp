@@ -4,6 +4,7 @@
 //! @brief A class that represents the status of a function call.
 //! @copyright Ancillarycat & The Abseil Authors
 //! @note Part of the contents of this header are derived in part from Google's Abseil Common Libraries.
+#include <variant>
 #ifndef ACCAT_AUXILIA_STATUS_HPP
 #define ACCAT_AUXILIA_STATUS_HPP
 
@@ -352,33 +353,6 @@ public:
                            my_location.line(),
                            my_location.column());
   }
-  // monadic operations
-  template <typename Self, std::invocable<> Func>
-    requires requires(Self &&self, Func &&func) {
-      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>, Status>;
-    }
-  [[nodiscard]] inline constexpr auto or_else(this Self &&self, Func &&func)
-      -> Status {
-    if (self.ok())
-      return self;
-    return std::invoke(std::forward<Func>(func));
-  }
-  template <typename Self, std::invocable<> Func>
-    requires requires(Self &&self, Func &&func) {
-      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>, Status>;
-    }
-  constexpr inline auto and_then(this Self &&self, Func &&func) -> Status {
-    if (!self.ok())
-      return self;
-    return std::invoke(std::forward<Func>(func));
-  }
-  template <typename Self, std::invocable<> Func>
-    requires requires(Self &&self, Func &&func) {
-      std::is_same_v<std::remove_cvref_t<std::invoke_result_t<Func>>, Status>;
-    }
-  constexpr inline auto transform(this Self &&self, Func &&func) -> Status {
-    return std::invoke(std::forward<Func>(func));
-  }
 
 public:
   Code my_code = kOk;
@@ -468,6 +442,39 @@ public:
     my_message.clear();
     my_location = std::source_location::current();
     return *this;
+  }
+  template <typename F>
+    requires std::is_invocable_r_v<StatusOr<Ty>, F, Ty>
+  auto and_then(this auto &&self, F &&f) -> StatusOr<Ty> {
+    if (!self.ok()) {
+      return {self.as_status()};
+    }
+    return std::invoke(std::forward<F>(f), self.my_value);
+  }
+  template <typename F>
+    requires std::is_invocable_r_v<StatusOr<Ty>, F>
+  auto or_else(this auto &&self, F &&f) -> StatusOr<Ty> {
+    if (self.ok()) {
+      return self;
+    }
+    return std::invoke(std::forward<F>(f));
+  }
+  template <typename F>
+    requires std::is_invocable_v<F, Ty>
+  auto transform(this auto &&self, F &&f)
+      -> StatusOr<std::invoke_result_t<F, Ty>> {
+    if (!self.ok()) {
+      return {self.as_status()};
+    }
+    return {std::invoke(std::forward<F>(f), self.my_value)};
+  }
+  template <typename F>
+    requires std::is_invocable_v<F, base_type>
+  auto transform_error(this auto &&self, F &&f) -> StatusOr<Ty> {
+    if (self.ok()) {
+      return self;
+    }
+    return std::invoke(std::forward<F>(f), self.as_status());
   }
 
 private:

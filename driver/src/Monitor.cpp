@@ -15,7 +15,7 @@
 #include <syncstream>
 #include <utility>
 
-namespace accat::luce::repl{
+namespace accat::luce::repl {
 extern auto repl(Monitor *)
     -> ::accat::auxilia::Generator<::accat::auxilia::Status>;
 }
@@ -90,8 +90,7 @@ auxilia::Status Monitor::REPL() {
 
   cpus.attach_context(process.context(), process.id());
 
-  auto replCoro = repl::repl(this);
-  for (auto res : replCoro | std::views::common) {
+  for (auto res : repl::repl(this) | std::views::common) {
     if (!res) {
       if (res.code() == auxilia::Status::Code::kReturning) {
         return {};
@@ -111,7 +110,7 @@ auxilia::Status Monitor::REPL() {
 
 auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   // TODO: implement this
-  for ([[maybe_unused]] const auto _ : std::views::iota(0ull, steps)) {
+  for ([[maybe_unused]] auto _ : std::views::iota(0ull, steps)) {
     if (process.state == Task::State::kTerminated) {
       spdlog::info("Program has terminated.");
       return {};
