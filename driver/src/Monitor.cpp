@@ -24,22 +24,25 @@ namespace accat::luce {
 using namespace std::literals;
 using namespace fmt::literals;
 using enum fmt::color;
+using auxilia::Status;
+using auxilia::StatusOr;
 using fmt::fg;
-auxilia::Status Monitor::notify(Component *sender, Event event) {
+
+Status Monitor::notify(Component *sender, Event event) {
   switch (event) {
   case Event::kNone:
     spdlog::warn("nothing to do");
     break;
   case Event::kTaskFinished: {
-    spdlog::info(
-        "Hit good ol' {trapBytes:x}, program finished!",
-        "trapBytes"_a = fmt::join(
-            isa::signal::trap | auxilia::ranges::views::invert_endianness, ""));
     // currently the sender here was surely a CPU, so we cast it
     auto cpu = static_cast<CentralProcessingUnit *>(sender);
     defer {
       cpu->detach_context();
     };
+    spdlog::info(
+        "Hit good ol' {trapBytes:x}, program finished!",
+        "trapBytes"_a = fmt::join(
+            isa::signal::trap | auxilia::ranges::views::invert_endianness, ""));
     dbg_block
     {
       if (process.id() != cpu->task_id()) {
@@ -71,7 +74,7 @@ auxilia::Status Monitor::notify(Component *sender, Event event) {
   }
   return {};
 }
-auxilia::Status Monitor::run() {
+Status Monitor::run() {
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
   cpus.attach_context(process.context(), process.id());
@@ -84,7 +87,7 @@ auxilia::Status Monitor::run() {
   }
   return {};
 }
-auxilia::Status Monitor::REPL() {
+Status Monitor::REPL() {
   precondition(process.state == Task::State::kNew,
                "No program loaded or the program has already running")
 
@@ -92,7 +95,7 @@ auxilia::Status Monitor::REPL() {
 
   for (auto res : repl::repl(this) | std::views::common) {
     if (!res) {
-      if (res.code() == auxilia::Status::Code::kReturning) {
+      if (res.code() == Status::Code::kReturning) {
         return {};
       }
       // error, return as is
@@ -108,7 +111,7 @@ auxilia::Status Monitor::REPL() {
   return auxilia::InternalError("REPL exited unexpectedly");
 }
 
-auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {
+Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   // TODO: implement this
   for ([[maybe_unused]] auto _ : std::views::iota(0ull, steps)) {
     if (process.state == Task::State::kTerminated) {
@@ -120,7 +123,7 @@ auxilia::Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   }
   return {};
 }
-auxilia::Status Monitor::execute_n(const size_t steps) {
+Status Monitor::execute_n(const size_t steps) {
   if (process.state == Task::State::kPaused ||
       process.state == Task::State::kNew) {
     process.state = Task::State::kRunning;
@@ -130,7 +133,7 @@ auxilia::Status Monitor::execute_n(const size_t steps) {
   }
   return _do_execute_n_unchecked(steps);
 }
-auxilia::Status
+Status
 Monitor::_do_register_task_unchecked(const std::span<const std::byte> bytes,
                                      const paddr_t start_addr,
                                      const paddr_t block_size) {

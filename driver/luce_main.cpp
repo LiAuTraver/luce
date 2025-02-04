@@ -1,18 +1,9 @@
 #include "deps.hh"
 
-#include <fmt/base.h>
-#include <fmt/color.h>
-#include <fmt/compile.h>
-#include <spdlog/spdlog.h>
-
-#include <cstdlib>
-#include <functional>
-#include <iostream>
-#include <luce/config.hpp>
-#include <luce/isa/architecture.hpp>
-#include <luce/MainMemory.hpp>
-#include <luce/Task.hpp>
-#include <string_view>
+#include "luce/config.hpp"
+#include "luce/isa/architecture.hpp"
+#include "luce/MainMemory.hpp"
+#include "luce/Task.hpp"
 #include "exec.hpp"
 #include "luce/argument/Argument.hpp"
 #include "luce/argument/ArgumentLoader.hpp"

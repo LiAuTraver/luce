@@ -26,8 +26,9 @@ public:
   using polymorphic_allocator_t = auxilia::MemoryPool;
   std::pmr::vector<std::byte> real_data;
 
+  /// @param addr the address to check, not the index
   MemoryAccess();
-  auto operator[](this auto &&self, isa::physical_address_t addr)
+  auto operator[](this auto &&self, const isa::physical_address_t addr)
       -> decltype(auto) {
     precondition(addr >= isa::physical_base_address &&
                      addr <
@@ -37,22 +38,19 @@ public:
 
     return self.real_data[addr - isa::physical_base_address];
   }
-  auto at(isa::physical_address_t addr) const {
-    return real_data.at(addr - isa::physical_base_address);
-  }
+  // clang-format off
+  constexpr auto at(const isa::physical_address_t addr) const { return real_data.at(addr - isa::physical_base_address); }
   auto begin(this auto &&self) { return self.real_data.begin(); }
   auto end(this auto &&self) { return self.real_data.end(); }
-  auto cbegin() const { return real_data.cbegin(); }
-  auto cend() const { return real_data.cend(); }
-  auto size() const { return real_data.size(); }
-  auto data(this auto &&self) -> decltype(auto) {
-    return self.real_data.data();
-  }
-  auto address_of(size_t offset) const {
-    return isa::physical_base_address + offset;
-  }
+  auto cbegin() const noexcept { return real_data.cbegin(); }
+  auto cend() const noexcept { return real_data.cend(); }
+  auto size() const noexcept { return real_data.size(); }
+  auto empty() const noexcept { return real_data.empty(); }
+  auto data(this auto &&self) -> decltype(auto) { return self.real_data.data(); }
+  auto address_of(const size_t offset) const { return isa::physical_base_address + offset; }
+  // clang-format on
 #pragma warning(push)
-#pragma warning(disable: 4702) // unreachable code
+#pragma warning(disable : 4702) // unreachable code
   template <typename... Args>
   bool is_in_range(isa::physical_address_t addr, Args... addrs) const noexcept
     requires(std::convertible_to<Args, isa::physical_address_t> && ...)
@@ -76,7 +74,7 @@ public:
 public:
   auto read(isa::physical_address_t) const noexcept
       -> auxilia::StatusOr<std::byte>;
-  auto read_n(isa::physical_address_t,size_t) const 
+  auto read_n(isa::physical_address_t, size_t) const
       -> auxilia::StatusOr<std::span<const std::byte>>;
 
   auto write(isa::physical_address_t, isa::minimal_addressable_unit_t) noexcept
@@ -102,7 +100,7 @@ public:
     // std::byte) is undefined behavior. currently my stl doesn't support it, so
     // we have to create a copy. when it's supported, we can use the
     // std::start_lifetime_as to avoid the copy.
-    
+
     // Solution 2: use std::as_writable_bytes
     T value;
     auto bytes = std::as_writable_bytes(std::span{&value, 1});
@@ -112,7 +110,7 @@ public:
     return value;
     // Solution 3: use std::bit_cast
     // ...
-    
+
     // Solution 4: use placement new (more verbose)
     //    alignas(T) std::byte buffer[sizeof(T)];
     //    memcpy(buffer, memory.begin() + addr, sizeof(T));
@@ -120,7 +118,7 @@ public:
     //    T  result = *value;
     //    value->~T();
     //    return result;
-    
+
     // Solution 5: use union  (might not be strictly aligned)
     //    union {
     //      T value;
