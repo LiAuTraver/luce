@@ -1,16 +1,16 @@
 load("//test:luce_add_test.bzl", "luce_add_test")
 
 luce_add_test(
-    name = "dummy",
-    src = "dummy.cpp",
+    name = "expr.test",
+    src = "expr.test.cpp",
 )
 
 luce_add_test(
-    name = "endian_test",
-    src = "endian_test.cpp",
+    name = "endian.test",
+    src = "endian.test.cpp",
 )
 
 luce_add_test(
-    name = "memory_load_test",
-    src = "memory_load_test.cpp",
+    name = "memory.load.test",
+    src = "memory.load.test.cpp",
 )

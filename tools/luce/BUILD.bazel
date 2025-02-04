@@ -1,6 +1,6 @@
 cc_binary(
     name = "luce",
-    srcs = ["main.cpp"] + ["init-inl.hpp"] + ["alter_args-inl.h"],
+    srcs = ["luce_emulator.cpp"] + ["init-inl.hpp"] + ["alter_args-inl.h"],
     copts = [
         "/std:c++latest",
         "/Isource/auxilia/include",
