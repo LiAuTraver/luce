@@ -2,27 +2,11 @@
 
 #include "luce/config.hpp"
 #include "luce/Monitor.hpp"
-#include <fmt/color.h>
-#include <fmt/format.h>
-#include <scn/scan.h>
-#include <spdlog/spdlog.h>
-#include <accat/auxilia/auxilia.hpp>
 #include "luce/repl/ExprVisitor.hpp"
 #include "luce/repl/Lexer.hpp"
 #include "luce/repl/Parser.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/utils/Pattern.hpp"
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <iterator>
-#include <queue>
-#include <string>
-#include <string_view>
-#include <iostream>
-#include <ranges>
-#include <utility>
-#include <variant>
 
 namespace accat::luce {
 using fmt::fg;
@@ -62,11 +46,10 @@ StatusOr<std::string> read(Monitor *) {
         auxilia::println(stderr, fg(crimson), "Input error, please try again");
         continue;
       }
-      contract_assert(0, "unreachable")
+      dbg_break
       continue;
     }
     // clang-format off
-    // trim input
     auto trimmed_input = raw_input 
         | auxilia::ranges::views::trim
         | std::ranges::to<std::string>()

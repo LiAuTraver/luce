@@ -34,3 +34,8 @@ TEST(exprEvaluation, boolean) {
   auto str = "!true";
   EXPECT_EQ(evaluate(str), "false");
 }
+
+TEST(exprEvaluation, comparison) {
+  auto str = "1 < 2";
+  EXPECT_EQ(evaluate(str), "true");
+}

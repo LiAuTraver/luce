@@ -18,7 +18,7 @@ equality       -> comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           -> factor ( ( "-" | "+" ) factor )* ;
 factor         -> unary ( ( "/" | "*" ) unary )* ;
-unary          -> ( "!" | "-" | "*" | "&" ) unary # pointer and dereference
+unary          -> ( "!" | "-" | "*" ) unary 
                 | call ;
 call           -> primary ( "(" arguments? ")" )* ;
 
@@ -32,7 +32,6 @@ arguments     -> expression ( "," expression )* ;
 function      -> IDENTIFIER "(" parameters? ")" block ;
 parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
 alnums        -> [a-zA-Z0-9] 
-               | [.!@#$%^&*()] 
                | [...] ;
 ```
 

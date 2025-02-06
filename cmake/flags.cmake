@@ -22,7 +22,8 @@ if(CXX_FLAGS_STYLES_MSVC)
     /Zi /Od /Ob0 /Oy-
     /GR # <- rtti
     /fsanitize=address /fsanitize=fuzzer
-    /guard:cf /guard:ehcont
+    /guard:cf 
+    /guard:ehcont
     /RTCsu /sdl
 
     # /Qpar # parallel code generation

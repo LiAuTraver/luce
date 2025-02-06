@@ -1,36 +1,36 @@
-# Build outputs
+### Build outputs ###
 bazel-bin
 bazel-out
 bazel-testlogs
 bazel-luce
 
-# Common build directories
+### Common build directories ###
 build/
 cmake-build-debug/
 cmake-build-release/
 out/
 
-# IDE directories
+### IDE directories ###
 .vs/
 .vscode/
 .idea/
 
-# External dependencies
+### External dependencies ###
 external/
 
-# Package manager directories
+### Package manager directories ###
 vcpkg/
 cmake/
 data/
 
-# Generated files directory
+### Generated files directory ###
 generated/
 
-# Object file directories
+### Object file directories ###
 obj/
 x64/
 
-# Miscellaneous
+### Miscellaneous ###
 README.md
 CONTRIBUTING.md
 CODE_OF_CONDUCT.md
