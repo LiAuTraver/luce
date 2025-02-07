@@ -85,7 +85,7 @@ public:
       -> auxilia::Status;
 
 public:
-  auto fetch_from_main_memory(const vaddr_t addr, const size_t size)
+  auto fetch_from_main_memory(const paddr_t addr, const size_t size)
       -> auxilia::StatusOr<std::span<const std::byte>> {
     return memory.read_n(addr, size);
   }

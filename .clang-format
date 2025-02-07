@@ -60,6 +60,7 @@ StatementMacros:
   - return_if_not
   - dbg_break
   - TODO
+  - DebugUnreachable
 InsertNewlineAtEOF: true
 InsertTrailingCommas: Wrapped
 IndentPPDirectives: AfterHash

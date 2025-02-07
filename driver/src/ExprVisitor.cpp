@@ -1,3 +1,4 @@
+#include "accat/auxilia/details/macros.hpp"
 #include "deps.hh"
 
 #include "luce/repl/ExprVisitor.hpp"
@@ -8,7 +9,7 @@
 #include <utility>
 #include <variant>
 #include "accat/auxilia/auxilia.hpp"
-#include "accat/auxilia/details/format.hpp"
+#include "luce/Monitor.hpp"
 #include "luce/repl/Token.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/repl/expression.hpp"
@@ -90,15 +91,37 @@ result_type Evaluator::visit(const Unary &expr) {
   }
   auto pattern = match{
       [&](const evaluation::Number &num) -> result_type {
-        if (expr.op.is_type(kMinus)) {
+        switch (expr.op.type()) {
+        case kMinus:
           return {{evaluation::Number{-num}}};
-        }
-        if (expr.op.is_type(kBang)) {
+        case kBang:
           return {{evaluation::Boolean{!num}}};
+        case kStar:
+          // in this repl, a number might represent an addr
+          if (auto myInt = num.integer()) {
+            // may be a pointer
+            if (this->mediator) {
+              precondition(dynamic_cast<Monitor *>(mediator),
+                           "mediator must be a Monitor");
+              auto monitor = static_cast<Monitor *>(mediator);
+              if (auto res = monitor->fetch_from_main_memory(*myInt, 1)) {
+                return {{evaluation::Byte{res->front()}}};
+              } else {
+                return {res.as_status()};
+              }
+              DebugUnreachable()
+            }
+            spdlog::warn("Running evaluator without mediator, pointer "
+                         "dereference is unavailable.");
+          }
+          return {InvalidArgumentError("cannot dereference a number")};
+        default:
+          break;
         }
+        DebugUnreachable()
         return {InvalidArgumentError("unknown unary operator")};
       },
-      [&](const evaluation::String str) -> result_type {
+      [&](const evaluation::String &str) -> result_type {
         switch (expr.op.type()) {
         case kMinus:
           return {InvalidArgumentError("cannot negate a string")};
@@ -111,7 +134,7 @@ result_type Evaluator::visit(const Unary &expr) {
         default:
           break;
         }
-        dbg_break
+        DebugUnreachable()
         return {InvalidArgumentError("unknown unary operator")};
       },
       [&](const evaluation::Nil &) -> result_type {

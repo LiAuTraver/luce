@@ -3,6 +3,7 @@
 #include <fmt/format.h>
 #include <compare>
 #include <limits>
+#include <optional>
 #include <variant>
 
 #include "./luce/repl/repl_fwd.hpp"
@@ -116,8 +117,37 @@ struct Number : /* implements */ Value,
                       lhs.value,
                       rhs.value);
   }
+  constexpr auto integer() const noexcept -> std::optional<I> {
+    if (std::holds_alternative<I>(value))
+      return std::make_optional(std::get<I>(value));
+    return {};
+  }
+  constexpr auto floating() const noexcept -> std::optional<F> {
+    if (std::holds_alternative<F>(value))
+      return std::make_optional(std::get<F>(value));
+    return {};
+  }
 
 private:
+  ValueType value;
+};
+
+struct Byte : /* implements */ Value,
+              /* implements */ auxilia::Printable<Byte> {
+  using ValueType = std::byte;
+  constexpr Byte() = default;
+  explicit constexpr Byte(ValueType value) : value(value) {}
+  constexpr ~Byte() = default;
+  auto to_string(const auxilia::FormatPolicy & =
+                     auxilia::FormatPolicy::kDefault) const -> string_type {
+    return fmt::format("0x{:02x}", static_cast<int>(value));
+  }
+  friend auto operator==(const Byte &lhs, const Byte &rhs) -> bool {
+    return lhs.value == rhs.value;
+  }
+  friend auto operator<=>(const Byte &lhs, const Byte &rhs) {
+    return lhs.value <=> rhs.value;
+  }
   ValueType value;
 };
 struct String : /* implements */ Value,
@@ -174,10 +204,10 @@ struct Boolean : /* implements */ Value,
   friend auto operator!=(const Boolean &lhs, const Boolean &rhs) {
     return Boolean{lhs.value != rhs.value};
   }
-  friend auto operator&&(const Boolean &lhs, const Boolean &rhs) -> Boolean {
+  friend auto operator&&(const Boolean &lhs, const Boolean &rhs) {
     return Boolean{lhs.value && rhs.value};
   }
-  friend auto operator||(const Boolean &lhs, const Boolean &rhs) -> Boolean {
+  friend auto operator||(const Boolean &lhs, const Boolean &rhs) {
     return Boolean{lhs.value || rhs.value};
   }
 

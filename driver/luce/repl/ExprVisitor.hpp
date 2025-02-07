@@ -4,6 +4,7 @@
 #include <string>
 
 #include "repl_fwd.hpp"
+#include "luce/utils/Pattern.hpp"
 #include "luce/repl/IVisitor.hpp"
 namespace accat::luce::repl::expression {
 struct ASTPrinter : Visitor {
@@ -23,7 +24,9 @@ private:
   std::ostream outs{std::cout.rdbuf()};
 };
 
-struct Evaluator : Visitor {
+struct Evaluator : Visitor, Component {
+  Evaluator() = default;
+  Evaluator(Mediator * parent) : Component(parent) {}
   virtual evaluation::result_type evaluate(const Expr &) override;
   virtual evaluation::result_type visit(const Undefined &) override;
   virtual evaluation::result_type visit(const Grouping &) override;

@@ -151,10 +151,10 @@ public:
 struct Print final : ICommand {
   Print() = default;
   Print(std::string expr) : expression(std::move(expr)) {}
-  virtual Status execute(Monitor *) const override final {
+  virtual Status execute(Monitor * monitor) const override final {
     auto lexer = Lexer{};
     auto parser = Parser{lexer.load_string(expression).lex()};
-    auto eval = expression::Evaluator{};
+    auto eval = expression::Evaluator{monitor};
     parser.next_expression()
         ->accept(eval)
         .transform([](auto &&res) {

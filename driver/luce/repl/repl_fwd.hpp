@@ -1,9 +1,10 @@
 #pragma once
 #include <accat/auxilia/details/config.hpp>
+#include "luce/repl/evaluation.hpp"
 
 namespace accat::auxilia {
 template <typename> class StatusOr;
-template <typename... Types> class Variant;
+template <typename...> class Variant;
 } // namespace accat::auxilia
 
 namespace accat::luce {}
@@ -29,10 +30,11 @@ interface Evaluatable;
 interface Value;
 struct Undefined;
 struct Number;
+struct Byte;
 struct String;
 struct Boolean;
 struct Nil;
 
-using variant_type = auxilia::Variant<Undefined, Number, String, Boolean, Nil>;
+using variant_type = auxilia::Variant<Undefined, Number,Byte, String, Boolean, Nil>;
 using result_type = auxilia::StatusOr<variant_type>;
 } // namespace accat::luce::repl::evaluation
