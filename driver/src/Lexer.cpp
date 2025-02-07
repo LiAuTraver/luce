@@ -1,14 +1,22 @@
-#include <algorithm>
-#include <charconv>
-#include <locale>
-#include <utility>
-#include "accat/auxilia/details/Status.hpp"
-#include "accat/auxilia/details/macros.hpp"
 #include "deps.hh"
 
-#include "luce/repl/Lexer.hpp"
-#include <spdlog/spdlog.h>
+#include <algorithm>
+#include <charconv>
+#include <cstddef>
+#include <locale>
+#include <magic_enum/magic_enum.hpp>
+#include <utility>
 
+#include "luce/config.hpp"
+#include "luce/repl/Lexer.hpp"
+
+#include <spdlog/spdlog.h>
+namespace {
+constexpr auto is_valid_base(const char c) noexcept -> bool {
+  return c == 'x' || c == 'X' || c == 'b' || c == 'B' || c == 'o' || c == 'O' ||
+         c == 'd' || c == 'D';
+}
+} // namespace
 namespace accat::luce::repl {
 using auxilia::operator""s;
 using auxilia::operator""sv;
@@ -64,17 +72,35 @@ Lexer &Lexer::operator=(Lexer &&other) noexcept {
 
   return *this;
 }
-template <typename Num>
-  requires std::is_arithmetic_v<Num>
-auto Lexer::to_number(string_view_type value) -> std::optional<Num> {
-  Num number;
-  const auto &[p, ec] =
-      std::from_chars(value.data(), value.data() + value.size(), number);
-  if (ec == std::errc())
-    return {number};
-  dbg(error, "Unable to convert string to number: {}", value)
-  dbg(error, "Error code: {}", std::to_underlying(ec))
-  dbg(error, "Error position: {}", p)
+auto Lexer::to_number(string_view_type value, bool isFloating, int Base)
+    -> std::optional<number_value_t> {
+  auto realValStr = value;
+  if (value.size() >= 2 && value[0] == '0' && is_valid_base(value[1]))
+    realValStr = value.substr(2);
+
+  std::from_chars_result res;
+  if (isFloating) {
+    if (Base != 10) {
+      spdlog::warn("Only base 10 is supported for floating point");
+      return {};
+    }
+    long double number;
+    res = std::from_chars(
+        realValStr.data(), realValStr.data() + realValStr.size(), number);
+    if (res.ec == std::errc())
+      return {number};
+  } else {
+    long long number;
+    res = std::from_chars(
+        realValStr.data(), realValStr.data() + realValStr.size(), number, Base);
+    if (res.ec == std::errc())
+      return {number};
+  }
+  spdlog::error("Unable to convert string '{String}' to number: at {Location}, "
+                "error: {ErrorString}",
+                "String"_a = realValStr,
+                "Location"_a = res.ptr,
+                "ErrorString"_a = magic_enum::enum_name(res.ec));
   return {};
 }
 Lexer::status_t Lexer::load(const path_type &filepath) const {
@@ -92,7 +118,7 @@ Lexer::status_t Lexer::load(const path_type &filepath) const {
   const_cast<string_type &>(contents) = std::move(buffer).str();
   return {};
 }
-auto Lexer::load_string(const string_view_type str)-> Lexer & {
+auto Lexer::load_string(const string_view_type str) -> Lexer & {
   precondition(contents.empty(), "File already loaded")
   const_cast<string_type &>(contents) = std::move(str);
   return *this;
@@ -117,7 +143,7 @@ Lexer::token_t Lexer::add_identifier_or_keyword() {
   return add_token(kIdentifier);
 }
 Lexer::token_t Lexer::add_number() {
-  if (auto value = lex_number(false)) {
+  if (auto value = lex_number()) {
     return add_token(*value);
   }
   return add_error_token("Invalid number: "s +
@@ -228,7 +254,7 @@ Lexer::token_t Lexer::add_token(Token::Type type) {
   dbg(trace, "lexeme: {}", lexeme)
   return token_t::Lexeme(type, lexeme, current_line);
 }
-Lexer::token_t Lexer::add_token(long double number) const {
+Lexer::token_t Lexer::add_token(number_value_t number) const {
   dbg(trace, "lexeme: {}", number)
   return token_t::Number(number, current_line);
 }
@@ -255,7 +281,21 @@ Lexer::status_t Lexer::lex_string() {
     get(); // consume the closing quote.
   return {};
 }
-auto Lexer::lex_number(const bool is_negative) -> std::optional<long double> {
+auto Lexer::lex_number() -> std::optional<number_value_t> {
+  // 0x123456
+  //  ^ cursor position(one after the first digit)
+  auto Base = 10;
+  if (auto c = peek(); is_valid_base(c)) {
+    if (c == 'x' || c == 'X')
+      Base = 16;
+    else if (c == 'b' || c == 'B')
+      Base = 2;
+    else if (c == 'o' || c == 'O')
+      Base = 8;
+    else if (c == 'd' || c == 'D')
+      Base = 10;
+    get(); // consume the 'x', 'b', or 'o'
+  }
   while (std::isdigit(peek(), std::locale())) {
     get();
   }
@@ -266,18 +306,14 @@ auto Lexer::lex_number(const bool is_negative) -> std::optional<long double> {
     while (std::isdigit(peek(), std::locale())) {
       get();
     }
-    // 123.456_
-    // 		    ^ cursor position
+    // 123.456
+    // 		    ^ cursor position(one after the last digit)
     is_floating_point = true;
   }
-  // 789_
+  // 789
   //    ^ cursor position
   auto value = contents.substr(head, cursor - head);
-  (void)is_floating_point;
-
-  (void)is_negative;
-
-  return to_number<long double>(value);
+  return to_number(value, is_floating_point, Base);
 }
 bool Lexer::ok() const noexcept {
   return !error_count;

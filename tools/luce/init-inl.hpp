@@ -8,7 +8,7 @@
 #include "alter_args-inl.h"
 
 namespace accat::luce {
-[[nodiscard]] int luce_main([[maybe_unused]] std::span<const std::string_view>);
+[[nodiscard]] int main([[maybe_unused]] std::span<const std::string_view>);
 
 struct init {
 private:

@@ -10,8 +10,8 @@
 #include "luce/Image.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/isa/riscv32/isa.hpp"
-namespace accat::luce {
-LUCE_API int luce_main(const std::span<const std::string_view> args) {
+
+LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   auto callback = 0;
   constexpr auto defaultImagePath = R"(Z:/luce/data/image.bin)";
 
@@ -63,4 +63,3 @@ LUCE_API int luce_main(const std::span<const std::string_view> args) {
 
   return callback;
 }
-} // namespace accat::luce

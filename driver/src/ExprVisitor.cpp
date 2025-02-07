@@ -52,13 +52,15 @@ result_type Evaluator::visit(const Literal &expr) {
   case kIdentifier: // TODO: implement identifier
     break;
   case kString:
-    return {{evaluation::String{std::string{expr.value.lexeme()}}}};
+    return {{evaluation::String{std::string{
+        expr.value.lexeme().begin() + 1,
+        expr.value.lexeme().end() - 1}}}}; // remove `"` from the string
   case kNumber:
     return {{evaluation::Number{expr.value.number()}}};
   case kFalse:
     return {{evaluation::False}};
   case kNil:
-    return {evaluation::nil};
+    return {{evaluation::nil}};
   case kTrue:
     return {{evaluation::True}};
   case kLexError:
@@ -89,10 +91,10 @@ result_type Evaluator::visit(const Unary &expr) {
   auto pattern = match{
       [&](const evaluation::Number &num) -> result_type {
         if (expr.op.is_type(kMinus)) {
-          return {{evaluation::Number{-num.value}}};
+          return {{evaluation::Number{-num}}};
         }
         if (expr.op.is_type(kBang)) {
-          return {{evaluation::Boolean{!num.value}}};
+          return {{evaluation::Boolean{!num}}};
         }
         return {InvalidArgumentError("unknown unary operator")};
       },
@@ -101,7 +103,7 @@ result_type Evaluator::visit(const Unary &expr) {
         case kMinus:
           return {InvalidArgumentError("cannot negate a string")};
         case kBang:
-          return {{evaluation::Boolean{str.value.empty()}}};
+          return {{evaluation::Boolean{!!str}}};
         case kStar:
           return {InvalidArgumentError("cannot dereference or a string")};
         case kAmpersand:
@@ -133,7 +135,7 @@ result_type Evaluator::visit(const Unary &expr) {
         case kMinus:
           return {InvalidArgumentError("cannot negate a boolean")};
         case kBang:
-          return {{evaluation::Boolean{!b.value}}};
+          return {{evaluation::Boolean{!b}}};
         case kStar:
           return {InvalidArgumentError("cannot dereference a boolean")};
         case kAmpersand:
@@ -166,28 +168,25 @@ result_type Evaluator::visit(const Binary &expr) {
           const evaluation::Number &rhs) -> result_type {
         switch (expr.op.type()) {
         case kPlus:
-          return {{evaluation::Number{lhs.value + rhs.value}}};
+          return {{lhs + rhs}};
         case kMinus:
-          return {{evaluation::Number{lhs.value - rhs.value}}};
+          return {{lhs - rhs}};
         case kStar:
-          return {{evaluation::Number{lhs.value * rhs.value}}};
+          return {{lhs * rhs}};
         case kSlash:
-          if (rhs.value == 0) {
-            return {InvalidArgumentError("division by zero")};
-          }
-          return {{evaluation::Number{lhs.value / rhs.value}}};
+          return {{lhs / rhs}};
         case kGreater:
-          return {{evaluation::Boolean{lhs.value > rhs.value}}};
+          return {{evaluation::Boolean{lhs > rhs}}};
         case kGreaterEqual:
-          return {{evaluation::Boolean{lhs.value >= rhs.value}}};
+          return {{evaluation::Boolean{lhs >= rhs}}};
         case kLess:
-          return {{evaluation::Boolean{lhs.value < rhs.value}}};
+          return {{evaluation::Boolean{lhs < rhs}}};
         case kLessEqual:
-          return {{evaluation::Boolean{lhs.value <= rhs.value}}};
+          return {{evaluation::Boolean{lhs <= rhs}}};
         case kEqualEqual:
-          return {{evaluation::Boolean{lhs.value == rhs.value}}};
+          return {{evaluation::Boolean{lhs == rhs}}};
         case kBangEqual:
-          return {{evaluation::Boolean{lhs.value != rhs.value}}};
+          return {{evaluation::Boolean{lhs != rhs}}};
         default:
           break;
         }
@@ -197,11 +196,15 @@ result_type Evaluator::visit(const Binary &expr) {
           const evaluation::String &rhs) -> result_type {
         switch (expr.op.type()) {
         case kPlus:
-          return {{evaluation::String{lhs.value + rhs.value}}};
+          if (!lhs)
+            return {{rhs}};
+          if (!rhs)
+            return {{lhs}};
+          return {{lhs + rhs}};
         case kEqualEqual:
-          return {{evaluation::Boolean{lhs.value == rhs.value}}};
+          return {{evaluation::Boolean{lhs == rhs}}};
         case kBangEqual:
-          return {{evaluation::Boolean{lhs.value != rhs.value}}};
+          return {{evaluation::Boolean{lhs != rhs}}};
         case kMinus:
           return {InvalidArgumentError("cannot subtract strings")};
         default:
@@ -213,13 +216,13 @@ result_type Evaluator::visit(const Binary &expr) {
           const evaluation::Boolean &rhs) -> result_type {
         switch (expr.op.type()) {
         case kOr:
-          return {{evaluation::Boolean{lhs.value || rhs.value}}};
+          return {{lhs || rhs}};
         case kAnd:
-          return {{evaluation::Boolean{lhs.value && rhs.value}}};
+          return {{lhs && rhs}};
         case kEqualEqual:
-          return {{evaluation::Boolean{lhs.value == rhs.value}}};
+          return {{lhs == rhs}};
         case kBangEqual:
-          return {{evaluation::Boolean{lhs.value != rhs.value}}};
+          return {{lhs != rhs}};
         default:
           break;
         }
@@ -260,9 +263,9 @@ result_type Evaluator::visit(const Logical &expr) {
                 const evaluation::Boolean &rhs) -> result_type {
               switch (expr.op.type()) {
               case kOr:
-                return {{evaluation::Boolean{lhs.value || rhs.value}}};
+                return {{lhs || rhs}};
               case kAnd:
-                return {{evaluation::Boolean{lhs.value && rhs.value}}};
+                return {{lhs && rhs}};
               default:
                 break;
               }

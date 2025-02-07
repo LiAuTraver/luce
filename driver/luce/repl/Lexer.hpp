@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -27,6 +28,7 @@ public:
   using token_type_t = Token::Type;
   using char_t = typename string_type::value_type;
   using generator_t = auxilia::Generator<token_t, uint_least32_t>;
+  using number_value_t = std::variant<long long, long double>;
 
 public:
   Lexer() = default;
@@ -60,23 +62,16 @@ private:
   token_t add_comment();
   token_t next_token();
   token_t add_token(token_type_t);
-  token_t add_token(long double) const;
+  token_t add_token(number_value_t) const;
   token_t add_error_token(string_type &&);
   bool is_at_end(size_t = 0) const;
   auto lex_string() -> Lexer::status_t;
   auto lex_identifier() -> string_view_type;
-  auto lex_number(bool) -> std::optional<long double>;
+  auto lex_number() -> std::optional<number_value_t>;
 
 private:
-  /// @brief convert a string to a number
-  /// @tparam Num the number type
-  /// @param value the string to convert
-  /// @return the number if successful
-  template <typename Num>
-    requires std::is_arithmetic_v<Num>
-  auto to_number(string_view_type value) -> std::optional<Num>;
+  auto to_number(string_view_type, bool, int) -> std::optional<number_value_t>;
 
-private:
   /// @brief lookaheads; we have only consumed the character before the cursor
   char_t peek(size_t = 0) const;
   /// @brief get current character and advance the cursor

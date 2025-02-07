@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <iostream>
 #include <luce/config.hpp>
+#include <spdlog/common.h>
 #include <spdlog/logger.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -43,7 +44,6 @@ public:
 
     spdlog::set_default_logger(std::make_shared<spdlog::logger>(
         spdlog::logger{"luce", {console_sink, file_sink}}));
-
     return;
   }
   static auto &InitializeContext(const ArgumentLoader &) {
@@ -76,6 +76,6 @@ public:
 };
 
 LUCE_API [[nodiscard]] int
-    luce_main([[maybe_unused]] std::span<const std::string_view>);
+    main([[maybe_unused]] std::span<const std::string_view>);
 
 } // namespace accat::luce

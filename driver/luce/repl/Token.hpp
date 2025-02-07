@@ -12,7 +12,6 @@
 #include <vector>
 #include <unordered_map>
 #include <magic_enum/magic_enum.hpp>
-#include "accat/auxilia/details/format.hpp"
 
 namespace accat::luce::repl {
 using namespace std::literals;
@@ -56,28 +55,30 @@ struct Token : auxilia::Printable<Token> {
   }
 
 public:
-  std::string_view lexeme() const noexcept {
+  auto lexeme() const noexcept -> std::string_view {
     precondition(type_ != Type::kNumber && type_ != Type::kLexError,
                  "lexeme() called on a non-lexeme token")
     return lexeme_;
   }
-  long double number() const noexcept {
+  // Changed number() to return a variant instead of long double.
+  auto number() const noexcept {
     precondition(type_ == Type::kNumber,
-                 "number() called on a non-number token")
-    return number_;
+                 "number() called on a non-number token");
+    using NumberType = std::variant<long long, long double>;
+    return number_is_integer_ ? NumberType{num_ll_} : NumberType{num_ld_};
   }
-  string_type error_message() const noexcept {
+  auto error_message() const noexcept {
     precondition(type_ == Type::kLexError,
                  "error_message() called on a non-error token")
     return lexeme_;
   }
-  constexpr Type type() const noexcept {
+  constexpr auto type() const noexcept {
     return type_;
   }
-  constexpr bool is_type(const Type type) const noexcept {
+  constexpr auto is_type(const Type type) const noexcept {
     return type_ == type;
   }
-  constexpr uint_least32_t line() const noexcept {
+  constexpr auto line() const noexcept {
     return line_;
   }
   auto to_string(const auxilia::FormatPolicy &format_policy =
@@ -98,12 +99,16 @@ protected:
   Token(Type type, std::string &&error_message, uint_least32_t line)
       : type_(type), lexeme_(std::move(error_message)), line_(line) {}
   Token(Type type, long double number, uint_least32_t line)
-      : type_(type), number_(number), line_(line) {}
+      : type_(type), num_ld_(number), number_is_integer_(false), line_(line) {}
+  Token(Type type, long long number, uint_least32_t line)
+      : type_(type), num_ll_(number), number_is_integer_(true), line_(line) {}
 
 public:
-  static AC_CONSTEXPR20 auto Number(const long double value,
-                                    const uint_least32_t line) noexcept {
-    return Token{Type::kNumber, value, line};
+  static AC_CONSTEXPR20 auto
+  Number(const std::variant<long long, long double> value,
+         const uint_least32_t line) noexcept {
+    return std::visit(
+        [line](auto &&v) { return Token{Type::kNumber, v, line}; }, value);
   }
   static AC_CONSTEXPR20 auto Lexeme(const Type type,
                                     const std::string_view lexeme,
@@ -129,7 +134,9 @@ public:
     case Type::kLexError:
       return std::partial_ordering::unordered;
     case Type::kNumber:
-      return number_ <=> that.number_;
+      if (number_is_integer_ && that.number_is_integer_)
+        return num_ll_ <=> that.num_ll_; // strong ordering convert to partial
+      return num_ld_ <=> that.num_ld_;
     case Type::kMonostate:
       return std::partial_ordering::equivalent;
     default:
@@ -146,8 +153,10 @@ private:
   union {
     std::monostate monostate_{};
     string_type lexeme_;
-    long double number_;
+    long double num_ld_;
+    long long num_ll_;
   };
+  bool number_is_integer_ = false;
   uint_least32_t line_ = std::numeric_limits<uint_least32_t>::signaling_NaN();
 
 private:
@@ -159,15 +168,16 @@ private:
     type_ = that.type_;
     line_ = that.line_;
 
-    switch (that.type_) {
-    case Type::kNumber:
-      number_ = that.number_;
-      break;
-    case Type::kMonostate:
-      break;
-    default:
+    if (that.type_ == Type::kNumber) {
+      if (that.number_is_integer_) {
+        num_ll_ = that.num_ll_;
+        number_is_integer_ = true;
+      } else {
+        num_ld_ = that.num_ld_;
+        number_is_integer_ = false;
+      }
+    } else {
       ::new (std::addressof(lexeme_)) std::string(std::move(that.lexeme_));
-      break;
     }
 
     that.type_ = Type::kMonostate;
@@ -176,9 +186,15 @@ private:
   auto _do_format(const auxilia::FormatPolicy format_policy) const
       -> string_type {
     auto str = string_type{};
+    auto format_number = [this]() -> long double {
+      auto n = number();
+      return std::holds_alternative<long long>(n)
+                 ? static_cast<long double>(std::get<long long>(n))
+                 : std::get<long double>(n);
+    };
     if (format_policy == auxilia::FormatPolicy::kBrief) {
       if (type_ == Type::kNumber)
-        str = fmt::format("{}", number_);
+        str = fmt::format("{}", format_number());
       else if (type_ == Type::kLexError)
         str = lexeme_;
       else if (type_ == Type::kMonostate)
@@ -187,7 +203,7 @@ private:
         str = magic_enum::enum_name(type_);
     } else {
       if (type_ == Type::kNumber)
-        str = fmt::format("number: '{}'", number_);
+        str = fmt::format("number: '{}'", format_number());
       else if (type_ == Type::kLexError)
         str = fmt::format("error: '{}'", lexeme_);
       else if (type_ == Type::kMonostate)

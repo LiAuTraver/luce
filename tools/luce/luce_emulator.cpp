@@ -13,5 +13,5 @@ int main(const int argc,
   accat::luce::init X{&argc, &argv};
 
   // argument modernization done. now invoke the main function.
-  return accat::luce::luce_main({X.args});
+  return accat::luce::main({X.args});
 }
