@@ -50,8 +50,8 @@ using auxilia::match;
 
 result_type Evaluator::visit(const Literal &expr) {
   switch (expr.value.type()) {
-  case kIdentifier: // TODO: implement identifier
-    break;
+  case kIdentifier:
+    dbg_break
   case kString:
     return {{evaluation::String{std::string{
         expr.value.lexeme().begin() + 1,
@@ -79,6 +79,27 @@ result_type Evaluator::visit(const Literal &expr) {
   return {auxilia::UnimplementedError(
       fmt::format("Unimplemented literal type: {}",
                   expr.to_string(auxilia::FormatPolicy::kDetailed)))};
+}
+result_type Evaluator::visit(const Variable &expr) {
+  // if start with `$`, then it might be visiting a register, e.g, $a0, $t0
+  // else, not implemented
+  // if (expr.identifier().front() == '$') {
+  //   if (expr.identifier().size() <= 2) {
+  //     return {InvalidArgumentError(
+  //         fmt::format("'{}' is not a valid identifier", expr.identifier()))};
+  //   }
+  //   const auto target = expr.identifier().substr(1);
+  // }
+  const auto ident = expr.identifier();
+  if (ident.front() == '$') {
+    if (ident.size() <= 2) {
+      return {InvalidArgumentError(
+          fmt::format("'{}' is not a valid identifier", ident))};
+    }
+    // const auto target = ident.substr(1);
+    TODO(register evaluation is not implemented)
+  }
+  TODO(variable evaluation is not implemented)
 }
 result_type Evaluator::visit(const Unary &expr) {
   auto maybe_right = evaluate(*expr.right);

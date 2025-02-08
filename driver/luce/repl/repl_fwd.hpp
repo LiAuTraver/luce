@@ -16,6 +16,7 @@ interface Expr;
 struct Undefined;
 struct Grouping;
 struct Literal;
+struct Variable;
 struct Unary;
 struct Binary;
 struct Logical;

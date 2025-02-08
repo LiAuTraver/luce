@@ -3,7 +3,6 @@
 #include "config.hpp"
 
 #include <accat/auxilia/auxilia.hpp>
-#include <luce/isa/architecture.hpp>
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -16,6 +15,7 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "Support/isa/architecture.hpp"
 namespace accat::luce {
 
 class LUCE_API MemoryAccess {

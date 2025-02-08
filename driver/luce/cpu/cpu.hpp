@@ -8,7 +8,7 @@
 #include "accat/auxilia/details/Status.hpp"
 #include "luce/config.hpp"
 #include "luce/Task.hpp"
-#include "luce/isa/architecture.hpp"
+#include "Support/isa/architecture.hpp"
 #include "mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/macros.hpp>
@@ -23,7 +23,7 @@ namespace accat::luce {
 class Monitor;
 }
 namespace accat::luce {
-class CentralProcessingUnit :public Component {
+class CentralProcessingUnit : public Component {
   std::shared_ptr<Context> context_;
   std::optional<pid_t> task_id_;
   MemoryManagementUnit mmu_;

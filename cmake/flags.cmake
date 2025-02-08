@@ -21,7 +21,8 @@ if(CXX_FLAGS_STYLES_MSVC)
     /analyze- # don't run analysis when compiling (too slow)
     /Zi /Od /Ob0 /Oy-
     /GR # <- rtti
-    /fsanitize=address /fsanitize=fuzzer
+    /fsanitize=address 
+    # /fsanitize=fuzzer
     /guard:cf 
     /guard:ehcont
     /RTCsu /sdl
@@ -92,7 +93,9 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
   add_compile_options(
     -g3 -O0 -fno-inline -fstandalone-debug # Debug flags
     -frtti
-    -fsanitize=address -fsanitize=fuzzer -fsanitize=undefined
+    -fsanitize=address 
+    # -fsanitize=fuzzer 
+    -fsanitize=undefined
     -fcf-protection=full -fstack-protector-strong # control flow protection
 
     # -fopenmp # openmp/qpar/simd
@@ -101,6 +104,8 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
     -Wimplicit-fallthrough
   )
   add_link_options(
-    -g -fsanitize=address -fsanitize=fuzzer -fsanitize=undefined
+    -g -fsanitize=address 
+    # -fsanitize=fuzzer 
+    -fsanitize=undefined
   )
 endif()

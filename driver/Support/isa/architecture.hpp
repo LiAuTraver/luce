@@ -4,14 +4,15 @@
 #include <cstdint>
 #include <limits>
 
-#include <accat/auxilia/auxilia.hpp>
-#include "./riscv32/isa.hpp"
+#include <accat/auxilia/defines.hpp>
+#include "./config.hpp"
 #include "./host.hpp"
+#include "./riscv32/riscv32.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-const-variable"
 namespace accat::luce::isa {
-
+using namespace riscv32;
 enum class instruction_set : std::uint8_t {
   host = 0,
   is_32bit = 1,
@@ -27,7 +28,6 @@ enum class instruction_set : std::uint8_t {
   x64 = is_x86 | is_64bit,
 };
 AC_BITMASK_OPS(instruction_set)
-using namespace riscv32;
 
 /// @note currently not supported/tested, so left as is.
 

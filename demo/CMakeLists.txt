@@ -23,6 +23,7 @@ add_executable(demo2
 target_link_libraries(demo2 PUBLIC
   external_deps
   $<TARGET_OBJECTS:driver>
+  Support.isa
 )
 target_precompile_headers(demo2 PUBLIC
   ${LUCE_EXTERNAL_DEPS_PCH}

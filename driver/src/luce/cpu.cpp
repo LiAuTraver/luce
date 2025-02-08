@@ -9,6 +9,7 @@
 #include <span>
 #include <type_traits>
 #include "luce/Monitor.hpp"
+#include "Support/isa/riscv32/isa.hpp"
 namespace accat::luce {
 CentralProcessingUnit::CentralProcessingUnit(Mediator *parent)
     : Component(parent), mmu_(this) {}
@@ -65,12 +66,14 @@ auxilia::Status CentralProcessingUnit::decode() {
 }
 auxilia::StatusOr<std::span<const std::byte>> CentralProcessingUnit::fetch() {
   auto translated = mmu_.virtual_to_physical(context_->program_counter);
-  constexpr auto num = sizeof(instruction_t) / sizeof(isa::minimal_addressable_unit_t);
-  if (auto res = this->monitor()->fetch_from_main_memory(translated, num)) {
-    return {mmu_.physical_to_virtual(*res)};
-  } else {
-    return {res.as_status()};
-  }
+  // if (auto res = this->monitor()->fetch_from_main_memory(translated, num)) {
+  //   return {mmu_.physical_to_virtual(*res)};
+  // } else {
+  //   return {res.as_status()};
+  // }
+  return this->monitor()
+      ->fetch_from_main_memory(translated, isa::instruction_size_bytes)
+      .and_then([&](auto &&res) { return mmu_.physical_to_virtual(res); });
 }
 Monitor *CentralProcessingUnit::monitor() const noexcept {
   precondition(dynamic_cast<Monitor *>(mediator), "Parent must be a Monitor")

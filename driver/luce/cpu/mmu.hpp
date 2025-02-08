@@ -1,6 +1,6 @@
 #pragma once
 
-#include "luce/isa/architecture.hpp"
+#include "Support/isa/architecture.hpp"
 namespace accat::luce {
 class CentralProcessingUnit;
 // memory management unit -- MMU: converts virtual addresses to physical

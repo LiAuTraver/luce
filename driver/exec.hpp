@@ -10,7 +10,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <accat/auxilia/auxilia.hpp>
-#include <luce/isa/architecture.hpp>
+#include "Support/isa/architecture.hpp"
 #include <string>
 #include "luce/argument/Argument.hpp"
 

@@ -4,7 +4,6 @@
 
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
-#include <accat/auxilia/details/id.hpp>
 #include <utility>
 
 #include "luce/config.hpp"

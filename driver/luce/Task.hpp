@@ -7,7 +7,7 @@
 #include <accat/auxilia/details/Property.hpp>
 #include <accat/auxilia/details/Status.hpp>
 
-#include "isa/architecture.hpp"
+#include "Support/isa/architecture.hpp"
 
 namespace accat::luce {
 enum class [[clang::flag_enum]] Permission : uint8_t {
@@ -34,12 +34,18 @@ public:
   enum class PrivilegeLevel : uint8_t { kUser = 0, kSupervisor, kMachine };
 
 public:
+  Context() = default;
+  Context(const Context &) = delete;
+  Context &operator=(const Context &) = delete;
+  Context(Context &&) noexcept = default;
+  Context &operator=(Context &&) noexcept = default;
+public:
   void restart() {
     program_counter = 0x0;
     stack_pointer = 0x0;
     instruction_register = {};
     memory_bounds = {};
-    general_purpose_registers.fill({});
+    general_purpose_registers.reset();
     privilege_level = PrivilegeLevel::kUser;
   }
 
@@ -48,8 +54,7 @@ public:
   vaddr_t stack_pointer = 0x0;
   register_t instruction_register = {};
   std::pair<vaddr_t, vaddr_t> memory_bounds = {};
-  std::array<register_t, isa::general_purpose_register_count>
-      general_purpose_registers = {};
+  isa::GeneralPurposeRegisters general_purpose_registers;
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
 
 private:

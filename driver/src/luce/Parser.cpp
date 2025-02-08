@@ -97,8 +97,11 @@ auto Parser::call() -> expr_ptr_t {
   return expr;
 }
 auto Parser::primary() -> expr_ptr_t {
-  if (inspect(kFalse, kTrue, kNil, kNumber, kString, kIdentifier)) {
+  if (inspect(kFalse, kTrue, kNil, kNumber, kString)) {
     return std::make_shared<expression::Literal>(consume());
+  }
+  if (inspect(kIdentifier)) {
+    return std::make_shared<expression::Variable>(consume());   
   }
   // groupings
   if (inspect(kLeftParen)) {

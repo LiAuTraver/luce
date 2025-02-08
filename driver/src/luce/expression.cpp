@@ -14,6 +14,7 @@ namespace accat::luce::repl::expression {
 ACCEPT_VISIT(Undefined)
 ACCEPT_VISIT(Grouping)
 ACCEPT_VISIT(Literal)
+ACCEPT_VISIT(Variable)
 ACCEPT_VISIT(Unary)
 ACCEPT_VISIT(Binary)
 ACCEPT_VISIT(Logical)

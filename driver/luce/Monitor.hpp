@@ -4,7 +4,14 @@
 #include <fmt/compile.h>
 #include <fmt/xchar.h>
 #include <scn/scan.h>
+#include <cstddef>
+#include <iostream>
+#include <ranges>
+#include <span>
+#include <type_traits>
+#include <utility>
 #include <spdlog/spdlog.h>
+
 #include "MainMemory.hpp"
 #include "repl/Debugger.hpp"
 #include "utils/Pattern.hpp"
@@ -13,16 +20,10 @@
 #include "SystemBus.hpp"
 #include "Task.hpp"
 #include "cpu/cpu.hpp"
-#include "isa/architecture.hpp"
-#include "Disassembler.hpp"
+#include "Support/isa/architecture.hpp"
+#include "Support/isa/Disassembler.hpp"
 
 #include <accat/auxilia/auxilia.hpp>
-#include <cstddef>
-#include <iostream>
-#include <ranges>
-#include <span>
-#include <type_traits>
-#include <utility>
 namespace accat::luce {
 namespace message::repl {
 using namespace std::literals;

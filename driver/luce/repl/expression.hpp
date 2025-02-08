@@ -13,7 +13,8 @@ interface Expr {
   virtual auto to_string(const auxilia::FormatPolicy & =
                              auxilia::FormatPolicy::kBrief) const
       -> auxilia::Printable<Expr>::string_type = 0;
-  virtual auto accept(expression::Visitor &) const -> evaluation::result_type = 0;
+  virtual auto accept(expression::Visitor &) const
+      -> evaluation::result_type = 0;
 };
 /// @remark save some typings(`__interface` cannot have alias)
 #define EVAL_NAME_USINGS()                                                     \
@@ -21,8 +22,8 @@ interface Expr {
   using token_t = Token
 
 struct Undefined : /* extends */ auxilia::Monostate,
-                 /* implements */ Expr,
-                 /* implements */ auxilia::Printable<Undefined> {
+                   /* implements */ Expr,
+                   /* implements */ auxilia::Printable<Undefined> {
   EVAL_NAME_USINGS();
   token_t token;
   Undefined() = default;
@@ -34,7 +35,8 @@ struct Undefined : /* extends */ auxilia::Monostate,
   }
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
-  friend auto operator<<(std::ostream &os, const Undefined &u) -> std::ostream & {
+  friend auto operator<<(std::ostream &os, const Undefined &u)
+      -> std::ostream & {
     return os << u.to_string(auxilia::FormatPolicy::kBrief);
   }
 };
@@ -50,6 +52,24 @@ struct Literal : Expr, auxilia::Printable<Literal> {
   }
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
+};
+struct Variable : Expr, auxilia::Printable<Variable> {
+  EVAL_NAME_USINGS();
+  Variable() = default;
+  explicit Variable(token_t name) : name(std::move(name)) {}
+  virtual auto to_string(
+      const auxilia::FormatPolicy &policy = auxilia::FormatPolicy::kBrief) const
+      -> string_type override final {
+    return name.to_string(policy);
+  }
+  virtual auto accept(expression::Visitor &) const
+      -> evaluation::result_type override final;
+  auto identifier() const noexcept {
+    return name.lexeme();
+  }
+
+private:
+  token_t name;
 };
 /// @note !, -, *(dereference), &(address-of)
 struct Unary : Expr, auxilia::Printable<Unary> {

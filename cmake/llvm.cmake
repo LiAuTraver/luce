@@ -41,7 +41,7 @@ target_include_directories(${PENDING_TARGET} PUBLIC
   ${LLVM_INCLUDE_DIRS}
 )
 target_link_libraries(${PENDING_TARGET}
-  PUBLIC 
+  PUBLIC
   ${llvm_libs}
 )
 endmacro()

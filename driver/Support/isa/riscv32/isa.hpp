@@ -4,6 +4,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+
 namespace accat::luce::isa::riscv32 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-const-variable"
@@ -14,6 +15,8 @@ using minimal_addressable_unit_t = std::uint8_t;
 /// as a sequence of 16-bit little-endian parcels, regardless of memory system
 /// endianness.
 using instruction_size_t = std::uint32_t;
+inline static constexpr std::size_t instruction_size_bytes =
+    sizeof(instruction_size_t) / sizeof(std::byte);
 inline static constexpr physical_address_t physical_base_address = 0x80000000;
 inline static constexpr virtual_address_t virtual_base_address = 0x80000000;
 // inline static constexpr physical_address_t physical_memory_size = 0x8000000;

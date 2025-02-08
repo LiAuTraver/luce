@@ -17,6 +17,7 @@ interface Visitor {
   virtual evaluation::result_type visit(const Undefined &) = 0;
   virtual evaluation::result_type visit(const Grouping &) = 0;
   virtual evaluation::result_type visit(const Literal &) = 0;
+  virtual evaluation::result_type visit(const Variable &) = 0;
   virtual evaluation::result_type visit(const Unary &) = 0;
   virtual evaluation::result_type visit(const Binary &) = 0;
   virtual evaluation::result_type visit(const Logical &) = 0;

@@ -1,6 +1,6 @@
 #include "deps.hh"
 
-#include "luce/Disassembler.hpp"
+#include "Support/isa/Disassembler.hpp"
 
 #include <llvm/MC/MCAsmInfo.h>
 #include <llvm/MC/MCContext.h>
@@ -17,13 +17,14 @@
 namespace accat::luce {
 Disassembler::Disassembler(Disassembler &&that) noexcept
     : Component(std::move(that)) {
-  _do_move_impl(std::move(that));
+  _do_move_impl(*this, std::move(that));
 }
 Disassembler &Disassembler::operator=(Disassembler &&that) noexcept {
   if (this == std::addressof(that))
     return *this;
   Component::operator=(std::move(that));
-  return _do_move_impl(std::move(that));
+  // NOLINTNEXTLINE(*-unconventional-assign-operator)
+  return _do_move_impl(*this, std::move(that));
 }
 Disassembler::Disassembler(Mediator *parent) : Component(parent) {
   llvm::InitializeAllTargetInfos();
@@ -81,40 +82,40 @@ Disassembler::~Disassembler() {
     instruction_printer = nullptr;
   };
 }
-Disassembler &Disassembler::_do_move_impl(Disassembler &&that) noexcept {
+Disassembler &_do_move_impl(Disassembler &lhs, Disassembler &&rhs) noexcept {
 
-  std::exchange(this->target, that.target);
+  std::exchange(lhs.target, rhs.target);
 
-  this->triple->~Triple();
-  this->register_info->~MCRegisterInfo();
-  this->target_options->~MCTargetOptions();
-  this->asm_info->~MCAsmInfo();
-  this->subtarget_info->~MCSubtargetInfo();
-  this->instruction_info->~MCInstrInfo();
-  this->context->~MCContext();
-  this->disassembler->~MCDisassembler();
-  this->instruction_printer->~MCInstPrinter();
+  lhs.triple->~Triple();
+  lhs.register_info->~MCRegisterInfo();
+  lhs.target_options->~MCTargetOptions();
+  lhs.asm_info->~MCAsmInfo();
+  lhs.subtarget_info->~MCSubtargetInfo();
+  lhs.instruction_info->~MCInstrInfo();
+  lhs.context->~MCContext();
+  lhs.disassembler->~MCDisassembler();
+  lhs.instruction_printer->~MCInstPrinter();
 
-  triple = that.triple;
-  register_info = that.register_info;
-  target_options = that.target_options;
-  asm_info = that.asm_info;
-  subtarget_info = that.subtarget_info;
-  instruction_info = that.instruction_info;
-  context = that.context;
-  disassembler = that.disassembler;
-  instruction_printer = that.instruction_printer;
+  lhs.triple = rhs.triple;
+  lhs.register_info = rhs.register_info;
+  lhs.target_options = rhs.target_options;
+  lhs.asm_info = rhs.asm_info;
+  lhs.subtarget_info = rhs.subtarget_info;
+  lhs.instruction_info = rhs.instruction_info;
+  lhs.context = rhs.context;
+  lhs.disassembler = rhs.disassembler;
+  lhs.instruction_printer = rhs.instruction_printer;
 
-  that.triple = nullptr;
-  that.register_info = nullptr;
-  that.target_options = nullptr;
-  that.asm_info = nullptr;
-  that.subtarget_info = nullptr;
-  that.instruction_info = nullptr;
-  that.context = nullptr;
-  that.disassembler = nullptr;
-  that.instruction_printer = nullptr;
+  rhs.triple = nullptr;
+  rhs.register_info = nullptr;
+  rhs.target_options = nullptr;
+  rhs.asm_info = nullptr;
+  rhs.subtarget_info = nullptr;
+  rhs.instruction_info = nullptr;
+  rhs.context = nullptr;
+  rhs.disassembler = nullptr;
+  rhs.instruction_printer = nullptr;
 
-  return *this;
+  return lhs;
 }
 } // namespace accat::luce
