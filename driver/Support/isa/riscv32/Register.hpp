@@ -20,6 +20,7 @@ namespace accat::luce::isa::riscv32 {
 struct LUCE_SUPPORT_ISA_API GeneralPurposeRegisters : auxilia::Printable<GeneralPurposeRegisters> {
 private:
   using enum auxilia::FormatPolicy;
+  using self_type = GeneralPurposeRegisters;
 
 public:
   using register_t = std::array<std::byte, instruction_size_bytes>;
@@ -70,7 +71,7 @@ public:
     memcpy(raw, newVal, sizeof(raw));
     return *this;
   }
-  auto &reset() noexcept {
+  [[clang::reinitializes]] auto &reset() noexcept {
     memset(raw, 0, sizeof(raw));
     return *this;
   }

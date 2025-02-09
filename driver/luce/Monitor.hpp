@@ -86,14 +86,18 @@ public:
       -> auxilia::Status;
 
 public:
-  auto fetch_from_main_memory(const paddr_t addr, const size_t size)
-      -> auxilia::StatusOr<std::span<const std::byte>> {
+  auto fetch_from_main_memory(const paddr_t addr,
+                              const size_t size) const noexcept {
     return memory.read_n(addr, size);
   }
-  auto decode_from_disassembler(const std::span<const std::byte> bytes)
+  auto decode_from_disassembler(const std::span<const std::byte>)
       -> auxilia::StatusOr<auxilia::string> {
     // return disassembler.decode(bytes);
     TODO(...)
+  }
+  auto fetch_from_registers(const std::string_view reg_name) const noexcept {
+    // currently only one task
+    return process.context()->general_purpose_registers()->read(reg_name);
   }
 
 public:

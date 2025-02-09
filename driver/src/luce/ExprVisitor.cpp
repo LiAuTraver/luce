@@ -5,7 +5,9 @@
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
+#include <charconv>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <variant>
 #include "accat/auxilia/auxilia.hpp"
@@ -96,8 +98,25 @@ result_type Evaluator::visit(const Variable &expr) {
       return {InvalidArgumentError(
           fmt::format("'{}' is not a valid identifier", ident))};
     }
-    // const auto target = ident.substr(1);
-    TODO(register evaluation is not implemented)
+    precondition(this->mediator, "mediator must be set");
+    if (auto maybe_bytes = static_cast<Monitor *>(this->mediator)
+                               ->fetch_from_registers(ident.substr(1))) {
+      auto str = reinterpret_cast<const char *>(maybe_bytes->data());
+      // convert to number, base 16
+      auto num = 0ll;
+      if (*str == '\0') {
+        // value of 0
+        return {evaluation::Number{num}};
+      }
+      std::from_chars_result res =
+          std::from_chars(str, str + maybe_bytes->size(), num, 16);
+      if (res.ec == std::errc{}) {
+        return {{evaluation::Number{num}}};
+      }
+      return {InvalidArgumentError(
+          fmt::format("failed to convert '{}' to number", str))};
+    }
+    return {InvalidArgumentError(fmt::format("unknown register: {}", ident.substr(1)))};
   }
   TODO(variable evaluation is not implemented)
 }

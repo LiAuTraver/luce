@@ -28,7 +28,7 @@ target_link_libraries(demo2 PUBLIC
 target_precompile_headers(demo2 PUBLIC
   ${LUCE_EXTERNAL_DEPS_PCH}
 )
-add_llvm_deps_for(demo2)
+copy_dlls(demo2 Support.isa)
 
 add_executable(demo3
   demo3.cpp

@@ -19,14 +19,15 @@ MemoryAccess::MemoryAccess() {
 auto MainMemory::read(isa::physical_address_t addr) const noexcept
     -> StatusOr<std::byte> {
   if (!memory.is_in_range(addr)) {
-    return OutOfRangeError("Memory access violation");
+    return MakeMemoryAccessViolationError(addr);
   }
   return {memory[addr]};
 }
-auto MainMemory::read_n(isa::physical_address_t addr, size_t count) const
+auto MainMemory::read_n(isa::physical_address_t addr,
+                        size_t count) const noexcept
     -> StatusOr<std::span<const std::byte>> {
   if (!memory.is_in_range(addr, addr + count)) {
-    return {OutOfRangeError("Memory access violation")};
+    return {MakeMemoryAccessViolationError(addr)};
   }
   // dont write `memory.begin() + addr` here; the operator is overloaded with
   // different meaning
@@ -37,7 +38,7 @@ auto MainMemory::write(isa::physical_address_t addr,
                        isa::minimal_addressable_unit_t value) noexcept
     -> Status {
   if (!memory.is_in_range(addr)) {
-    return {OutOfRangeError("Memory access violation")};
+    return {MakeMemoryAccessViolationError(addr)};
   }
   memory[addr] = static_cast<std::byte>(value);
   return {};

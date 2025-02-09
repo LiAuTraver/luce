@@ -39,14 +39,16 @@ public:
   Context &operator=(const Context &) = delete;
   Context(Context &&) noexcept = default;
   Context &operator=(Context &&) noexcept = default;
+
 public:
-  void restart() {
+  [[clang::reinitializes]] auto &restart() {
     program_counter = 0x0;
     stack_pointer = 0x0;
     instruction_register = {};
     memory_bounds = {};
-    general_purpose_registers.reset();
+    general_purpose_registers_.reset();
     privilege_level = PrivilegeLevel::kUser;
+    return *this;
   }
 
 public:
@@ -54,7 +56,14 @@ public:
   vaddr_t stack_pointer = 0x0;
   register_t instruction_register = {};
   std::pair<vaddr_t, vaddr_t> memory_bounds = {};
-  isa::GeneralPurposeRegisters general_purpose_registers;
+
+private:
+  isa::GeneralPurposeRegisters general_purpose_registers_;
+
+public:
+  auto general_purpose_registers(this auto &&self) noexcept -> decltype(auto) {
+    return &self.general_purpose_registers_;
+  }
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
 
 private:
@@ -135,14 +144,16 @@ public:
   void resume() {}
   /// @brief (forcefully) terminate the task
   void terminate() {}
-  void restart() {
+  auto &restart() {
     context_->restart();
-    context_->program_counter = address_space_.static_regions.text_segment.start;
+    context_->program_counter =
+        address_space_.static_regions.text_segment.start;
     state_ = State::kNew;
     time_slice_ = 0;
     total_cpu_time_ = 0;
     creation_time_ = clock_type::now();
     last_run_time_ = creation_time_;
+    return *this;
   }
 
 private:

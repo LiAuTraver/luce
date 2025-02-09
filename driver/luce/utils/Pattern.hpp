@@ -6,6 +6,7 @@
 #include <accat/auxilia/auxilia.hpp>
 #include <utility>
 
+#include "accat/auxilia/details/Status.hpp"
 #include "luce/config.hpp"
 
 namespace accat::luce {
@@ -109,11 +110,13 @@ private:
   pid_t id_ = auxilia::id::get();
 };
 inline auxilia::Status Mediator::set_as_parent(Component *child) {
-  precondition(child->mediator == nullptr || child->mediator == this,
-               "Component already has a parent. Check your code, set the "
-               "parent to nullptr first.")
+  if (child->mediator && child->mediator != this) {
+    return auxilia::AlreadyExistsError(
+        "Component already has a parent. Check your code, set the parent to "
+        "nullptr first.");
+  }
   child->mediator = this;
-  return auxilia::OkStatus();
+  return {};
 }
 
 } // namespace accat::luce

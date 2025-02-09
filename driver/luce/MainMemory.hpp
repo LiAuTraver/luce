@@ -1,4 +1,7 @@
 #pragma once
+#include <fmt/format.h>
+#include <stdlib.h>
+#include "Support/isa/riscv32/isa.hpp"
 #include "utils/Pattern.hpp"
 #include "config.hpp"
 
@@ -67,6 +70,20 @@ class LUCE_API MainMemory : public Component {
 
   MemoryAccess memory;
 
+private:
+  static consteval auto _make_fmt_str() {
+    constexpr auto C = sizeof(isa::physical_address_t) * 2;
+    static_assert(C == 8 || C == 16, "Invalid address size");
+    if constexpr (C == 8)
+      return "Memory access violation at address 0x{:08x}";
+    else
+      return "Memory access violation at address 0x{:016x}";
+  }
+  AC_FORCEINLINE static auto
+  MakeMemoryAccessViolationError(isa::physical_address_t addr) noexcept {
+    return auxilia::OutOfRangeError(fmt::format(_make_fmt_str(), addr));
+  }
+
 public:
   MainMemory(Mediator *parent) : Component(parent) {}
   ~MainMemory() = default;
@@ -74,7 +91,7 @@ public:
 public:
   auto read(isa::physical_address_t) const noexcept
       -> auxilia::StatusOr<std::byte>;
-  auto read_n(isa::physical_address_t, size_t) const
+  auto read_n(isa::physical_address_t, size_t) const noexcept
       -> auxilia::StatusOr<std::span<const std::byte>>;
 
   auto write(isa::physical_address_t, isa::minimal_addressable_unit_t) noexcept
@@ -92,7 +109,7 @@ public:
   template <typename T>
   auxilia::StatusOr<T> read_typed(isa::physical_address_t addr) const {
     if (!memory.is_in_range(addr, addr + sizeof(T))) {
-      return auxilia::OutOfRangeError("Memory access violation");
+      return MakeMemoryAccessViolationError(addr);
     }
     // Solution 1: use std::start_lifetime_as
     // until C++23 compiler magic std utils `std::start_lifetime_as`, reading
@@ -131,7 +148,7 @@ public:
   template <typename T>
   auxilia::Status write_typed(isa::physical_address_t addr, const T &value) {
     if (!memory.is_in_range(addr, addr + sizeof(T))) {
-      return auxilia::OutOfRangeError("Memory access violation");
+      return MakeMemoryAccessViolationError(addr);
     }
     std::span<const T, 1> tmp{&value, 1};
     std::ranges::copy(std::as_bytes({&value, 1}),

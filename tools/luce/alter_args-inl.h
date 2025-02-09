@@ -5,12 +5,14 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#pragma warning(push, 0)
-#pragma warning(disable : 6011)
-#pragma warning(disable : 6387)
 #ifdef __clang__
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#  pragma clang diagnostic ignored "-Wunused-function"
+#elif defined(_MSC_VER)
+#  pragma warning(push, 0)
+#  pragma warning(disable : 6011)
+#  pragma warning(disable : 6387)
 #endif
 // ReSharper disable All
 static inline char **new_argv = nullptr;
@@ -52,8 +54,9 @@ static void add_command_if_not_present(int *const argc,
 }
 #ifdef __clang__
 #  pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#  pragma warning(pop)
 #endif
-#pragma warning(pop)
 #ifdef __cplusplus
 }
 #endif

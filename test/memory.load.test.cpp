@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "luce/isa/architecture.hpp"
+#include "Support/isa/architecture.hpp"
 #include "luce/MainMemory.hpp"
 
 using namespace accat::luce;

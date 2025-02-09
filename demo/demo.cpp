@@ -62,6 +62,7 @@ void captsone_demo() {
                     0,
                     &insn); // 0x1000: Base address
   if (count > 0) {
+    #pragma unroll
     for (size_t i = 0; i < count; i++) {
       std::cout << "Address: 0x" << std::hex << insn[i].address
                 << " | Mnemonic: " << insn[i].mnemonic
