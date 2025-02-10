@@ -43,7 +43,7 @@ auxilia::Status Disassembler::set_target(isa::instruction_set instructionSet) {
     return auxilia::InternalError("Failed to lookup target: " + error);
 
   register_info = target->createMCRegInfo(triple->getTriple());
-  target_options = new llvm::MCTargetOptions();
+  target_options = new llvm::MCTargetOptions{};
   asm_info = target->createMCAsmInfo(
       *register_info, triple->getTriple(), *target_options);
   subtarget_info =

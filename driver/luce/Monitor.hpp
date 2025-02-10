@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <fmt/color.h>
-#include <fmt/compile.h>
-#include <fmt/xchar.h>
 #include <scn/scan.h>
 #include <cstddef>
 #include <iostream>
@@ -49,7 +46,7 @@ Available commands:
 static const inline auto Welcome =
     format(fg(dark_cyan), "Welcome to luce emulator!\n").append(R"(
     Type 'help' for help
-    Type 'exit' to exit
+    Type 'exit' to exitcd .
 )"_raw);
 } // namespace message::repl
 class Monitor : public Mediator {

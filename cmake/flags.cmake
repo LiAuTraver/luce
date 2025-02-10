@@ -104,7 +104,8 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
     -Wimplicit-fallthrough
   )
   add_link_options(
-    -g -fsanitize=address 
+    -g 
+    -fsanitize=address 
     # -fsanitize=fuzzer 
     -fsanitize=undefined
   )

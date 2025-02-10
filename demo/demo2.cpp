@@ -43,13 +43,14 @@ int main() {
     reg = {arr[i], arr[i + 1], arr[i + 2], arr[i + 3]};
     i += 4;
   }
+  using enum accat::auxilia::FormatPolicy;
   std::cout << "\n\n\n"
-            << registers.to_string(accat::auxilia::FormatPolicy::kDefault)
+            << registers.to_string(kDefault)
             << std::endl;
   std::cout << "\n\n\n"
-            << registers.to_string(accat::auxilia::FormatPolicy::kDetailed)
+            << registers.to_string(kDetailed)
             << std::endl;
   std::cout << "\n\n\n"
-            << registers.to_string(accat::auxilia::FormatPolicy::kBrief)
+            << registers.to_string(kBrief)
             << std::endl;
 }

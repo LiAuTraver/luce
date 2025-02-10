@@ -11,7 +11,8 @@
 #include <variant>
 #include <vector>
 #include <unordered_map>
-#include <magic_enum/magic_enum.hpp>
+
+#include <accat/auxilia/auxilia.hpp>
 
 namespace accat::luce::repl {
 using namespace std::literals;
@@ -33,9 +34,99 @@ struct Token : auxilia::Printable<Token> {
     // lex error.
     kLexError,
     // end of file.
-    kEndOfFile,
+    kEndOfFile = std::numeric_limits<uint8_t>::max()
     // clang-format on
   };
+  static constexpr auto token_type_str(const Type type) {
+    switch (type) {
+    case Type::kMonostate:
+      return "Monostate"sv;
+    case Type::kLeftParen:
+      return "LeftParen"sv;
+    case Type::kRightParen:
+      return "RightParen"sv;
+    case Type::kLeftBrace:
+      return "LeftBrace"sv;
+    case Type::kRightBrace:
+      return "RightBrace"sv;
+    case Type::kComma:
+      return "Comma"sv;
+    case Type::kDot:
+      return "Dot"sv;
+    case Type::kMinus:
+      return "Minus"sv;
+    case Type::kPlus:
+      return "Plus"sv;
+    case Type::kSemicolon:
+      return "Semicolon"sv;
+    case Type::kSlash:
+      return "Slash"sv;
+    case Type::kAmpersand:
+      return "Ampersand"sv;
+    case Type::kStar:
+      return "Star"sv;
+    case Type::kBang:
+      return "Bang"sv;
+    case Type::kBangEqual:
+      return "BangEqual"sv;
+    case Type::kEqual:
+      return "Equal"sv;
+    case Type::kEqualEqual:
+      return "EqualEqual"sv;
+    case Type::kGreater:
+      return "Greater"sv;
+    case Type::kGreaterEqual:
+      return "GreaterEqual"sv;
+    case Type::kLess:
+      return "Less"sv;
+    case Type::kLessEqual:
+      return "LessEqual"sv;
+    case Type::kIdentifier:
+      return "Identifier"sv;
+    case Type::kString:
+      return "String"sv;
+    case Type::kNumber:
+      return "Number"sv;
+    case Type::kAnd:
+      return "And"sv;
+    case Type::kClass:
+      return "Class"sv;
+    case Type::kElse:
+      return "Else"sv;
+    case Type::kFalse:
+      return "False"sv;
+    case Type::kFun:
+      return "Fun"sv;
+    case Type::kFor:
+      return "For"sv;
+    case Type::kIf:
+      return "If"sv;
+    case Type::kNil:
+      return "Nil"sv;
+    case Type::kOr:
+      return "Or"sv;
+    case Type::kPrint:
+      return "Print"sv;
+    case Type::kReturn:
+      return "Return"sv;
+    case Type::kSuper:
+      return "Super"sv;
+    case Type::kThis:
+      return "This"sv;
+    case Type::kTrue:
+      return "True"sv;
+    case Type::kVar:
+      return "Var"sv;
+    case Type::kWhile:
+      return "While"sv;
+    case Type::kLexError:
+      return "LexError"sv;
+    case Type::kEndOfFile:
+      return "EndOfFile"sv;
+    default:
+      return "Unknown"sv;
+    }
+  }
   Token() = default;
   Token(Type type, std::string_view lexeme, uint_least32_t line)
       : type_(type), lexeme_(std::string{lexeme}), line_(line) {}
@@ -87,7 +178,7 @@ public:
     if (format_policy == auxilia::FormatPolicy::kBrief) {
       str = _do_format(format_policy);
     } else {
-      auto name = magic_enum::enum_name(type_);
+      auto name = token_type_str(type_);
       str = fmt::format(
           "type: {}, {}, line: {}", name, _do_format(format_policy), line_);
     }
@@ -200,7 +291,7 @@ private:
       else if (type_ == Type::kMonostate)
         str = "monostate"s;
       else
-        str = magic_enum::enum_name(type_);
+        str = token_type_str(type_);
     } else {
       if (type_ == Type::kNumber)
         str = fmt::format("number: '{}'", format_number());
@@ -209,7 +300,7 @@ private:
       else if (type_ == Type::kMonostate)
         str = "monostate"s;
       else
-        str = fmt::format("lexeme: '{}'", magic_enum::enum_name(type_));
+        str = fmt::format("lexeme: '{}'", token_type_str(type_));
     }
     return str;
   }

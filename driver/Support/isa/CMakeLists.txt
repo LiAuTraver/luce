@@ -17,5 +17,4 @@ target_precompile_headers(Support.isa PRIVATE
   ${LUCE_EXTERNAL_DEPS_PCH}
 )
 add_llvm_deps_for(Support.isa)
-
 add_folder(Support)
