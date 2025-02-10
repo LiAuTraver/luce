@@ -1,4 +1,3 @@
-#include "accat/auxilia/details/macros.hpp"
 #include "deps.hh"
 
 #include "luce/repl/ExprVisitor.hpp"
@@ -54,6 +53,7 @@ result_type Evaluator::visit(const Literal &expr) {
   switch (expr.value.type()) {
   case kIdentifier:
     dbg_break
+    break;
   case kString:
     return {{evaluation::String{std::string{
         expr.value.lexeme().begin() + 1,
@@ -67,9 +67,9 @@ result_type Evaluator::visit(const Literal &expr) {
   case kTrue:
     return {{evaluation::True}};
   case kLexError:
-    return {InvalidArgumentError(fmt::format("Lex error: {} at line {}",
+    return {InvalidArgumentError("Lex error: {} at line {}",
                                              expr.value.error_message(),
-                                             expr.value.line()))};
+                                             expr.value.line())};
   case kEndOfFile:
     return {InvalidArgumentError(
         fmt::format("unexpected EOF at line {}", expr.value.line()))};
@@ -116,9 +116,12 @@ result_type Evaluator::visit(const Variable &expr) {
       return {InvalidArgumentError(
           fmt::format("failed to convert '{}' to number", str))};
     }
-    return {InvalidArgumentError(fmt::format("unknown register: {}", ident.substr(1)))};
+    return {InvalidArgumentError("unknown register: {}", ident.substr(1))};
   }
-  TODO(variable evaluation is not implemented)
+  // TODO(variable evaluation is not implemented)
+  return {auxilia::UnimplementedError(
+      fmt::format("Unimplemented variable evaluation: {}",
+                  expr.to_string(auxilia::FormatPolicy::kDetailed)))};
 }
 result_type Evaluator::visit(const Unary &expr) {
   auto maybe_right = evaluate(*expr.right);

@@ -36,7 +36,7 @@ auxilia::Status
 ArgumentLoader::parse_arguments(const std::span<const std::string_view> args) {
   try {
     program->parse_args({args.begin(), args.end()});
-    return auxilia::OkStatus();
+    return {};
   } catch (const std::exception &e) {
     return auxilia::InvalidArgumentError(e.what());
   }

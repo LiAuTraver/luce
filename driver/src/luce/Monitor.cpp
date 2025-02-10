@@ -3,17 +3,17 @@
 #include <fmt/color.h>
 #include <fmt/xchar.h>
 #include <spdlog/spdlog.h>
-#include "accat/auxilia/details/views.hpp"
-#include <accat/auxilia/details/Status.hpp>
-#include <accat/auxilia/details/macros.hpp>
 #include <functional>
 #include "luce/Monitor.hpp"
 #include <iostream>
 #include <ostream>
 #include <ranges>
+#include <stacktrace>
 #include <string>
 #include <syncstream>
 #include <utility>
+
+#include <accat/auxilia/auxilia.hpp>
 
 namespace accat::luce::repl {
 extern auto repl(Monitor *)
@@ -81,7 +81,7 @@ Status Monitor::run() {
   while (process.state != Task::State::kTerminated) {
     if (auto res = cpus.execute_shuttle(); !res) {
       spdlog::error("Error: {}", res.message());
-      dbg(error, res.stacktrace());
+      dbg(error, AC_UTILS_STACKTRACE);
       return res;
     }
   }
@@ -100,7 +100,7 @@ Status Monitor::REPL() {
       }
       // error, return as is
       spdlog::error("Error: {}", res.message());
-      dbg(error, res.stacktrace());
+      dbg(error, AC_UTILS_STACKTRACE);
       return res;
     }
   }

@@ -4,7 +4,6 @@
 #include <charconv>
 #include <cstddef>
 #include <locale>
-#include <magic_enum/magic_enum.hpp>
 #include <utility>
 
 #include "luce/config.hpp"
@@ -100,14 +99,14 @@ auto Lexer::to_number(string_view_type value, bool isFloating, int Base)
                 "error: {ErrorString}",
                 "String"_a = realValStr,
                 "Location"_a = res.ptr,
-                "ErrorString"_a = magic_enum::enum_name(res.ec));
+                "ErrorString"_a = std::make_error_code(res.ec).message());
   return {};
 }
 Lexer::status_t Lexer::load(const path_type &filepath) const {
   if (not contents.empty())
     return auxilia::AlreadyExistsError("File already loaded");
   if (not std::filesystem::exists(filepath))
-    return auxilia::NotFoundError("File does not exist: " + filepath.string());
+    return auxilia::NotFoundError("File does not exist: {}", filepath);
   std::ifstream file(filepath);
   if (not file)
     return {};

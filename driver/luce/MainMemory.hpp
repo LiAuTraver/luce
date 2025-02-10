@@ -1,10 +1,5 @@
 #pragma once
-#include <fmt/format.h>
 #include <stdlib.h>
-#include "Support/isa/riscv32/isa.hpp"
-#include "utils/Pattern.hpp"
-#include "config.hpp"
-
 #include <accat/auxilia/auxilia.hpp>
 #include <algorithm>
 #include <array>
@@ -18,6 +13,8 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "utils/Pattern.hpp"
+#include "config.hpp"
 #include "Support/isa/architecture.hpp"
 namespace accat::luce {
 
@@ -81,7 +78,7 @@ private:
   }
   AC_FORCEINLINE static auto
   MakeMemoryAccessViolationError(isa::physical_address_t addr) noexcept {
-    return auxilia::OutOfRangeError(fmt::format(_make_fmt_str(), addr));
+    return auxilia::OutOfRangeError(_make_fmt_str(), addr);
   }
 
 public:

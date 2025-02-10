@@ -18,7 +18,6 @@
 namespace accat::luce {
 using fmt::fg;
 using enum fmt::color;
-using namespace std::literals;
 using auxilia::InvalidArgumentError;
 using auxilia::match;
 using auxilia::Monostate;
@@ -202,29 +201,29 @@ StatusOr<command_t> inspect(std::string_view input) {
     if (it == input.end()) {
       return {Exit{}};
     }
-    return {InvalidArgumentError(
-        fmt::format(fg(crimson), "exit: command does not take arguments"))};
+    return {InvalidArgumentError(fg(crimson),
+                                 "exit: command does not take arguments")};
   }
   if (mainCommand == "help") {
     if (it == input.end()) {
       return {Help{}};
     }
-    return {InvalidArgumentError(
-        fmt::format(fg(crimson), "help: command does not take arguments"))};
+    return {InvalidArgumentError(fg(crimson),
+                                 "help: command does not take arguments")};
   }
   if (mainCommand == "r") {
     if (it == input.end()) {
       return {Restart{}};
     }
-    return {InvalidArgumentError(
-        fmt::format(fg(crimson), "r: command does not take arguments"))};
+    return {InvalidArgumentError(fg(crimson),
+                                 "r: command does not take arguments")};
   }
   if (mainCommand == "c") {
     if (it == input.end()) {
       return {Continue{}};
     }
-    return {InvalidArgumentError(
-        fmt::format(fg(crimson), "c: command does not take arguments"))};
+    return {InvalidArgumentError(fg(crimson),
+                                 "c: command does not take arguments")};
   }
   if (mainCommand == "si") {
     if (auto args = input.substr(it - input.begin()) |
@@ -236,14 +235,14 @@ StatusOr<command_t> inspect(std::string_view input) {
         auto [steps] = std::move(maybe_steps)->values();
         return {Step{steps}};
       } else {
-        return {InvalidArgumentError(fmt::format(fg(crimson),
-                                                 "si: error parsing number: {}",
-                                                 maybe_steps.error().msg()))};
+        return {InvalidArgumentError(fg(crimson),
+                                     "si: error parsing number: {}",
+                                     maybe_steps.error().msg())};
       }
     }
 
     return {InvalidArgumentError(
-        fmt::format(fg(crimson), "si: requires [number] as argument"))};
+        fg(crimson), "si: requires [number] as argument")};
   }
   if (mainCommand == "p") {
     return {Print{input.substr(it - input.begin()).data()}};
@@ -274,8 +273,7 @@ StatusOr<command_t> inspect(std::string_view input) {
       auto [watchpoint] = std::move(maybe_watchpoint)->values();
       return {Unknown{std::string(input)}};
     }
-    return {InvalidArgumentError(
-        fmt::format(fg(crimson), "d: requires 'number' as argument"))};
+    return {InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
   }
 
   return {Unknown{std::string(input)}};

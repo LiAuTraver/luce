@@ -35,10 +35,13 @@ add_executable(demo3
 )
 target_link_libraries(demo3 PUBLIC
   external_deps
-  concurrencpp::concurrencpp
 )
 target_precompile_headers(demo3 PUBLIC
   ${LUCE_EXTERNAL_DEPS_PCH}
+)
+
+add_executable(demo4
+  demo4.cpp
 )
 
 

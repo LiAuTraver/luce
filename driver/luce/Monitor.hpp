@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <fmt/color.h>
-#include <fmt/compile.h>
-#include <fmt/xchar.h>
 #include <scn/scan.h>
 #include <cstddef>
 #include <iostream>

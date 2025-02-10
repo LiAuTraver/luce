@@ -19,7 +19,7 @@ namespace accat::auxilia {
 class Status;
 }
 namespace accat::luce {
-class LUCE_SUPPORT_ISA_API Disassembler : Component {
+class LUCE_SUPPORT_ISA_API [[gsl::Pointer]] Disassembler : Component {
   friend Disassembler &_do_move_impl(Disassembler &, Disassembler &&) noexcept;
 
 public:

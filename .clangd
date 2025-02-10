@@ -34,3 +34,4 @@ CompileFlags:
     - -MD
     # ^^^ unfortunately MSVC compiles. Add this to override -MDd.
     - -ferror-limit=0
+  # Compiler: clang++

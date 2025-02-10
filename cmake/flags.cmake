@@ -20,7 +20,7 @@ if(CXX_FLAGS_STYLES_MSVC)
     /wd4834 # discarding return value of function with 'nodiscard' attribute
     /analyze- # don't run analysis when compiling (too slow)
     /Zi /Od /Ob0 /Oy-
-    /GR # <- rtti
+    /GR # <- rtti (actually in my build i am not using rtti)
     /fsanitize=address 
     # /fsanitize=fuzzer
     /guard:cf 
@@ -104,7 +104,8 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
     -Wimplicit-fallthrough
   )
   add_link_options(
-    -g -fsanitize=address 
+    -g 
+    -fsanitize=address 
     # -fsanitize=fuzzer 
     -fsanitize=undefined
   )
