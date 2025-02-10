@@ -37,9 +37,7 @@ struct Token : auxilia::Printable<Token> {
     // clang-format on
   };
   Token() = default;
-  Token(const Type type,
-        const std::string_view lexeme,
-        const uint_least32_t line)
+  Token(Type type, std::string_view lexeme, uint_least32_t line)
       : type_(type), lexeme_(std::string{lexeme}), line_(line) {}
   Token(const Token &) = delete;
   Token &operator=(const Token &) = delete;
@@ -49,7 +47,7 @@ struct Token : auxilia::Printable<Token> {
   Token &operator=(Token &&that) noexcept {
     if (this == &that)
       return *this;
-    return _do_move(std::move(that)); // NOLINT(*-unconventional-assign-operator)
+    return _do_move(std::move(that));
   }
   AC_CONSTEXPR20 ~Token() noexcept {
     if (type_ != Type::kNumber && type_ != Type::kMonostate)
@@ -98,11 +96,11 @@ public:
   }
 
 protected:
-  Token(const Type type, std::string &&error_message, const uint_least32_t line)
+  Token(Type type, std::string &&error_message, uint_least32_t line)
       : type_(type), lexeme_(std::move(error_message)), line_(line) {}
-  Token(const Type type, const long double number, const uint_least32_t line)
+  Token(Type type, long double number, uint_least32_t line)
       : type_(type), num_ld_(number), number_is_integer_(false), line_(line) {}
-  Token(const Type type, const long long number, const uint_least32_t line)
+  Token(Type type, long long number, uint_least32_t line)
       : type_(type), num_ll_(number), number_is_integer_(true), line_(line) {}
 
 public:

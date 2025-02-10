@@ -1,3 +1,10 @@
+#include <algorithm>
+#include <charconv>
+#include <iterator>
+#include <ranges>
+#include <string>
+#include "accat/auxilia/details/config.hpp"
+#include "accat/auxilia/details/views.hpp"
 #include "deps.hh"
 
 #include "luce/config.hpp"
@@ -76,7 +83,7 @@ interface ICommand {
 struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
   Unknown() = default;
   explicit Unknown(string_type cmd) : command(std::move(cmd)) {}
-  virtual ~Unknown() override = default;
+  virtual ~Unknown() = default;
 
   string_type command;
   virtual Status execute(Monitor *) const override final {
@@ -118,7 +125,6 @@ struct Step final : ICommand {
   }
 };
 struct AddWatchPoint final : ICommand {
-  // TODO: implement expression AST and expr parser
   virtual Status execute(Monitor *) const override final {
     TODO(...)
   }
@@ -140,10 +146,8 @@ public:
   using InfoType = auxilia::Variant<Unknown, Registers, WatchPoints>;
   InfoType infoType;
   virtual Status execute(Monitor *monitor) const override final {
-    return infoType.visit(match{
-        [&](const auto &subCommand) -> Status {
-          return subCommand.execute(monitor);
-        },
+    return infoType.visit([&](const auto &subCommand) -> Status {
+      return subCommand.execute(monitor);
     });
   }
 };
@@ -151,7 +155,7 @@ public:
 struct Print final : ICommand {
   Print() = default;
   Print(std::string expr) : expression(std::move(expr)) {}
-  virtual Status execute(Monitor * monitor) const override final {
+  virtual Status execute(Monitor *monitor) const override final {
     auto lexer = Lexer{};
     auto parser = Parser{lexer.load_string(expression).lex()};
     auto eval = expression::Evaluator{monitor};
@@ -162,14 +166,12 @@ struct Print final : ICommand {
                            "{result}",
                            "result"_a = res.underlying_string(
                                auxilia::FormatPolicy::kBrief));
-          return std::monostate{};
         })
         .transform_error([](auto &&res) {
           auxilia::println(stderr,
                            fg(crimson),
                            "luce: error: {msg}",
                            "msg"_a = res.message());
-          return std::monostate{};
         });
     return {};
   }
@@ -225,11 +227,21 @@ StatusOr<command_t> inspect(std::string_view input) {
         fmt::format(fg(crimson), "c: command does not take arguments"))};
   }
   if (mainCommand == "si") {
-    if (auto maybe_number =
-            scn::scan<size_t>(input.substr(it - input.begin()), "[{}]")) {
-      auto [steps] = std::move(maybe_number)->values();
-      return {Step{steps}};
+    if (auto args = input.substr(it - input.begin()) |
+                    auxilia::ranges::views::trim |
+                    std::ranges::to<std::string>();
+        !args.empty() && args.front() == '[' && args.back() == ']') {
+      if (auto maybe_steps =
+              scn::scan_int<size_t>(args.substr(1, args.size() - 2))) {
+        auto [steps] = std::move(maybe_steps)->values();
+        return {Step{steps}};
+      } else {
+        return {InvalidArgumentError(fmt::format(fg(crimson),
+                                                 "si: error parsing number: {}",
+                                                 maybe_steps.error().msg()))};
+      }
     }
+
     return {InvalidArgumentError(
         fmt::format(fg(crimson), "si: requires [number] as argument"))};
   }
