@@ -1,10 +1,10 @@
-﻿#include "deps.hh"
+﻿#include "accat/auxilia/details/macros.hpp"
+#include "deps.hh"
 
 #include <fmt/color.h>
 #include <fmt/xchar.h>
 #include <spdlog/spdlog.h>
 #include <functional>
-#include "luce/Monitor.hpp"
 #include <iostream>
 #include <ostream>
 #include <ranges>
@@ -15,6 +15,10 @@
 
 #include <accat/auxilia/auxilia.hpp>
 
+#include "luce/Monitor.hpp"
+#include "luce/Task.hpp"
+#include "luce/utils/Pattern.hpp"
+
 namespace accat::luce::repl {
 extern auto repl(Monitor *)
     -> ::accat::auxilia::Generator<::accat::auxilia::Status>;
@@ -24,52 +28,49 @@ namespace accat::luce {
 using namespace std::literals;
 using namespace fmt::literals;
 using enum fmt::color;
+using enum Event;
 using auxilia::Status;
 using auxilia::StatusOr;
 using fmt::fg;
 
-Status Monitor::notify(Component *sender, Event event) {
+Status
+Monitor::notify(Component *, Event event, std::function<void(void)> callback) {
   switch (event) {
-  case Event::kNone:
+  case kNone:
     spdlog::warn("nothing to do");
     break;
-  case Event::kTaskFinished: {
-    // currently the sender here was surely a CPU, so we cast it
-    auto cpu = static_cast<CentralProcessingUnit *>(sender);
+  case kTaskFinished: {
     defer {
-      cpu->detach_context();
+      callback(); // cpu detaches context
     };
     spdlog::info(
         "Hit good ol' {trapBytes:x}, program finished!",
         "trapBytes"_a = fmt::join(
             isa::signal::trap | auxilia::ranges::views::invert_endianness, ""));
-    dbg_block
-    {
-      if (process.id() != cpu->task_id()) {
-        spdlog::error(
-            "Task id mismatch: {lpid} != {rpid}; should not happen; currently "
-            "we just have excatly one task",
-            "lpid"_a = process.id(),
-            "rpid"_a = cpu->task_id());
-        dbg_break
-        // return auxilia::InternalError("Task id mismatch");
-      }
-    };
     // find the task and mark it as terminated
     process.state = Task::State::kTerminated;
     break;
   }
-  case Event::kRestartTask: {
-    precondition(sender == nullptr,
-                 "currently no sender is expected to send "
-                 "this event, except from the REPL")
-    spdlog::info("Restarting task");
-    process.restart();
-    cpus.attach_context(process.context(), process.id());
+  case kRestartOrResumeTask: {
+    if (process.state == Task::State::kPaused) {
+      spdlog::info("Resuming task");
+      process.resume();
+    } else {
+      spdlog::info("Restarting task");
+      process.restart();
+      cpus.attach_context(process.context(), process.id());
+    }
     break;
   }
+  case kPrintWatchPoint:
+    fmt::println("{}", debugger_.watchpoints());
+    break;
+  case kPauseTask:
+    spdlog::info("Pausing task");
+    process.pause();
+    break;
   default:
-    spdlog::warn("Unhandled event: {}", static_cast<uint8_t>(event));
+    spdlog::warn("Unhandled event: {}", event::to_string_view(event));
     dbg_break
   }
   return {};
@@ -118,8 +119,13 @@ Status Monitor::_do_execute_n_unchecked(const size_t steps) {
       spdlog::info("Program has terminated.");
       return {};
     }
+    if (process.state == Task::State::kPaused) {
+      spdlog::info("Program is paused. Press `r` to resume.");
+      return {};
+    }
     if (auto res = cpus.execute_shuttle(); !res)
       return res;
+    this->debugger_.update_watchpoints(true, true);
   }
   return {};
 }
@@ -137,7 +143,7 @@ Status
 Monitor::_do_register_task_unchecked(const std::span<const std::byte> bytes,
                                      const paddr_t start_addr,
                                      const paddr_t block_size) {
-  return_if_not(memory.load_program(bytes, start_addr, block_size))
+  return_if_not(memory_.load_program(bytes, start_addr, block_size))
 
   process = Task(this);
   const auto startOfDynamicMemory =

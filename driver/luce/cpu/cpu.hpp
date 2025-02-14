@@ -71,7 +71,6 @@ public:
     return *task_id_;
     // return task_id_.value_or(std::numeric_limits<uint32_t>::max());
   }
-  Monitor *monitor() const noexcept;
 };
 
 /// @implements Component

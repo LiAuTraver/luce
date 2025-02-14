@@ -24,7 +24,7 @@ if(CXX_FLAGS_STYLES_MSVC)
     /fsanitize=address 
     # /fsanitize=fuzzer
     /guard:cf 
-    /guard:ehcont
+    # /guard:ehcont
     /RTCsu /sdl
 
     # /Qpar # parallel code generation
@@ -49,7 +49,7 @@ if(CXX_FLAGS_STYLES_MSVC)
     /SUBSYSTEM:CONSOLE
     /MACHINE:X64
     /GUARD:CF # control flow protection
-    /GUARD:EHCONT # exception handler control
+    # /GUARD:EHCONT # exception handler control
     # /bigobj # big object files
   )
 
@@ -93,9 +93,9 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
   add_compile_options(
     -g3 -O0 -fno-inline -fstandalone-debug # Debug flags
     -frtti
-    -fsanitize=address 
+    # -fsanitize=address 
     # -fsanitize=fuzzer 
-    -fsanitize=undefined
+    # -fsanitize=undefined
     -fcf-protection=full -fstack-protector-strong # control flow protection
 
     # -fopenmp # openmp/qpar/simd
@@ -105,8 +105,8 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
   )
   add_link_options(
     -g 
-    -fsanitize=address 
+    # -fsanitize=address 
     # -fsanitize=fuzzer 
-    -fsanitize=undefined
+    # -fsanitize=undefined
   )
 endif()

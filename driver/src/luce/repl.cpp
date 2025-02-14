@@ -1,9 +1,13 @@
+#include <fmt/ostream.h>
+#include <spdlog/spdlog.h>
 #include <algorithm>
 #include <charconv>
 #include <iterator>
 #include <ranges>
 #include <string>
+#include "accat/auxilia/details/Status.hpp"
 #include "accat/auxilia/details/config.hpp"
+#include "accat/auxilia/details/format.hpp"
 #include "accat/auxilia/details/views.hpp"
 #include "deps.hh"
 
@@ -86,11 +90,15 @@ struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
 
   string_type command;
   virtual Status execute(Monitor *) const override final {
-    auxilia::println(stderr,
-                     fg(crimson),
-                     "luce: unknown command '{cmd}'. Type "
-                     "'help' for more information.",
-                     "cmd"_a = command);
+    if (command.empty())
+      auxilia::println(
+          stderr, fg(crimson), "luce: no command or subcommand provided");
+    else
+      auxilia::println(stderr,
+                       fg(crimson),
+                       "luce: unknown command '{cmd}'. Type "
+                       "'help' for more information.",
+                       "cmd"_a = command);
     return {};
   }
 };
@@ -107,12 +115,13 @@ struct Exit final : ICommand {
 };
 struct Restart final : ICommand {
   virtual Status execute(Monitor *monitor) const override final {
-    return monitor->notify(nullptr, Event::kRestartTask);
+    return monitor->notify(nullptr, Event::kRestartOrResumeTask);
   }
 };
 struct Continue final : ICommand {
   virtual Status execute(Monitor *monitor) const override final {
-    return monitor->execute_n(1);
+    monitor->execute_n(1);
+    return {};
   }
 };
 struct Step final : ICommand {
@@ -120,26 +129,62 @@ struct Step final : ICommand {
   explicit Step(size_t steps) : steps(steps) {}
   size_t steps = 1;
   virtual Status execute(Monitor *monitor) const override final {
-    return monitor->execute_n(steps);
+    monitor->execute_n(steps);
+    return {};
   }
 };
 struct AddWatchPoint final : ICommand {
-  virtual Status execute(Monitor *) const override final {
-    TODO(...)
+  AddWatchPoint() = default;
+  explicit AddWatchPoint(std::string expr) : expression(std::move(expr)) {}
+  virtual Status execute(Monitor *monitor) const override final {
+    monitor->debugger().add_watchpoint(expression);
+    return {};
+  }
+  std::string expression;
+};
+struct DeleteWatchPoint final : ICommand {
+  DeleteWatchPoint() = default;
+  explicit DeleteWatchPoint(size_t id) : watchpointId(id) {}
+  size_t watchpointId = 0;
+  virtual Status execute(Monitor *monitor) const override final {
+    if (auto res = monitor->debugger().delete_watchpoint(watchpointId)) {
+      fmt::println("Deleted watchpoint {}", watchpointId);
+    } else {
+      spdlog::error("Error: {}", res.message());
+    }
+    return {};
   }
 };
 struct Info final : ICommand {
 private:
   struct Registers final : ICommand {
-    virtual Status execute(Monitor *) const override final {
-      TODO(...)
+    virtual Status execute(Monitor *monitor) const override final {
+      auxilia::println(stdout, "{regs}", "regs"_a = *monitor->registers());
+      return {};
     }
   };
   struct WatchPoints final : ICommand {
-    virtual Status execute(Monitor *) const override final {
-      TODO(...)
+    virtual Status execute(Monitor *monitor) const override final {
+      return monitor->notify(nullptr, Event::kPrintWatchPoint);
     }
   };
+
+public:
+  Info() = default;
+  explicit Info(const std::string &subCommand) {
+    auto trimmed =
+        subCommand | auxilia::views::trim | std::ranges::to<std::string>();
+    if (trimmed.empty()) {
+      infoType.emplace(Unknown{subCommand});
+      return;
+    } else if (trimmed == "r" or trimmed == "registers") {
+      infoType.emplace(Registers{});
+    } else if (trimmed == "w" or trimmed == "watchpoints") {
+      infoType.emplace(WatchPoints{});
+    } else {
+      infoType.emplace(Unknown{trimmed});
+    }
+  }
 
 public:
   using InfoType = auxilia::Variant<Unknown, Registers, WatchPoints>;
@@ -158,13 +203,21 @@ struct Print final : ICommand {
     auto lexer = Lexer{};
     auto parser = Parser{lexer.load_string(expression).lex()};
     auto eval = expression::Evaluator{monitor};
-    parser.next_expression()
-        ->accept(eval)
-        .transform([](auto &&res) {
-          auxilia::println(stdout,
-                           "{result}",
-                           "result"_a = res.underlying_string(
-                               auxilia::FormatPolicy::kBrief));
+    parser.next_expression().transform(
+        [&](auto &&res) {
+          res->accept(eval)
+              .transform([](auto &&res) {
+                auxilia::println(stdout,
+                                 "{result}",
+                                 "result"_a = res.underlying_string(
+                                     auxilia::FormatPolicy::kBrief));
+              })
+              .transform_error([](auto &&res) {
+                auxilia::println(stderr,
+                                 fg(crimson),
+                                 "luce: error: {msg}",
+                                 "msg"_a = res.message());
+              });
         })
         .transform_error([](auto &&res) {
           auxilia::println(stderr,
@@ -184,6 +237,7 @@ using command_t = auxilia::Variant<Unknown,
                                    Continue,
                                    Step,
                                    AddWatchPoint,
+                                   DeleteWatchPoint,
                                    Info,
                                    Print>;
 
@@ -241,39 +295,36 @@ StatusOr<command_t> inspect(std::string_view input) {
       }
     }
 
-    return {InvalidArgumentError(
-        fg(crimson), "si: requires [number] as argument")};
+    return {
+        InvalidArgumentError(fg(crimson), "si: requires [number] as argument")};
   }
   if (mainCommand == "p") {
     return {Print{input.substr(it - input.begin()).data()}};
   }
 
   if (mainCommand == "info") {
-    // if (it == input.end()) {
-    //   // return {Info{Info::Registers{}}};
-    // }
-    // if (auto subCommand = input.substr(it - input.begin());
-    //     subCommand == "r") {
-    //   // return {Info{Info::Registers{}}};
-    // }
-    // if (subCommand == "w") {
-    //   // return {Info{Info::WatchPoints{}}};
-    TODO(...)
+    return {Info{input.substr(it - input.begin()).data()}};
   }
 
   if (mainCommand == "w") {
-    // watchpoint: w EXPRESSION
-    return {AddWatchPoint{}};
+    if (auto maybe_exprStr = input.substr(it - input.begin()) |
+                             auxilia::views::trim |
+                             std::ranges::to<std::string>();
+        !maybe_exprStr.empty()) {
+      return {AddWatchPoint{std::move(maybe_exprStr)}};
+    }
+    return {InvalidArgumentError(fg(crimson),
+                                 "w: requires 'expression' as argument")};
   }
 
   if (mainCommand == "d") {
-    // delete watchpoint
     if (auto maybe_watchpoint =
             scn::scan_int<size_t>(input.substr(it - input.begin()))) {
       auto [watchpoint] = std::move(maybe_watchpoint)->values();
-      return {Unknown{std::string(input)}};
+      return {DeleteWatchPoint{watchpoint}};
     }
-    return {InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
+    return {
+        InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
   }
 
   return {Unknown{std::string(input)}};

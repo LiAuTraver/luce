@@ -28,6 +28,7 @@ result_type ASTPrinter::evaluate(const Expr &expr) {
 VISIT_PRINT(Undefined)
 VISIT_PRINT(Grouping)
 VISIT_PRINT(Literal)
+VISIT_PRINT(Variable)
 VISIT_PRINT(Unary)
 VISIT_PRINT(Binary)
 VISIT_PRINT(Logical)
@@ -68,8 +69,8 @@ result_type Evaluator::visit(const Literal &expr) {
     return {{evaluation::True}};
   case kLexError:
     return {InvalidArgumentError("Lex error: {} at line {}",
-                                             expr.value.error_message(),
-                                             expr.value.line())};
+                                 expr.value.error_message(),
+                                 expr.value.line())};
   case kEndOfFile:
     return {InvalidArgumentError(
         fmt::format("unexpected EOF at line {}", expr.value.line()))};
@@ -100,7 +101,8 @@ result_type Evaluator::visit(const Variable &expr) {
     }
     precondition(this->mediator, "mediator must be set");
     if (auto maybe_bytes = static_cast<Monitor *>(this->mediator)
-                               ->fetch_from_registers(ident.substr(1))) {
+                               ->registers()
+                               ->read(ident.substr(1))) {
       auto str = reinterpret_cast<const char *>(maybe_bytes->data());
       // convert to number, base 16
       auto num = 0ll;
@@ -147,7 +149,7 @@ result_type Evaluator::visit(const Unary &expr) {
               precondition(dynamic_cast<Monitor *>(mediator),
                            "mediator must be a Monitor");
               auto monitor = static_cast<Monitor *>(mediator);
-              if (auto res = monitor->fetch_from_main_memory(*myInt, 1)) {
+              if (auto res = monitor->memory().read_n(*myInt, 1)) {
                 return {{evaluation::Byte{res->front()}}};
               } else {
                 return {res.as_status()};
@@ -286,9 +288,9 @@ result_type Evaluator::visit(const Binary &expr) {
         case kAnd:
           return {{lhs && rhs}};
         case kEqualEqual:
-          return {{lhs == rhs}};
+          return {evaluation::Boolean{lhs == rhs}};
         case kBangEqual:
-          return {{lhs != rhs}};
+          return {evaluation::Boolean{lhs != rhs}};
         default:
           break;
         }

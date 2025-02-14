@@ -27,8 +27,8 @@ interface Stmt;
 }
 
 namespace accat::luce::repl::evaluation {
-interface Evaluatable;
-interface Value;
+struct Evaluatable;
+struct Value;
 struct Undefined;
 struct Number;
 struct Byte;

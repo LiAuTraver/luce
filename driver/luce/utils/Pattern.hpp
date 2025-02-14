@@ -4,6 +4,7 @@
 
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
+#include <functional>
 #include <utility>
 
 #include "accat/auxilia/details/Status.hpp"
@@ -26,11 +27,13 @@ enum class Event : uint8_t {
   kLoadProgram = 1,
   kRunTask = 2,
   kTaskFinished = 3,
-  kRestartTask = 4,
+  kRestartOrResumeTask = 4,
+  kPrintWatchPoint = 5,
+  kPauseTask = 6,
   // todo: add more events
 };
 namespace event {
-consteval auto to_string_view(const Event event) noexcept {
+constexpr auto to_string_view(const Event event) noexcept {
   using namespace std::string_view_literals;
   switch (event) {
   case Event::kNone:
@@ -41,8 +44,10 @@ consteval auto to_string_view(const Event event) noexcept {
     return "kRunTask"sv;
   case Event::kTaskFinished:
     return "kTaskFinished"sv;
-  case Event::kRestartTask:
+  case Event::kRestartOrResumeTask:
     return "kRestartTask"sv;
+  case Event::kPrintWatchPoint:
+    return "kPrintWatchPoint"sv;
   default:
     return "kUnknown"sv;
   }
@@ -54,7 +59,8 @@ public:
   constexpr Mediator() = default;
 
 public:
-  virtual auxilia::Status notify(Component *, Event) = 0;
+  virtual auxilia::Status notify(Component *, Event, std::function<void(void)> = [](){}) = 0;
+  // virtual auxilia::StatusOr<std::any> query(Component*, Event,
   auxilia::Status set_as_parent(Component *);
 
 protected:
@@ -69,11 +75,8 @@ protected:
 
 public:
   Mediator *mediator = nullptr;
-  auxilia::Status send(const Event event) {
-    precondition(mediator,
-                 "Fatal: Component has no mediator. "
-                 "Check your code.")
-    return mediator->notify(this, event);
+  auxilia::Status send(const Event event, std::function<void(void)>&& callback = []() {}) {
+    return mediator->notify(this, event , std::move(callback));
   }
 
 public:

@@ -10,8 +10,24 @@
 namespace accat::luce::repl::evaluation {
 using namespace std::literals;
 
-interface Evaluatable{};
-interface Value : Evaluatable{};
+struct Evaluatable {
+  friend constexpr bool operator==(const Evaluatable &,
+                                   const Evaluatable &) noexcept {
+    return true;
+  }
+  friend constexpr bool operator!=(const Evaluatable &,
+                                   const Evaluatable &) noexcept {
+    return false;
+  }
+};
+struct Value : Evaluatable {
+  friend constexpr bool operator==(const Value &, const Value &) noexcept {
+    return true;
+  }
+  friend constexpr bool operator!=(const Value &, const Value &) noexcept {
+    return false;
+  }
+};
 struct Undefined : /* extends */ auxilia::Monostate,
                    /* implements */ Evaluatable,
                    /* implements */ auxilia::Printable<Undefined>,
@@ -19,8 +35,18 @@ struct Undefined : /* extends */ auxilia::Monostate,
   constexpr Undefined() = default;
   constexpr Undefined(const Undefined &) noexcept = default;
   constexpr Undefined(Undefined &&) noexcept = default;
-  auto operator=(const Undefined &) noexcept -> Undefined & = default;
-  auto operator=(Undefined &&) noexcept -> Undefined & = default;
+  auto operator=(const Undefined &) noexcept -> Undefined & {
+    return *this;
+  }
+  auto operator=(Undefined &&) noexcept -> Undefined & {
+    return *this;
+  }
+  friend bool operator==(const Undefined &lhs, const Undefined &rhs) {
+    return false;
+  }
+  friend bool operator!=(const Undefined &lhs, const Undefined &rhs) {
+    return !(lhs == rhs);
+  }
   constexpr ~Undefined() noexcept = default;
   constexpr auto to_string(
       const auxilia::FormatPolicy & = auxilia::FormatPolicy::kDefault) const
@@ -199,10 +225,10 @@ struct Boolean : /* implements */ Value,
     return value;
   }
   friend auto operator==(const Boolean &lhs, const Boolean &rhs) {
-    return Boolean{lhs.value == rhs.value};
+    return lhs.value == rhs.value;
   }
   friend auto operator!=(const Boolean &lhs, const Boolean &rhs) {
-    return Boolean{lhs.value != rhs.value};
+    return lhs.value != rhs.value;
   }
   friend auto operator&&(const Boolean &lhs, const Boolean &rhs) {
     return Boolean{lhs.value && rhs.value};

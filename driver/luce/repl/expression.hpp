@@ -7,7 +7,7 @@
 #include "accat/auxilia/details/format.hpp"
 #include "luce/repl/repl_fwd.hpp"
 namespace accat::luce::repl::expression {
-interface Visitor;
+struct Visitor;
 
 interface Expr {
   virtual auto to_string(const auxilia::FormatPolicy & =
@@ -29,6 +29,7 @@ struct Undefined : /* extends */ auxilia::Monostate,
   token_t token;
   Undefined() = default;
   explicit Undefined(Token token) : token(std::move(token)) {}
+  // ReSharper disable once CppHidingFunction
   virtual auto to_string(const auxilia::FormatPolicy &policy = kBrief) const
       -> auxilia::Monostate::string_type override final {
     return token.to_string(policy);

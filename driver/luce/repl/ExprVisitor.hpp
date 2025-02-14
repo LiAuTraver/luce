@@ -25,7 +25,6 @@ struct ASTPrinter : Visitor {
 private:
   std::ostream outs{std::cout.rdbuf()};
 };
-
 struct Evaluator : Visitor, Component {
   Evaluator() = default;
   explicit Evaluator(Mediator *parent) : Component(parent) {}
