@@ -2,6 +2,7 @@
 
 #include <scn/scan.h>
 #include <cstddef>
+#include <functional>
 #include <iostream>
 #include <ranges>
 #include <span>
@@ -53,19 +54,19 @@ class Monitor : public Mediator {
   using paddr_t = isa::physical_address_t;
   using vaddr_t = isa::virtual_address_t;
 
-  MainMemory memory;
+  MainMemory memory_;
   SystemBus bus;
   // std::vector<Task> processes; // currently just one process
   Task process;
   CPUs cpus;
   Timer timer;
   Disassembler disassembler;
-  repl::Debugger debugger;
+  repl::Debugger debugger_;
 
 public:
   Monitor()
-      : memory(this), bus(this), cpus(this), disassembler(this),
-        debugger(this) {
+      : memory_(this), bus(this), cpus(this), disassembler(this),
+        debugger_(this) {
     if (auto res = disassembler.set_target(isa::instruction_set::riscv32))
       return;
     else {
@@ -73,9 +74,19 @@ public:
       dbg_break
     }
   }
+  auto &debugger(this auto &&self) noexcept {
+    return self.debugger_;
+  }
+  auto &memory(this auto &&self) noexcept {
+    return self.memory_;
+  }
 
 public:
-  virtual auxilia::Status notify(Component *sender, Event event) override;
+  virtual auto notify(
+      Component *sender,
+      Event event,
+      std::function<void(void)> callback = []() {}) -> auxilia::Status override;
+
   auxilia::Status run();
   auxilia::Status REPL();
   auxilia::Status execute_n(size_t);
@@ -83,18 +94,14 @@ public:
       -> auxilia::Status;
 
 public:
-  auto fetch_from_main_memory(const paddr_t addr,
-                              const size_t size) const noexcept {
-    return memory.read_n(addr, size);
-  }
   auto decode_from_disassembler(const std::span<const std::byte>)
       -> auxilia::StatusOr<auxilia::string> {
     // return disassembler.decode(bytes);
     TODO(...)
   }
-  auto fetch_from_registers(const std::string_view reg_name) const noexcept {
+  auto registers() const noexcept {
     // currently only one task
-    return process.context()->general_purpose_registers()->read(reg_name);
+    return process.context()->general_purpose_registers();
   }
 
 public:
@@ -137,15 +144,3 @@ auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
       static_cast<::cs_mode>(CS_MODE_RISCV64 | CS_MODE_RISCVC);
   return disassembler_.init(cs_arch, cs_mode);
 }*/
-// inline utils::Status Monitor::initDevice(CtxRef ctx) {
-//   // io_space = utils::alloc<uint8_t>(ctx.io_space_max);
-//   // p_space = io_space;
-//   return {};
-//   TODO(init other devices);
-// }
-// utils::Status Monitor::initDebugSystem(CtxRef) {
-//   // TODO: init regex
-//   // TODO: init watchpoint pool
-//   return {};
-//   TODO(not implemented);
-// }

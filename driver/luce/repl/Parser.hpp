@@ -7,7 +7,9 @@
 #include <memory>
 #include <optional>
 #include <queue>
+#include <string>
 #include "Token.hpp"
+#include "accat/auxilia/details/Status.hpp"
 #include "expression.hpp"
 #include "luce/repl/Lexer.hpp"
 namespace accat::luce::repl {
@@ -26,7 +28,10 @@ public:
   Parser &operator=(Parser &&) noexcept = default;
 
 public:
-  auto next_expression() -> expr_ptr_t;
+  auto next_expression() -> auxilia::StatusOr<expr_ptr_t>;
+
+private:
+  auto next_expression_impl() -> expr_ptr_t;
   auto assignment() -> expr_ptr_t;
   auto logical_or() -> expr_ptr_t;
   auto logical_and() -> expr_ptr_t;
@@ -45,6 +50,7 @@ private:
   template <typename... Args>
     requires(std::is_enum_v<std::common_type_t<Args...>>)
   bool inspect(Args &&...);
+  std::string error_message;
 
 private:
   /// @brief the coroutine that generates tokens

@@ -11,25 +11,29 @@
 #include "luce/Monitor.hpp"
 #include "Support/isa/riscv32/isa.hpp"
 namespace accat::luce {
-CentralProcessingUnit::CentralProcessingUnit(Mediator *parent)
-    : Component(parent), mmu_(this) {}
-auto CentralProcessingUnit::detach_context() noexcept
-    -> CentralProcessingUnit & {
+using auxilia::Status;
+using auxilia::StatusOr;
+using CPU = CentralProcessingUnit;
+using enum CPU::State;
+
+CPU::CentralProcessingUnit(Mediator *parent) : Component(parent), mmu_(this) {}
+
+auto CPU::detach_context() noexcept -> CPU & {
   if (context_.use_count() == 1) {
     spdlog::warn("Seems like the context is in a broken state, destroying...");
   }
   context_.reset();
   task_id_.reset();
-  state_ = State::kVacant;
+  state_ = kVacant;
   return *this;
 }
-auxilia::Status CentralProcessingUnit::execute() {
+Status CPU::execute() {
   precondition(context_, "No program to execute")
 
   auto executeShuttle = [&]() {
-    state_ = State::kRunning;
+    state_ = kRunning;
     defer {
-      state_ = State::kVacant;
+      state_ = kVacant;
     };
     return shuttle();
   };
@@ -37,7 +41,7 @@ auxilia::Status CentralProcessingUnit::execute() {
   spdlog::info("CPU execution time: {} ms", elapsed);
   return res;
 }
-auxilia::Status CentralProcessingUnit::shuttle() {
+Status CPU::shuttle() {
   auto maybe_bytes = fetch();
   if (!maybe_bytes) {
     return maybe_bytes.as_status();
@@ -56,28 +60,21 @@ auxilia::Status CentralProcessingUnit::shuttle() {
   decode();
   return {};
 }
-auxilia::Status CentralProcessingUnit::decode() {
+Status CPU::decode() {
   // TODO()
   if (std::ranges::equal(context_->instruction_register, isa::signal::trap)) {
-    this->send(Event::kTaskFinished);
+    this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
   }
 
   return {};
 }
-auxilia::StatusOr<std::span<const std::byte>> CentralProcessingUnit::fetch() {
-  auto translated = mmu_.virtual_to_physical(context_->program_counter);
-  // if (auto res = this->monitor()->fetch_from_main_memory(translated, num)) {
-  //   return {mmu_.physical_to_virtual(*res)};
-  // } else {
-  //   return {res.as_status()};
-  // }
-  return this->monitor()
-      ->fetch_from_main_memory(translated, isa::instruction_size_bytes)
-      .and_then([&](auto &&res) { return mmu_.physical_to_virtual(res); });
-}
-Monitor *CentralProcessingUnit::monitor() const noexcept {
-  precondition(dynamic_cast<Monitor *>(mediator), "Parent must be a Monitor")
-
-  return static_cast<Monitor *>(mediator);
+auto CPU::fetch() -> StatusOr<std::span<const std::byte>> {
+  return static_cast<Monitor *>(this->mediator)
+      ->memory()
+      .read_n(mmu_.virtual_to_physical(context_->program_counter),
+              isa::instruction_size_bytes)
+      .and_then([&](auto &&res) { // convert back
+        return mmu_.physical_to_virtual(res);
+      });
 }
 } // namespace accat::luce

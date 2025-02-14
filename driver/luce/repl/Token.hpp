@@ -146,7 +146,7 @@ struct Token : auxilia::Printable<Token> {
   }
 
 public:
-  auto lexeme() const noexcept -> std::string_view {
+  auto lexeme() const noexcept [[clang::lifetimebound]] -> std::string_view {
     precondition(type_ != Type::kNumber && type_ != Type::kLexError,
                  "lexeme() called on a non-lexeme token")
     return lexeme_;
@@ -158,7 +158,8 @@ public:
     using NumberType = std::variant<long long, long double>;
     return number_is_integer_ ? NumberType{num_ll_} : NumberType{num_ld_};
   }
-  auto error_message() const noexcept {
+  auto error_message() const noexcept [[clang::lifetimebound]]
+  -> std::string_view {
     precondition(type_ == Type::kLexError,
                  "error_message() called on a non-error token")
     return lexeme_;
@@ -175,13 +176,13 @@ public:
   auto to_string(const auxilia::FormatPolicy &format_policy =
                      auxilia::FormatPolicy::kDefault) const -> string_type {
     auto str = string_type{};
-    if (format_policy == auxilia::FormatPolicy::kBrief) {
+    if (format_policy == auxilia::FormatPolicy::kBrief)
       str = _do_format(format_policy);
-    } else {
-      auto name = token_type_str(type_);
-      str = fmt::format(
-          "type: {}, {}, line: {}", name, _do_format(format_policy), line_);
-    }
+    else
+      str = fmt::format("type: {}, {}, line: {}",
+                        token_type_str(type_),
+                        _do_format(format_policy),
+                        line_);
 
     return str;
   }
@@ -190,9 +191,9 @@ protected:
   Token(Type type, std::string &&error_message, uint_least32_t line)
       : type_(type), lexeme_(std::move(error_message)), line_(line) {}
   Token(Type type, long double number, uint_least32_t line)
-      : type_(type), num_ld_(number), number_is_integer_(false), line_(line) {}
+      : type_(type), number_is_integer_(false), num_ld_(number), line_(line) {}
   Token(Type type, long long number, uint_least32_t line)
-      : type_(type), num_ll_(number), number_is_integer_(true), line_(line) {}
+      : type_(type), number_is_integer_(true), num_ll_(number), line_(line) {}
 
 public:
   static AC_CONSTEXPR20 auto
@@ -244,10 +245,14 @@ private:
   union {
     std::monostate monostate_{};
     string_type lexeme_;
-    long double num_ld_;
-    long long num_ll_;
+    struct {
+      bool number_is_integer_;
+      union {
+        long double num_ld_;
+        long long num_ll_;
+      };
+    };
   };
-  bool number_is_integer_ = false;
   uint_least32_t line_ = std::numeric_limits<uint_least32_t>::signaling_NaN();
 
 private:
@@ -278,10 +283,7 @@ private:
       -> string_type {
     auto str = string_type{};
     auto format_number = [this]() -> long double {
-      auto n = number();
-      return std::holds_alternative<long long>(n)
-                 ? static_cast<long double>(std::get<long long>(n))
-                 : std::get<long double>(n);
+      return number_is_integer_ ? static_cast<long double>(num_ll_) : num_ld_;
     };
     if (format_policy == auxilia::FormatPolicy::kBrief) {
       if (type_ == Type::kNumber)

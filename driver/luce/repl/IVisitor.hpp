@@ -12,7 +12,7 @@ interface IVisitor{};
 namespace accat::luce::repl::expression {
 
 
-interface Visitor {
+struct Visitor {
   virtual evaluation::result_type evaluate(const Expr &) = 0;
   virtual evaluation::result_type visit(const Undefined &) = 0;
   virtual evaluation::result_type visit(const Grouping &) = 0;

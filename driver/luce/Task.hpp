@@ -140,8 +140,22 @@ public:
   //   state_ = State::kRunning;
   //   return send(Event::kRunTask);
   // }
-  void pause() {}
-  void resume() {}
+  auto &pause() {
+    if (state_ == State::kRunning) {
+      state_ = State::kPaused;
+    } else {
+      spdlog::warn("Task not running");
+    }
+    return *this;
+  }
+  auto &resume() {
+    if (state_ == State::kPaused) {
+      state_ = State::kRunning;
+    } else {
+      spdlog::warn("Task not paused");
+    }
+    return *this;
+  }
   /// @brief (forcefully) terminate the task
   void terminate() {}
   auto &restart() {

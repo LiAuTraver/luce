@@ -1,3 +1,4 @@
+#include "accat/auxilia/details/Status.hpp"
 #include "deps.hh"
 
 #include <spdlog/spdlog.h>
@@ -9,7 +10,14 @@
 #include "luce/repl/evaluation.hpp"
 namespace accat::luce::repl {
 using enum Parser::token_t::Type;
-auto Parser::next_expression() -> expr_ptr_t {
+using fmt::fg;
+using enum fmt::color;
+auto Parser::next_expression() -> auxilia::StatusOr<expr_ptr_t> {
+  if (error_message.empty())
+    return next_expression_impl();
+  return {auxilia::InvalidArgumentError(fg(crimson), "{}", error_message)};
+}
+auto Parser::next_expression_impl() -> expr_ptr_t {
   return assignment();
 }
 auto Parser::assignment() -> expr_ptr_t {
@@ -101,19 +109,21 @@ auto Parser::primary() -> expr_ptr_t {
     return std::make_shared<expression::Literal>(consume());
   }
   if (inspect(kIdentifier)) {
-    return std::make_shared<expression::Variable>(consume());   
+    return std::make_shared<expression::Variable>(consume());
   }
   // groupings
   if (inspect(kLeftParen)) {
     consume();
-    auto expr = next_expression();
+    auto expr = next_expression_impl();
     if (!inspect(kRightParen)) {
-      dbg(trace, "expected ')' after expression")
+      error_message +=
+          "expected ')' after expression but got " + peek().to_string() + '\n';
       return std::make_shared<expression::Undefined>(consume());
     }
     consume();
     return std::make_shared<expression::Grouping>(std::move(expr));
   }
+  error_message += "expected expression but got " + peek().to_string() + '\n';
   return std::make_shared<expression::Undefined>(consume());
 }
 bool Parser::is_at_end() {
@@ -122,7 +132,6 @@ bool Parser::is_at_end() {
 Parser::token_t Parser::consume() {
   precondition(not queued_tokens.empty(), "unexpected end of file")
   auto token = std::move(queued_tokens.front());
-  // queued_tokens.pop();
   queued_tokens.pop_front();
   return token; // must enable RVO to compile
 }

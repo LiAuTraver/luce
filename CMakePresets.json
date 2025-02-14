@@ -193,7 +193,7 @@
         "CMAKE_AUTORCC": "ON",
         "CMAKE_AUTOUIC": "ON",
         "QT_VERSION_MAJOR": "6",
-        "CMAKE_PREFIX_PATH": "$ENV{Qt6_DIR}/msvc2019_64/lib/cmake/Qt6"
+        "CMAKE_PREFIX_PATH": "$env{Qt6_DIR}/msvc2022_64/lib/cmake/Qt6"
       }
     },
     {
