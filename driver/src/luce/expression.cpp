@@ -4,6 +4,7 @@
 #include "luce/repl/IVisitor.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/repl/repl_fwd.hpp"
+
 namespace accat::luce::repl::expression {
 #define ACCEPT_VISIT(_type_)                                                   \
   auto _type_::accept(expression::Visitor &_visitor_) const                    \

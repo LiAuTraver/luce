@@ -1,4 +1,3 @@
-#include "accat/auxilia/details/Status.hpp"
 #include "deps.hh"
 
 #include <spdlog/spdlog.h>

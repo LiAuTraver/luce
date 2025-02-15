@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <utility>
 #include <spdlog/spdlog.h>
+#include <accat/auxilia/auxilia.hpp>
 
 #include "MainMemory.hpp"
 #include "repl/Debugger.hpp"
@@ -21,7 +22,6 @@
 #include "Support/isa/architecture.hpp"
 #include "Support/isa/Disassembler.hpp"
 
-#include <accat/auxilia/auxilia.hpp>
 namespace accat::luce {
 namespace message::repl {
 using namespace std::literals;

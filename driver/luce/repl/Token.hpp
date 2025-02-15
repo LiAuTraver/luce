@@ -11,7 +11,6 @@
 #include <variant>
 #include <vector>
 #include <unordered_map>
-
 #include <accat/auxilia/auxilia.hpp>
 
 namespace accat::luce::repl {

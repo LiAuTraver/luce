@@ -1,7 +1,5 @@
-#include "accat/auxilia/details/Status.hpp"
 #include "deps.hh"
 
-#include "luce/repl/Debugger.hpp"
 #include <fmt/color.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>
@@ -9,6 +7,8 @@
 #include <ranges>
 #include <syncstream>
 #include <utility>
+
+#include "luce/repl/Debugger.hpp"
 #include "luce/repl/ExprVisitor.hpp"
 #include "luce/repl/Lexer.hpp"
 #include "luce/repl/Parser.hpp"

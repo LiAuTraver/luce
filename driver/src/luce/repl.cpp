@@ -1,3 +1,6 @@
+#include "accat/auxilia/details/views.hpp"
+#include "deps.hh"
+
 #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>
@@ -5,11 +8,6 @@
 #include <iterator>
 #include <ranges>
 #include <string>
-#include "accat/auxilia/details/Status.hpp"
-#include "accat/auxilia/details/config.hpp"
-#include "accat/auxilia/details/format.hpp"
-#include "accat/auxilia/details/views.hpp"
-#include "deps.hh"
 
 #include "luce/config.hpp"
 #include "luce/Monitor.hpp"
@@ -60,9 +58,7 @@ StatusOr<std::string> read(Monitor *) {
       continue;
     }
     // clang-format off
-    auto trimmed_input = raw_input 
-        | auxilia::ranges::views::trim
-        | std::ranges::to<std::string>()
+    auto trimmed_input = auxilia::ranges::trim(raw_input);
       ;
     // clang-format on
     if (trimmed_input.empty() && input.empty())
@@ -70,7 +66,7 @@ StatusOr<std::string> read(Monitor *) {
     else if (trimmed_input.starts_with('#'))
       continue;
     else if (trimmed_input.ends_with('\\')) {
-      trimmed_input.pop_back();
+      trimmed_input.remove_suffix(1);
       input += std::move(trimmed_input);
       continue;
     }
@@ -172,8 +168,7 @@ private:
 public:
   Info() = default;
   explicit Info(const std::string &subCommand) {
-    auto trimmed =
-        subCommand | auxilia::views::trim | std::ranges::to<std::string>();
+    auto trimmed = auxilia::ranges::trim(subCommand);
     if (trimmed.empty()) {
       infoType.emplace(Unknown{subCommand});
       return;
@@ -182,7 +177,7 @@ public:
     } else if (trimmed == "w" or trimmed == "watchpoints") {
       infoType.emplace(WatchPoints{});
     } else {
-      infoType.emplace(Unknown{trimmed});
+      infoType.emplace(Unknown{{trimmed.begin(), trimmed.end()}});
     }
   }
 
@@ -203,8 +198,8 @@ struct Print final : ICommand {
     auto lexer = Lexer{};
     auto parser = Parser{lexer.load_string(expression).lex()};
     auto eval = expression::Evaluator{monitor};
-    parser.next_expression().transform(
-        [&](auto &&res) {
+    parser.next_expression()
+        .transform([&](auto &&res) {
           res->accept(eval)
               .transform([](auto &&res) {
                 auxilia::println(stdout,
@@ -280,9 +275,7 @@ StatusOr<command_t> inspect(std::string_view input) {
                                  "c: command does not take arguments")};
   }
   if (mainCommand == "si") {
-    if (auto args = input.substr(it - input.begin()) |
-                    auxilia::ranges::views::trim |
-                    std::ranges::to<std::string>();
+    if (auto args = auxilia::ranges::trim(input.substr(it - input.begin()));
         !args.empty() && args.front() == '[' && args.back() == ']') {
       if (auto maybe_steps =
               scn::scan_int<size_t>(args.substr(1, args.size() - 2))) {
@@ -307,11 +300,9 @@ StatusOr<command_t> inspect(std::string_view input) {
   }
 
   if (mainCommand == "w") {
-    if (auto maybe_exprStr = input.substr(it - input.begin()) |
-                             auxilia::views::trim |
-                             std::ranges::to<std::string>();
+    if (auto maybe_exprStr = auxilia::ranges::trim(input.substr(it - input.begin()));
         !maybe_exprStr.empty()) {
-      return {AddWatchPoint{std::move(maybe_exprStr)}};
+      return {AddWatchPoint{{maybe_exprStr.begin(), maybe_exprStr.end()}}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "w: requires 'expression' as argument")};
@@ -342,7 +333,7 @@ auto repl(Monitor *monitor) -> auxilia::Generator<Status> {
       co_yield {maybe_input.as_status()};
     }
     auto input = *std::move(maybe_input);
-    if (auto res = command::inspect(input); res) {
+    if (auto res = command::inspect(input)) {
       co_yield res->visit(match{
           [&](const auto &cmd) -> Status { return cmd.execute(monitor); },
       });

@@ -1,8 +1,10 @@
 ﻿#pragma once
+
+#include <accat/auxilia/auxilia.hpp>
+
 #include "utils/Pattern.hpp"
 #include "config.hpp"
 #include "luce/MainMemory.hpp"
-#include <accat/auxilia/auxilia.hpp>
 
 namespace accat::luce {
 class SystemBus : public Component {

@@ -7,6 +7,7 @@
 #include <variant>
 
 #include "./luce/repl/repl_fwd.hpp"
+
 namespace accat::luce::repl::evaluation {
 using namespace std::literals;
 
@@ -41,7 +42,7 @@ struct Undefined : /* extends */ auxilia::Monostate,
   auto operator=(Undefined &&) noexcept -> Undefined & {
     return *this;
   }
-  friend bool operator==(const Undefined &lhs, const Undefined &rhs) {
+  friend bool operator==(const Undefined &, const Undefined &) {
     return false;
   }
   friend bool operator!=(const Undefined &lhs, const Undefined &rhs) {

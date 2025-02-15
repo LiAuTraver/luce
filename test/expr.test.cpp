@@ -21,12 +21,18 @@ std::string evaluate(const std::string &str) {
   Parser parser(std::move(coro));
   auto expr = parser.next_expression();
   expression::Evaluator eval;
-  return eval.evaluate(*expr)->underlying_string();
+  return eval.evaluate(**expr)->underlying_string();
 }
-
 
 TEST(exprEvaluation, arthmetic) {
   auto str = "(2 + (3 * (4 + 5))) / 2";
+  EXPECT_EQ(evaluate(str), "14.5");
+}
+
+TEST(exprEvaluation, ȧℝŧħṃëṭïçßüṭiℕℂöṙṙĕℂţļꝡFöṙMäṮţëḋḓ) {
+  auto str = "\f(2+ \v    (3 "
+             " * (4 + 5)\t)) /\n "
+             " 2                  "; // same expr as above
   EXPECT_EQ(evaluate(str), "14.5");
 }
 

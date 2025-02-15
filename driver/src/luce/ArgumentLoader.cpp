@@ -1,10 +1,11 @@
 #include "deps.hh"
 
-#include "luce/argument/ArgumentLoader.hpp"
 #include <spdlog/spdlog.h>
 #include <argparse/argparse.hpp>
 #include <iostream>
 #include <type_traits>
+
+#include "luce/argument/ArgumentLoader.hpp"
 
 namespace accat::luce::detail {
 using ap = argparse::ArgumentParser;

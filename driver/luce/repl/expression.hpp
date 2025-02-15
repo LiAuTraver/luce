@@ -1,10 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <accat/auxilia/auxilia.hpp>
+
 #include "Token.hpp"
-#include "accat/auxilia/details/Monostate.hpp"
-#include "accat/auxilia/details/Variant.hpp"
-#include "accat/auxilia/details/format.hpp"
 #include "luce/repl/repl_fwd.hpp"
 namespace accat::luce::repl::expression {
 struct Visitor;

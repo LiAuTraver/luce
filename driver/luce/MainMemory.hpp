@@ -16,6 +16,7 @@
 #include "utils/Pattern.hpp"
 #include "config.hpp"
 #include "Support/isa/architecture.hpp"
+
 namespace accat::luce {
 
 class LUCE_API MemoryAccess {

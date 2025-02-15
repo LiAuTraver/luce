@@ -4,8 +4,6 @@
 
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
-#include <accat/auxilia/details/Property.hpp>
-#include <accat/auxilia/details/Status.hpp>
 
 #include "Support/isa/architecture.hpp"
 
@@ -26,9 +24,7 @@ class Context {
                 "current implementation requires std::byte to be same size as "
                 "minimal_addressable_unit_t");
   using vaddr_t = isa::virtual_address_t;
-  using register_t = std::array<std::byte,
-                                sizeof(isa::virtual_address_t) /
-                                    sizeof(isa::minimal_addressable_unit_t)>;
+  using register_t = isa::GeneralPurposeRegisters::register_t;
 
 public:
   enum class PrivilegeLevel : uint8_t { kUser = 0, kSupervisor, kMachine };

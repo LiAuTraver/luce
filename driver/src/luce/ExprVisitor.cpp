@@ -1,6 +1,5 @@
 #include "deps.hh"
 
-#include "luce/repl/ExprVisitor.hpp"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -9,12 +8,15 @@
 #include <system_error>
 #include <utility>
 #include <variant>
-#include "accat/auxilia/auxilia.hpp"
+#include <accat/auxilia/auxilia.hpp>
+
+#include "luce/repl/ExprVisitor.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/repl/Token.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/repl/expression.hpp"
 #include "luce/repl/repl_fwd.hpp"
+
 namespace accat::luce::repl::expression {
 using evaluation::result_type;
 result_type ASTPrinter::evaluate(const Expr &expr) {

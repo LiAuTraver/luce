@@ -1,6 +1,11 @@
 ﻿#pragma once
-#include "luce/config.hpp"
+
+#include <chrono>
+#include <deque>
 #include <accat/auxilia/auxilia.hpp>
+
+#include "luce/config.hpp"
+
 namespace accat::luce {
 class Timer {
 public:

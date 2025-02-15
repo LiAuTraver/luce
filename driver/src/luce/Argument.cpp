@@ -1,10 +1,10 @@
 #include "deps.hh"
 
-#include "luce/argument/Argument.hpp"
-#include "luce/argument/ArgumentLoader.hpp"
-
 #include <argparse/argparse.hpp>
 #include <span>
+
+#include "luce/argument/Argument.hpp"
+#include "luce/argument/ArgumentLoader.hpp"
 
 namespace accat::luce::argument {
 namespace program {

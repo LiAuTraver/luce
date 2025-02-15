@@ -1,4 +1,6 @@
 #include "./Register.hpp"
+#include <span>
+#include "accat/auxilia/details/views.hpp"
 namespace accat::luce::isa::riscv32 {
 auto GeneralPurposeRegisters::to_string(
     const auxilia::FormatPolicy policy) const -> string_type {
@@ -11,38 +13,38 @@ auto GeneralPurposeRegisters::to_string(
   if (policy == kDefault) {
     // reg number, short name, 0x00000000
     str = fmt::format(R"(
-x0 (zero): {:#x}
-x1 (ra)  : {:#x}
-x2 (sp)  : {:#x}
-x3 (gp)  : {:#x}
-x4 (tp)  : {:#x}
-x5 (t0)  : {:#x}
-x6 (t1)  : {:#x}
-x7 (t2)  : {:#x}
-x8 (s0)  : {:#x}
-x9 (s1)  : {:#x}
-x10 (a0) : {:#x}
-x11 (a1) : {:#x}
-x12 (a2) : {:#x}
-x13 (a3) : {:#x}
-x14 (a4) : {:#x}
-x15 (a5) : {:#x}
-x16 (a6) : {:#x}
-x17 (a7) : {:#x}
-x18 (s2) : {:#x}
-x19 (s3) : {:#x}
-x20 (s4) : {:#x}
-x21 (s5) : {:#x}
-x22 (s6) : {:#x}
-x23 (s7) : {:#x}
-x24 (s8) : {:#x}
-x25 (s9) : {:#x}
-x26 (s10): {:#x}
-x27 (s11): {:#x}
-x28 (t3) : {:#x}
-x29 (t4) : {:#x}
-x30 (t5) : {:#x}
-x31 (t6) : {:#x}
+x0 (zero): {:#04x}
+x1 (ra)  : {:#04x}
+x2 (sp)  : {:#04x}
+x3 (gp)  : {:#04x}
+x4 (tp)  : {:#04x}
+x5 (t0)  : {:#04x}
+x6 (t1)  : {:#04x}
+x7 (t2)  : {:#04x}
+x8 (s0)  : {:#04x}
+x9 (s1)  : {:#04x}
+x10 (a0) : {:#04x}
+x11 (a1) : {:#04x}
+x12 (a2) : {:#04x}
+x13 (a3) : {:#04x}
+x14 (a4) : {:#04x}
+x15 (a5) : {:#04x}
+x16 (a6) : {:#04x}
+x17 (a7) : {:#04x}
+x18 (s2) : {:#04x}
+x19 (s3) : {:#04x}
+x20 (s4) : {:#04x}
+x21 (s5) : {:#04x}
+x22 (s6) : {:#04x}
+x23 (s7) : {:#04x}
+x24 (s8) : {:#04x}
+x25 (s9) : {:#04x}
+x26 (s10): {:#04x}
+x27 (s11): {:#04x}
+x28 (t3) : {:#04x}
+x29 (t4) : {:#04x}
+x30 (t5) : {:#04x}
+x31 (t6) : {:#04x}
 )"_raw, // remove leading and trailing newline
                       J(R.zero_reg),
                       J(R.ra),
@@ -79,41 +81,41 @@ x31 (t6) : {:#x}
   } else if (policy == kDetailed) {
     // full name, reg number, 0x00 0x00 0x00 0x00, group by classificaiton
     str = fmt::format(R"(
-zero register  (x0): {:#x}
-return address (x1): {:#x}
-stack pointer  (x2): {:#x}
-global pointer (x3): {:#x}
-thread pointer (x4): {:#x}
+zero register  (x0): {:#04x}
+return address (x1): {:#04x}
+stack pointer  (x2): {:#04x}
+global pointer (x3): {:#04x}
+thread pointer (x4): {:#04x}
 temporary registers:
-          t0   (x5): {:#x}
-          t1   (x6): {:#x}
-          t2   (x7): {:#x}
-          t3  (x28): {:#x}
-          t4  (x29): {:#x}
-          t5  (x30): {:#x}
-          t6  (x31): {:#x}
+          t0   (x5): {:#04x}
+          t1   (x6): {:#04x}
+          t2   (x7): {:#04x}
+          t3  (x28): {:#04x}
+          t4  (x29): {:#04x}
+          t5  (x30): {:#04x}
+          t6  (x31): {:#04x}
 argument registers:
-          a0  (x10): {:#x}
-          a1  (x11): {:#x}
-          a2  (x12): {:#x}
-          a3  (x13): {:#x}
-          a4  (x14): {:#x}
-          a5  (x15): {:#x}
-          a6  (x16): {:#x}
-          a7  (x17): {:#x}
+          a0  (x10): {:#04x}
+          a1  (x11): {:#04x}
+          a2  (x12): {:#04x}
+          a3  (x13): {:#04x}
+          a4  (x14): {:#04x}
+          a5  (x15): {:#04x}
+          a6  (x16): {:#04x}
+          a7  (x17): {:#04x}
 saved registers:
-          s0   (x8): {:#x}
-          s1   (x9): {:#x}
-          s2  (x18): {:#x}
-          s3  (x19): {:#x}
-          s4  (x20): {:#x}
-          s5  (x21): {:#x}
-          s6  (x22): {:#x}
-          s7  (x23): {:#x}
-          s8  (x24): {:#x}
-          s9  (x25): {:#x}
-          s10 (x26): {:#x}
-          s11 (x27): {:#x}
+          s0   (x8): {:#04x}
+          s1   (x9): {:#04x}
+          s2  (x18): {:#04x}
+          s3  (x19): {:#04x}
+          s4  (x20): {:#04x}
+          s5  (x21): {:#04x}
+          s6  (x22): {:#04x}
+          s7  (x23): {:#04x}
+          s8  (x24): {:#04x}
+          s9  (x25): {:#04x}
+          s10 (x26): {:#04x}
+          s11 (x27): {:#04x}
 )"_raw,
                       J(R.zero_reg),
                       J(R.ra),
@@ -148,11 +150,13 @@ saved registers:
                       J(R.s10),
                       J(R.s11));
   } else if (policy == kBrief) {
+    using auxilia::ranges::views::swap_endian;
     // 0x00000000 0x00000000
     str.reserve(351);
-    str += fmt::format("0x{:02x}", fmt::join(R.zero_reg, ""));
-    for (const auto &reg : general_purpose_registers.subspan(1))
-      str += fmt::format(" 0x{:02x}", fmt::join(reg, ""));
+    str +=
+        fmt::format("0x{:02x}", fmt::join(R.zero_reg | swap_endian, ""));
+    for (const auto &reg : raw | std::views::drop(1))
+      str += fmt::format(" 0x{:02x}", fmt::join(reg | swap_endian, ""));
   } else {
     str = "unsupported format policy";
   }
@@ -161,69 +165,69 @@ saved registers:
 auto GeneralPurposeRegisters::_get_impl(
     const std::string_view str) const noexcept -> const register_t * {
   if (str == "zero") {
-    return raw + 0;
+    return raw.data() + 0;
   } else if (str == "ra") {
-    return raw + 1;
+    return raw.data() + 1;
   } else if (str == "sp") {
-    return raw + 2;
+    return raw.data() + 2;
   } else if (str == "gp") {
-    return raw + 3;
+    return raw.data() + 3;
   } else if (str == "tp") {
-    return raw + 4;
+    return raw.data() + 4;
   } else if (str == "t0") {
-    return raw + 5;
+    return raw.data() + 5;
   } else if (str == "t1") {
-    return raw + 6;
+    return raw.data() + 6;
   } else if (str == "t2") {
-    return raw + 7;
+    return raw.data() + 7;
   } else if (str == "s0") {
-    return raw + 8;
+    return raw.data() + 8;
   } else if (str == "s1") {
-    return raw + 9;
+    return raw.data() + 9;
   } else if (str == "a0") {
-    return raw + 10;
+    return raw.data() + 10;
   } else if (str == "a1") {
-    return raw + 11;
+    return raw.data() + 11;
   } else if (str == "a2") {
-    return raw + 12;
+    return raw.data() + 12;
   } else if (str == "a3") {
-    return raw + 13;
+    return raw.data() + 13;
   } else if (str == "a4") {
-    return raw + 14;
+    return raw.data() + 14;
   } else if (str == "a5") {
-    return raw + 15;
+    return raw.data() + 15;
   } else if (str == "a6") {
-    return raw + 16;
+    return raw.data() + 16;
   } else if (str == "a7") {
-    return raw + 17;
+    return raw.data() + 17;
   } else if (str == "s2") {
-    return raw + 18;
+    return raw.data() + 18;
   } else if (str == "s3") {
-    return raw + 19;
+    return raw.data() + 19;
   } else if (str == "s4") {
-    return raw + 20;
+    return raw.data() + 20;
   } else if (str == "s5") {
-    return raw + 21;
+    return raw.data() + 21;
   } else if (str == "s6") {
-    return raw + 22;
+    return raw.data() + 22;
   } else if (str == "s7") {
-    return raw + 23;
+    return raw.data() + 23;
   } else if (str == "s8") {
-    return raw + 24;
+    return raw.data() + 24;
   } else if (str == "s9") {
-    return raw + 25;
+    return raw.data() + 25;
   } else if (str == "s10") {
-    return raw + 26;
+    return raw.data() + 26;
   } else if (str == "s11") {
-    return raw + 27;
+    return raw.data() + 27;
   } else if (str == "t3") {
-    return raw + 28;
+    return raw.data() + 28;
   } else if (str == "t4") {
-    return raw + 29;
+    return raw.data() + 29;
   } else if (str == "t5") {
-    return raw + 30;
+    return raw.data() + 30;
   } else if (str == "t6") {
-    return raw + 31;
+    return raw.data() + 31;
   }
   return nullptr;
 }

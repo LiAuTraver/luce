@@ -3,37 +3,44 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
+#include <algorithm>
 #include <array>
+#include <concepts>
 #include <cstddef>
 #include <iostream>
 #include <iterator>
+#include <mdspan>
 #include <optional>
 #include <span>
 #include <string_view>
 #include <accat/auxilia/auxilia.hpp>
+#include <utility>
 
 #include "./isa.hpp"
 #include "Support/isa/config.hpp"
+#include "accat/auxilia/details/macros.hpp"
 
 namespace accat::luce::isa::riscv32 {
 
-struct LUCE_SUPPORT_ISA_API GeneralPurposeRegisters : auxilia::Printable<GeneralPurposeRegisters> {
+struct LUCE_SUPPORT_ISA_API GeneralPurposeRegisters
+    : auxilia::Printable<GeneralPurposeRegisters> {
 private:
   using enum auxilia::FormatPolicy;
   using self_type = GeneralPurposeRegisters;
 
 public:
   using register_t = std::array<std::byte, instruction_size_bytes>;
+  using registers_t = std::array<register_t, general_purpose_register_count>;
   using iSpan = auxilia::incontiguous_span<register_t>;
 
   constexpr GeneralPurposeRegisters() {}
   GeneralPurposeRegisters(const GeneralPurposeRegisters &) = delete;
   GeneralPurposeRegisters &operator=(const GeneralPurposeRegisters &) = delete;
-  GeneralPurposeRegisters(GeneralPurposeRegisters &&that) noexcept {
-    memmove(raw, that.raw, sizeof(raw));
+  GeneralPurposeRegisters(self_type &&that) noexcept {
+    raw = std::move(that.raw);
   }
-  GeneralPurposeRegisters &operator=(GeneralPurposeRegisters &&that) noexcept {
-    memmove(raw, that.raw, sizeof(raw));
+  auto &operator=(self_type &&that) noexcept {
+    raw = std::move(that.raw);
     return *this;
   }
 
@@ -66,13 +73,9 @@ public:
   auto temporary(this auto &&self) noexcept {
     return iSpan{{&self.registers.t0, 3}, {&self.registers.t3, 4}};
   }
-  auto &
-  reset(const register_t (&newVal)[general_purpose_register_count]) noexcept {
-    memcpy(raw, newVal, sizeof(raw));
-    return *this;
-  }
-  [[clang::reinitializes]] auto &reset() noexcept {
-    memset(raw, 0, sizeof(raw));
+  [[clang::reinitializes]] auto &
+  reset(const registers_t &newVal = {}) noexcept {
+    raw = newVal;
     return *this;
   }
   auto read(const std::string_view str) const noexcept
@@ -81,6 +84,26 @@ public:
       return *reg;
     }
     return std::nullopt;
+  }
+  auto &operator[](this auto &&self, const std::string_view str) noexcept
+      [[clang::lifetimebound]] {
+    auto res = self.get_register_by_string(str);
+    precondition(res, "register not found");
+    return *res;
+  }
+  auto &operator[](this auto &&self, const size_t idx) noexcept
+      [[clang::lifetimebound]] {
+    precondition(idx < general_purpose_register_count, "index out of bounds");
+    return self.raw[idx];
+  }
+  auto &at(const size_t idx) const noexcept [[clang::lifetimebound]] {
+    precondition(idx < general_purpose_register_count, "index out of bounds");
+    return raw[idx];
+  }
+  auto &at(const std::string_view str) const noexcept [[clang::lifetimebound]] {
+    auto reg = get_register_by_string(str);
+    contract_assert(reg, "register not found");
+    return *reg;
   }
   /// @return previous value, if the register is not writable, return nullopt
   auto write(const std::string_view str, const register_t val)
@@ -102,7 +125,7 @@ public:
 private:
   auto get_register_by_string(this auto &&self,
                               const std::string_view str) noexcept
-      -> register_t * {
+      [[clang::lifetimebound]] -> register_t * {
     return const_cast<register_t *>(
         const_cast<const decltype(self) &>(self)._get_impl(str));
   }
@@ -113,7 +136,7 @@ private:
   // clang-format off
   union alignas(4)   {
     using R = register_t;
-    alignas(4) R raw[general_purpose_register_count] = {};
+    alignas(4) registers_t raw = {};
     alignas(4) struct {
       const R zero_reg;
       R ra; R sp; R gp; R tp;
@@ -124,12 +147,27 @@ private:
       R t3; R t4; R t5; R t6;
     } registers;
   };
-  // clang-format on
+// clang-format on
 #pragma pack(pop)
 public:
-  // shall NOT use this: avoid setting zero register to non-zero value
-  std::span<register_t, general_purpose_register_count>
-      general_purpose_registers = std::span{raw};
+  auto bytes_view() const noexcept [[clang::lifetimebound]] {
+    return std::mdspan<const std::byte, std::dextents<std::size_t, 2>>{
+        reinterpret_cast<const std::byte *>(raw.data()),
+        general_purpose_register_count,
+        register_t{}.size()};
+  }
+  auto bytes_view() noexcept [[clang::lifetimebound]] {
+    return std::mdspan<std::byte, std::dextents<std::size_t, 2>>{
+        reinterpret_cast<std::byte *>(raw.data()),
+        general_purpose_register_count,
+        register_t{}.size()};
+  }
+  auto view() const noexcept [[clang::lifetimebound]] {
+    return std::span<const register_t, general_purpose_register_count>{raw};
+  }
+  auto view() noexcept [[clang::lifetimebound]] {
+    return std::span<register_t, general_purpose_register_count>{raw};
+  }
 };
 
 } // namespace accat::luce::isa::riscv32

@@ -29,6 +29,8 @@ class CentralProcessingUnit : public Component {
   MemoryManagementUnit mmu_;
 
   Timer cpu_timer_;
+
+public:
   enum class State : uint8_t {
     /// no program is running
     kVacant = 0,
@@ -36,6 +38,8 @@ class CentralProcessingUnit : public Component {
     kRunning,
     /// finished running the program
   };
+
+private:
   State state_ = State::kVacant;
   using instruction_t = isa::instruction_size_t;
   using instruction_bytes_t = std::array<std::byte, sizeof(instruction_t)>;
@@ -60,16 +64,18 @@ public:
     return state_ == State::kVacant;
   }
   auto detach_context() noexcept -> CentralProcessingUnit &;
-  auxilia::StatusOr<std::span<const std::byte>> fetch();
-  auxilia::Status execute();
-  auxilia::Status decode();
+  auxilia::Status execute_shuttle();
+  
+  private:
   auxilia::Status shuttle();
+  auxilia::StatusOr<std::span<const std::byte>> fetch();
+  auxilia::Status decode();
+  auxilia::Status execute();
 
 public:
   auto task_id() const noexcept {
     precondition(task_id_, "Task id is not set or invalid")
     return *task_id_;
-    // return task_id_.value_or(std::numeric_limits<uint32_t>::max());
   }
 };
 
@@ -92,7 +98,7 @@ public:
 public:
   auxilia::Status execute_shuttle() {
     if (cpu.is_vacant()) {
-      if (auto res = cpu.execute(); !res) {
+      if (auto res = cpu.execute_shuttle(); !res) {
         return res;
       }
     }

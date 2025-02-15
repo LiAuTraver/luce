@@ -1,5 +1,4 @@
-﻿#include "accat/auxilia/details/macros.hpp"
-#include "deps.hh"
+﻿#include "deps.hh"
 
 #include <fmt/color.h>
 #include <fmt/xchar.h>
@@ -46,7 +45,7 @@ Monitor::notify(Component *, Event event, std::function<void(void)> callback) {
     spdlog::info(
         "Hit good ol' {trapBytes:x}, program finished!",
         "trapBytes"_a = fmt::join(
-            isa::signal::trap | auxilia::ranges::views::invert_endianness, ""));
+            isa::signal::trap | auxilia::ranges::views::swap_endian, ""));
     // find the task and mark it as terminated
     process.state = Task::State::kTerminated;
     break;

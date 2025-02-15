@@ -8,8 +8,8 @@
 #include <optional>
 #include <queue>
 #include <string>
+
 #include "Token.hpp"
-#include "accat/auxilia/details/Status.hpp"
 #include "expression.hpp"
 #include "luce/repl/Lexer.hpp"
 namespace accat::luce::repl {

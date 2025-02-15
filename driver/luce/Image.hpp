@@ -2,12 +2,12 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <accat/auxilia/auxilia.hpp>
-#include <accat/auxilia/details/format.hpp>
-#include <luce/config.hpp>
 #include <bit>
 #include <cstddef>
 #include <span>
 #include <string>
+
+#include "luce/config.hpp"
 namespace accat::luce {
 class Image : public auxilia::Printable<Image> {
 public:

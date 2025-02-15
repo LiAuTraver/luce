@@ -39,7 +39,7 @@ int main() {
       B{0x70}, B{0x71}, B{0x72}, B{0x73}, B{0x74}, B{0x75}, B{0x76}, B{0x77},
       B{0x78}, B{0x79}, B{0x7a}, B{0x7b}, B{0x7c}, B{0x7d}, B{0x7e}, B{0x7f}};
   size_t i = 0;
-  for (auto &reg : registers.general_purpose_registers) {
+  for (auto &reg : registers.view()) {
     reg = {arr[i], arr[i + 1], arr[i + 2], arr[i + 3]};
     i += 4;
   }

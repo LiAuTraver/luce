@@ -7,7 +7,6 @@
 #include <functional>
 #include <utility>
 
-#include "accat/auxilia/details/Status.hpp"
 #include "luce/config.hpp"
 
 namespace accat::luce {

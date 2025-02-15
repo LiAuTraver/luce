@@ -1,6 +1,6 @@
 ﻿#include "deps.hh"
 
-#include "luce/cpu/cpu.hpp"
+
 #include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>
@@ -8,8 +8,11 @@
 #include <ranges>
 #include <span>
 #include <type_traits>
+
+#include "luce/cpu/cpu.hpp"
 #include "luce/Monitor.hpp"
 #include "Support/isa/riscv32/isa.hpp"
+
 namespace accat::luce {
 using auxilia::Status;
 using auxilia::StatusOr;
@@ -27,7 +30,7 @@ auto CPU::detach_context() noexcept -> CPU & {
   state_ = kVacant;
   return *this;
 }
-Status CPU::execute() {
+Status CPU::execute_shuttle() {
   precondition(context_, "No program to execute")
 
   auto executeShuttle = [&]() {
@@ -55,17 +58,23 @@ Status CPU::shuttle() {
   spdlog::info("Fetched instruction: {:#04x} (in big-endian: 0x{:02x})",
                fmt::join(context_->instruction_register, " "),
                fmt::join(context_->instruction_register |
-                             auxilia::ranges::views::invert_endianness,
+                             auxilia::ranges::views::swap_endian,
                          ""));
   decode();
+  execute();
   return {};
 }
 Status CPU::decode() {
-  // TODO()
-  if (std::ranges::equal(context_->instruction_register, isa::signal::trap)) {
+  // TODO(todo: decode the instruction and perform the operation)
+  if (std::ranges::equal(context_->instruction_register, isa::signal::trap))
+  {
     this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
   }
 
+  return {};
+}
+auxilia::Status CentralProcessingUnit::execute() {
+  // TODO()
   return {};
 }
 auto CPU::fetch() -> StatusOr<std::span<const std::byte>> {

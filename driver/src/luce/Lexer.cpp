@@ -5,11 +5,11 @@
 #include <cstddef>
 #include <locale>
 #include <utility>
+#include <spdlog/spdlog.h>
 
 #include "luce/config.hpp"
 #include "luce/repl/Lexer.hpp"
 
-#include <spdlog/spdlog.h>
 namespace {
 constexpr auto is_valid_base(const char c) noexcept -> bool {
   return c == 'x' || c == 'X' || c == 'b' || c == 'B' || c == 'o' || c == 'O' ||
