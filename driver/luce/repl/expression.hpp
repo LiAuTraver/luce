@@ -8,23 +8,24 @@
 namespace accat::luce::repl::expression {
 struct Visitor;
 
-interface Expr {
-  virtual auto to_string(const auxilia::FormatPolicy & =
-                             auxilia::FormatPolicy::kBrief) const
+struct Expr {
+  virtual auto
+  to_string(const auxilia::FormatPolicy & = auxilia::FormatPolicy::kBrief) const
       -> auxilia::Printable<Expr>::string_type = 0;
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type = 0;
+
+protected:
+  Expr() = default;
+  virtual ~Expr() = default;
+  using expr_ptr_t = std::shared_ptr<Expr>;
+  using token_t = Token;
+  using enum auxilia::FormatPolicy;
 };
-/// @remark save some typings(`__interface` cannot have alias)
-#define EVAL_NAME_USINGS()                                                     \
-  using expr_ptr_t = std::shared_ptr<Expr>;                                    \
-  using token_t = Token;                                                       \
-  using enum auxilia::FormatPolicy
 
 struct Undefined : /* extends */ auxilia::Monostate,
                    /* implements */ Expr,
                    /* implements */ auxilia::Printable<Undefined> {
-  EVAL_NAME_USINGS();
   token_t token;
   Undefined() = default;
   explicit Undefined(Token token) : token(std::move(token)) {}
@@ -41,7 +42,6 @@ struct Undefined : /* extends */ auxilia::Monostate,
   }
 };
 struct Literal : Expr, auxilia::Printable<Literal> {
-  EVAL_NAME_USINGS();
   token_t value;
   Literal() = default;
   explicit Literal(token_t value) : value(std::move(value)) {}
@@ -53,7 +53,6 @@ struct Literal : Expr, auxilia::Printable<Literal> {
       -> evaluation::result_type override final;
 };
 struct Variable : Expr, auxilia::Printable<Variable> {
-  EVAL_NAME_USINGS();
   Variable() = default;
   explicit Variable(token_t name) : name(std::move(name)) {}
   virtual auto to_string(const auxilia::FormatPolicy &policy = kBrief) const
@@ -71,7 +70,6 @@ private:
 };
 /// @note !, -, *(dereference), &(address-of)
 struct Unary : Expr, auxilia::Printable<Unary> {
-  EVAL_NAME_USINGS();
   token_t op;
   expr_ptr_t right;
   Unary() = default;
@@ -85,7 +83,6 @@ struct Unary : Expr, auxilia::Printable<Unary> {
       -> evaluation::result_type override final;
 };
 struct Binary : Expr, auxilia::Printable<Binary> {
-  EVAL_NAME_USINGS();
   token_t op;
   expr_ptr_t left;
   expr_ptr_t right;
@@ -103,7 +100,6 @@ struct Binary : Expr, auxilia::Printable<Binary> {
       -> evaluation::result_type override final;
 };
 struct Grouping : Expr, auxilia::Printable<Grouping> {
-  EVAL_NAME_USINGS();
   expr_ptr_t expression;
   Grouping() = default;
   explicit Grouping(expr_ptr_t expression)
@@ -116,7 +112,6 @@ struct Grouping : Expr, auxilia::Printable<Grouping> {
       -> evaluation::result_type override final;
 };
 struct Logical : Expr, auxilia::Printable<Logical> {
-  EVAL_NAME_USINGS();
   token_t op;
   expr_ptr_t left;
   expr_ptr_t right;
@@ -133,7 +128,6 @@ struct Logical : Expr, auxilia::Printable<Logical> {
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
 };
-#undef EVAL_NAME_USINGS
 using expr =
     auxilia::Variant<Undefined, Literal, Unary, Binary, Grouping, Logical>;
 } // namespace accat::luce::repl::expression

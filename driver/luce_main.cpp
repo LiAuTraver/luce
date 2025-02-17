@@ -1,7 +1,7 @@
 #include "deps.hh"
 
 #include "luce/config.hpp"
-#include "Support/isa/architecture.hpp"
+#include "luce/Support/isa/architecture.hpp"
 #include "luce/MainMemory.hpp"
 #include "luce/Task.hpp"
 #include "exec.hpp"
@@ -9,7 +9,7 @@
 #include "luce/argument/ArgumentLoader.hpp"
 #include "luce/Image.hpp"
 #include "luce/Monitor.hpp"
-#include "Support/isa/riscv32/riscv32.hpp"
+#include "luce/Support/isa/architecture.hpp"
 
 LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   auto callback = 0;

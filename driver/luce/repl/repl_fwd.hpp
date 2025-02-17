@@ -15,7 +15,7 @@ namespace accat::luce {}
 namespace accat::luce::repl {}
 
 namespace accat::luce::repl::expression {
-interface Expr;
+struct Expr;
 struct Undefined;
 struct Grouping;
 struct Literal;
@@ -26,7 +26,7 @@ struct Logical;
 } // namespace accat::luce::repl::expression
 
 namespace accat::luce::repl::statement {
-interface Stmt;
+struct Stmt;
 }
 
 namespace accat::luce::repl::evaluation {

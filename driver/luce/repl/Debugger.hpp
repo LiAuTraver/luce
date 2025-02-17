@@ -3,12 +3,12 @@
 #include <utility>
 
 #include "luce/repl/repl_fwd.hpp"
-#include "luce/utils/Pattern.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 
 namespace accat::luce::repl {
 namespace expression {
 struct Visitor;
-interface Expr;
+struct Expr;
 } // namespace expression
 class WatchPoint : public auxilia::Printable<WatchPoint> {
 public:

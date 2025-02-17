@@ -92,7 +92,6 @@ int test3() {
     }
     std::cout << '\n';
   }
-  // play with it
   std::cout << Registers.size() << '\n';
   std::cout << Registers.rank() << '\n';
 

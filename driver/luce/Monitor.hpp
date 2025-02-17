@@ -13,14 +13,13 @@
 
 #include "MainMemory.hpp"
 #include "repl/Debugger.hpp"
-#include "utils/Pattern.hpp"
-#include "luce/utils/Timer.hpp"
+#include "luce/Support/utils/Pattern.hpp"
+#include "luce/Support/utils/Timer.hpp"
 #include "config.hpp"
 #include "SystemBus.hpp"
 #include "Task.hpp"
 #include "cpu/cpu.hpp"
-#include "Support/isa/architecture.hpp"
-#include "Support/isa/Disassembler.hpp"
+#include "luce/Support/isa/architecture.hpp"
 
 namespace accat::luce {
 namespace message::repl {
@@ -47,7 +46,7 @@ Available commands:
 static const inline auto Welcome =
     format(fg(dark_cyan), "Welcome to luce emulator!\n").append(R"(
     Type 'help' for help
-    Type 'exit' to exitcd .
+    Type 'exit' to  exit.
 )"_raw);
 } // namespace message::repl
 class Monitor : public Mediator {
@@ -60,20 +59,12 @@ class Monitor : public Mediator {
   Task process;
   CPUs cpus;
   Timer timer;
-  Disassembler disassembler;
+  // Disassembler disassembler;
   repl::Debugger debugger_;
 
 public:
-  Monitor()
-      : memory_(this), bus(this), cpus(this), disassembler(this),
-        debugger_(this) {
-    if (auto res = disassembler.set_target(isa::instruction_set::riscv32))
-      return;
-    else {
-      spdlog::critical("Failed to initialize disassembler: {}", res.message());
-      dbg_break
-    }
-  }
+  Monitor() : memory_(this), bus(this), cpus(this), debugger_(this) {}
+
   auto &debugger(this auto &&self) noexcept {
     return self.debugger_;
   }
@@ -138,9 +129,3 @@ auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
 }
 #pragma clang diagnostic pop
 } // namespace accat::luce
-/*utils::Status Monitor::initDisassembler(CtxRef) {
-  constexpr auto cs_arch = CS_ARCH_RISCV;
-  constexpr auto cs_mode =
-      static_cast<::cs_mode>(CS_MODE_RISCV64 | CS_MODE_RISCVC);
-  return disassembler_.init(cs_arch, cs_mode);
-}*/

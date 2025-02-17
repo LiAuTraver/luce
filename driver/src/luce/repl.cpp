@@ -1,4 +1,3 @@
-#include "accat/auxilia/details/views.hpp"
 #include "deps.hh"
 
 #include <fmt/ostream.h>
@@ -15,7 +14,7 @@
 #include "luce/repl/Lexer.hpp"
 #include "luce/repl/Parser.hpp"
 #include "luce/repl/evaluation.hpp"
-#include "luce/utils/Pattern.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 
 namespace accat::luce {
 using fmt::fg;
@@ -75,8 +74,11 @@ StatusOr<std::string> read(Monitor *) {
   }
 }
 } // namespace
-interface ICommand {
-  virtual Status execute(Monitor * monitor) const = 0;
+struct ICommand {
+  virtual Status execute(Monitor *monitor) const = 0;
+
+protected:
+  virtual ~ICommand() = default;
 };
 
 struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
@@ -199,26 +201,26 @@ struct Print final : ICommand {
     auto parser = Parser{lexer.load_string(expression).lex()};
     auto eval = expression::Evaluator{monitor};
     parser.next_expression()
-        .transform([&](auto &&res) {
-          res->accept(eval)
-              .transform([](auto &&res) {
+        .transform([&](auto &&res1) {
+          res1->accept(eval)
+              .transform([](auto &&res2) {
                 auxilia::println(stdout,
                                  "{result}",
-                                 "result"_a = res.underlying_string(
+                                 "result"_a = res2.underlying_string(
                                      auxilia::FormatPolicy::kBrief));
               })
-              .transform_error([](auto &&res) {
+              .transform_error([](auto &&res2) {
                 auxilia::println(stderr,
                                  fg(crimson),
                                  "luce: error: {msg}",
-                                 "msg"_a = res.message());
+                                 "msg"_a = res2.message());
               });
         })
-        .transform_error([](auto &&res) {
+        .transform_error([](auto &&res1) {
           auxilia::println(stderr,
                            fg(crimson),
                            "luce: error: {msg}",
-                           "msg"_a = res.message());
+                           "msg"_a = res1.message());
         });
     return {};
   }
@@ -300,7 +302,8 @@ StatusOr<command_t> inspect(std::string_view input) {
   }
 
   if (mainCommand == "w") {
-    if (auto maybe_exprStr = auxilia::ranges::trim(input.substr(it - input.begin()));
+    if (auto maybe_exprStr =
+            auxilia::ranges::trim(input.substr(it - input.begin()));
         !maybe_exprStr.empty()) {
       return {AddWatchPoint{{maybe_exprStr.begin(), maybe_exprStr.end()}}};
     }

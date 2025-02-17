@@ -5,6 +5,9 @@ Diagnostics:
     - cppcoreguidelines-narrowing-conversions
     - google-explicit-constructor
     - hicpp-exception-baseclass
+    - c++17-extensions
+    - c++20-extensions
+    - c++23-extensions
     - c++26-extensions
     - readability-static-accessed-through-instance
     - cert-dcl58-cpp
@@ -27,7 +30,7 @@ CompileFlags:
     - -xc++
     - -std=c++latest
     # https://github.com/clangd/clangd/issues/1850, a bug for clangd
-    - -clang:-std=c++23
+    # - -clang:-std=c++23
     # ^^^ workaround when compiler is MSVC and incompatible flags in it.
     - -IM:\vcpkg\installed\x64-windows\include
     # workaround, clang does not support both `-fsanitize=address` and `-MDd` at the same time.

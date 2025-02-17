@@ -1,7 +1,7 @@
 #pragma once
 
-#include "./architecture.hpp"
-#include "luce/utils/Pattern.hpp"
+#include "luce/Support/isa/architecture.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 
 namespace llvm {
 class Triple;

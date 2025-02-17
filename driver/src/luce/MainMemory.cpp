@@ -44,7 +44,16 @@ auto MainMemory::write(isa::physical_address_t addr,
   memory[addr] = static_cast<std::byte>(value);
   return {};
 }
-
+auto MainMemory::write_n(isa::physical_address_t addr,
+                         const size_t count,
+                         std::span<const std::byte> value) noexcept
+    -> auxilia::Status {
+  if (!memory.is_in_range(addr, addr + count)) {
+    return {MakeMemoryAccessViolationError(addr)};
+  }
+  std::ranges::copy(value.begin(), value.end(), &memory[addr]);
+  return {};
+}
 void MainMemory::fill(const isa::physical_address_t start,
                       const size_t size,
                       const isa::minimal_addressable_unit_t value) {

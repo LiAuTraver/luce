@@ -6,10 +6,16 @@ project(luce-project
   DESCRIPTION "A simple riscv64 emulator and its assets"
 )
 
-include(cmake/prelude.cmake)
-include(cmake/folders.cmake)
+option(AC_CPP_DEBUG "set the environment variable AC_CPP_DEBUG to enable debug mode" OFF)
+option(LUCE_USE_LLVM "Use LLVM as the backend" OFF)
 
 set(LUCE_PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${LUCE_PROJECT_ROOT_DIR}/cmake")
+
+# module does NOT and with .cmake although the file is a cmake file
+# https://stackoverflow.com/questions/59326450/cmake-ignoring-cmake-module-path
+include(prelude) 
+include(folders)
 
 # if source dir is the same as project root dir,enable testing
 if(PROJECT_IS_TOP_LEVEL)
@@ -22,8 +28,6 @@ if(PROJECT_IS_TOP_LEVEL)
   include(GoogleTest)
 endif()
 
-option(AC_CPP_DEBUG "set the environment variable AC_CPP_DEBUG to enable debug mode" OFF)
-
 if(DEFINED ENV{AC_CPP_DEBUG})
   if($ENV{AC_CPP_DEBUG} STREQUAL "ON")
     message(STATUS "Debug mode is ON. Corresponding macro features will be enabled: AC_CPP_DEBUG")
@@ -34,11 +38,11 @@ if(DEFINED ENV{AC_CPP_DEBUG})
 endif()
 
 if(AC_CPP_DEBUG)
-  include(cmake/flags.cmake)
+  include(flags)
 endif()
 
-include(cmake/dependencies.cmake)
-include(cmake/llvm.cmake)
+include(dependencies)
+include(llvm)
 
 include_directories(driver)
 include_directories(include)

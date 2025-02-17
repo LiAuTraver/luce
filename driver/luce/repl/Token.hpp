@@ -122,9 +122,8 @@ struct Token : auxilia::Printable<Token> {
       return "LexError"sv;
     case Type::kEndOfFile:
       return "EndOfFile"sv;
-    default:
-      return "Unknown"sv;
     }
+    return "Unknown"sv;
   }
   Token() = default;
   Token(Type type, std::string_view lexeme, uint_least32_t line)

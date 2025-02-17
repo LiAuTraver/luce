@@ -1,6 +1,5 @@
 #include "deps.hh"
 
-
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <charconv>
@@ -74,38 +73,28 @@ result_type Evaluator::visit(const Literal &expr) {
                                  expr.value.error_message(),
                                  expr.value.line())};
   case kEndOfFile:
-    return {InvalidArgumentError(
-        fmt::format("unexpected EOF at line {}", expr.value.line()))};
+    return {
+        InvalidArgumentError("unexpected EOF at line {}", expr.value.line())};
   default:
     break;
   }
 
   // TODO: implement the rest of the literal types
   return {auxilia::UnimplementedError(
-      fmt::format("Unimplemented literal type: {}",
-                  expr.to_string(auxilia::FormatPolicy::kDetailed)))};
+      "Unimplemented literal type: {}",
+      expr.to_string(auxilia::FormatPolicy::kDetailed))};
 }
 result_type Evaluator::visit(const Variable &expr) {
-  // if start with `$`, then it might be visiting a register, e.g, $a0, $t0
-  // else, not implemented
-  // if (expr.identifier().front() == '$') {
-  //   if (expr.identifier().size() <= 2) {
-  //     return {InvalidArgumentError(
-  //         fmt::format("'{}' is not a valid identifier", expr.identifier()))};
-  //   }
-  //   const auto target = expr.identifier().substr(1);
-  // }
   const auto ident = expr.identifier();
   if (ident.front() == '$') {
     if (ident.size() <= 2) {
-      return {InvalidArgumentError(
-          fmt::format("'{}' is not a valid identifier", ident))};
+      return {InvalidArgumentError("'{}' is not a valid identifier", ident)};
     }
     precondition(this->mediator, "mediator must be set");
     if (auto maybe_bytes = static_cast<Monitor *>(this->mediator)
                                ->registers()
                                ->read(ident.substr(1))) {
-      auto str = reinterpret_cast<const char *>(maybe_bytes->data());
+      auto str = reinterpret_cast<const char *>(maybe_bytes->bytes().data());
       // convert to number, base 16
       auto num = 0ll;
       if (*str == '\0') {
@@ -113,19 +102,18 @@ result_type Evaluator::visit(const Variable &expr) {
         return {evaluation::Number{num}};
       }
       std::from_chars_result res =
-          std::from_chars(str, str + maybe_bytes->size(), num, 16);
+          std::from_chars(str, str + maybe_bytes->bytes().size(), num, 16);
       if (res.ec == std::errc{}) {
         return {{evaluation::Number{num}}};
       }
-      return {InvalidArgumentError(
-          fmt::format("failed to convert '{}' to number", str))};
+      return {InvalidArgumentError("failed to convert '{}' to number", str)};
     }
     return {InvalidArgumentError("unknown register: {}", ident.substr(1))};
   }
   // TODO(variable evaluation is not implemented)
   return {auxilia::UnimplementedError(
-      fmt::format("Unimplemented variable evaluation: {}",
-                  expr.to_string(auxilia::FormatPolicy::kDetailed)))};
+      "Unimplemented variable evaluation: {}",
+      expr.to_string(auxilia::FormatPolicy::kDetailed))};
 }
 result_type Evaluator::visit(const Unary &expr) {
   auto maybe_right = evaluate(*expr.right);
@@ -156,7 +144,6 @@ result_type Evaluator::visit(const Unary &expr) {
               } else {
                 return {res.as_status()};
               }
-              DebugUnreachable()
             }
             spdlog::warn("Running evaluator without mediator, pointer "
                          "dereference is unavailable.");

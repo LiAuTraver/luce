@@ -222,7 +222,6 @@ Lexer::token_t Lexer::next_token() {
     }
     return add_error_token("Unexpected character: "s + c);
   }
-  std::unreachable();
 }
 Lexer::char_t Lexer::peek(const size_t offset) const {
   if (is_at_end(offset))

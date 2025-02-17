@@ -16,7 +16,7 @@
 
 #include "luce/Monitor.hpp"
 #include "luce/Task.hpp"
-#include "luce/utils/Pattern.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 
 namespace accat::luce::repl {
 extern auto repl(Monitor *)

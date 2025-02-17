@@ -1,11 +1,12 @@
 #pragma once
 
-#include "utils/Pattern.hpp"
 
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
 
-#include "Support/isa/architecture.hpp"
+#include "luce/Support/utils/Pattern.hpp"
+#include "luce/Support/isa/architecture.hpp"
+#include "luce/Support/isa/riscv32/riscv32.hpp"
 
 namespace accat::luce {
 enum class [[clang::flag_enum]] Permission : uint8_t {
@@ -20,9 +21,6 @@ enum class [[clang::flag_enum]] Permission : uint8_t {
 AC_BITMASK_OPS(Permission);
 
 class Context {
-  static_assert(sizeof(std::byte) == sizeof(isa::minimal_addressable_unit_t),
-                "current implementation requires std::byte to be same size as "
-                "minimal_addressable_unit_t");
   using vaddr_t = isa::virtual_address_t;
   using register_t = isa::GeneralPurposeRegisters::register_t;
 
@@ -42,7 +40,7 @@ public:
     stack_pointer = 0x0;
     instruction_register = {};
     memory_bounds = {};
-    general_purpose_registers_.reset();
+    gpr_.reset();
     privilege_level = PrivilegeLevel::kUser;
     return *this;
   }
@@ -54,11 +52,12 @@ public:
   std::pair<vaddr_t, vaddr_t> memory_bounds = {};
 
 private:
-  isa::GeneralPurposeRegisters general_purpose_registers_;
+  isa::GeneralPurposeRegisters gpr_;
 
 public:
-  auto general_purpose_registers(this auto &&self) noexcept -> decltype(auto) {
-    return &self.general_purpose_registers_;
+  auto general_purpose_registers(this auto &&self) noexcept
+      [[clang::lifetimebound]] -> decltype(auto) {
+    return &self.gpr_;
   }
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
 

@@ -13,17 +13,15 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "utils/Pattern.hpp"
+#include "Support/isa/constants/riscv32.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 #include "config.hpp"
-#include "Support/isa/architecture.hpp"
+#include "luce/Support/isa/architecture.hpp"
 
 namespace accat::luce {
 
 class LUCE_API MemoryAccess {
 public:
-  static_assert(sizeof(std::byte) == sizeof(isa::minimal_addressable_unit_t),
-                "current implementation requires std::byte to be same size as "
-                "minimal_addressable_unit_t");
   using polymorphic_allocator_t = auxilia::MemoryPool;
   std::pmr::vector<std::byte> real_data;
 
@@ -91,10 +89,21 @@ public:
       -> auxilia::StatusOr<std::byte>;
   auto read_n(isa::physical_address_t, size_t) const noexcept
       -> auxilia::StatusOr<std::span<const std::byte>>;
-
+  // auto read_word(const isa::physical_address_t addr) const noexcept {
+  //   // [[clang::musttail]]
+  //   return read_typed<isa::Word>(addr);
+  // }
   auto write(isa::physical_address_t, isa::minimal_addressable_unit_t) noexcept
       -> auxilia::Status;
 
+  auto write_n(isa::physical_address_t,
+               size_t,
+               std::span<const std::byte>) noexcept -> auxilia::Status;
+  // auto write_word(const isa::physical_address_t addr,
+  //                 const isa::Word value) noexcept {
+  //   // [[clang::musttail]]
+  //   return write_typed(addr, value);
+  // }
   auto load_program(std::span<const std::byte>,
                     isa::physical_address_t,
                     isa::physical_address_t,

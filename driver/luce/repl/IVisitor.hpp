@@ -8,7 +8,11 @@ namespace accat::auxilia {
 template <typename> class StatusOr;
 }
 namespace accat::luce::repl {
-interface IVisitor{};
+struct IVisitor {
+protected:
+  IVisitor() = default;
+  virtual ~IVisitor() = default;
+};
 }
 namespace accat::luce::repl::expression {
 
@@ -22,6 +26,10 @@ struct Visitor {
   virtual evaluation::result_type visit(const Unary &) = 0;
   virtual evaluation::result_type visit(const Binary &) = 0;
   virtual evaluation::result_type visit(const Logical &) = 0;
+
+protected:
+  Visitor() = default;
+  virtual ~Visitor() = default;
 };
 }
 

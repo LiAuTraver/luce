@@ -3,12 +3,12 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
-#include "luce/utils/Pattern.hpp"
-#include "luce/utils/Timer.hpp"
+#include "luce/Support/utils/Pattern.hpp"
+#include "luce/Support/utils/Timer.hpp"
 #include "accat/auxilia/details/Status.hpp"
 #include "luce/config.hpp"
 #include "luce/Task.hpp"
-#include "Support/isa/architecture.hpp"
+#include "luce/Support/isa/architecture.hpp"
 #include "mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/macros.hpp>
@@ -22,11 +22,16 @@
 namespace accat::luce {
 class Monitor;
 }
+namespace accat::luce::isa::riscv32 {
+class Instruction;
+}
 namespace accat::luce {
 class CentralProcessingUnit : public Component {
   std::shared_ptr<Context> context_;
   std::optional<pid_t> task_id_;
   MemoryManagementUnit mmu_;
+  using vaddr_t = MemoryManagementUnit::vaddr_t;
+  using paddr_t = MemoryManagementUnit::paddr_t;
 
   Timer cpu_timer_;
 
@@ -65,12 +70,16 @@ public:
   }
   auto detach_context() noexcept -> CentralProcessingUnit &;
   auxilia::Status execute_shuttle();
-  
-  private:
+  auto context() noexcept -> decltype(auto) {
+    return context_;
+  }
+  auto fetch(vaddr_t) const -> auxilia::StatusOr<std::span<const std::byte>>;
+  auto write(vaddr_t, const std::span<const std::byte>) -> auxilia::Status;
+
+private:
   auxilia::Status shuttle();
-  auxilia::StatusOr<std::span<const std::byte>> fetch();
-  auxilia::Status decode();
-  auxilia::Status execute();
+  auxilia::Status decode_and_execute();
+  auxilia::Status execute(isa::Instruction *);
 
 public:
   auto task_id() const noexcept {

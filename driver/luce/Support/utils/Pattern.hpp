@@ -47,10 +47,10 @@ constexpr auto to_string_view(const Event event) noexcept {
     return "kRestartTask"sv;
   case Event::kPrintWatchPoint:
     return "kPrintWatchPoint"sv;
-  default:
-    return "kUnknown"sv;
+  case Event::kPauseTask:
+    return "kPauseTask"sv;
   }
-  std::unreachable();
+  return "kUnknown"sv;
 }
 } // namespace event
 struct Mediator {
@@ -58,7 +58,8 @@ public:
   constexpr Mediator() = default;
 
 public:
-  virtual auxilia::Status notify(Component *, Event, std::function<void(void)> = [](){}) = 0;
+  virtual auxilia::Status
+  notify(Component *, Event, std::function<void(void)> = []() {}) = 0;
   // virtual auxilia::StatusOr<std::any> query(Component*, Event,
   auxilia::Status set_as_parent(Component *);
 
@@ -74,8 +75,9 @@ protected:
 
 public:
   Mediator *mediator = nullptr;
-  auxilia::Status send(const Event event, std::function<void(void)>&& callback = []() {}) {
-    return mediator->notify(this, event , std::move(callback));
+  auxilia::Status
+  send(const Event event, std::function<void(void)> &&callback = []() {}) {
+    return mediator->notify(this, event, std::move(callback));
   }
 
 public:

@@ -18,6 +18,6 @@
 namespace fmt::inline v11::inline literals {}
 namespace std::inline literals {}
 namespace accat::luce {
-using namespace fmt::v11::literals;
+using namespace fmt::literals;
 using namespace std::literals;
 } // namespace accat::luce

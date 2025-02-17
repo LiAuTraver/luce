@@ -1,6 +1,6 @@
 #include "deps.hh"
 
-#include "Support/isa/Disassembler.hpp"
+#include "Disassembler.hpp"
 
 #include <llvm/MC/MCAsmInfo.h>
 #include <llvm/MC/MCContext.h>

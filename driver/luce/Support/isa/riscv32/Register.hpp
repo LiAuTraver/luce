@@ -13,23 +13,26 @@
 #include <optional>
 #include <span>
 #include <string_view>
-#include <accat/auxilia/auxilia.hpp>
 #include <utility>
+#include <accat/auxilia/auxilia.hpp>
 
-#include "./isa.hpp"
-#include "Support/isa/config.hpp"
-#include "accat/auxilia/details/macros.hpp"
+#include "../Word.hpp"
 
 namespace accat::luce::isa::riscv32 {
-
-struct LUCE_SUPPORT_ISA_API GeneralPurposeRegisters
+struct GeneralPurposeRegisters
     : auxilia::Printable<GeneralPurposeRegisters> {
 private:
   using enum auxilia::FormatPolicy;
   using self_type = GeneralPurposeRegisters;
 
 public:
-  using register_t = std::array<std::byte, instruction_size_bytes>;
+  // union register_t {
+  //   constexpr register_t() noexcept : num{0ull} {}
+  //   uint32_t num{};
+  //   std::array<std::byte, 4> bytes;
+  //   std::bitset<32> bits;
+  // };
+  using register_t = Word;
   using registers_t = std::array<register_t, general_purpose_register_count>;
   using iSpan = auxilia::incontiguous_span<register_t>;
 
@@ -47,8 +50,8 @@ public:
   constexpr register_t /* not a reference */ zero() const noexcept {
     dbg_block
     {
-      contract_assert(register_t{} == registers.zero_reg,
-                      "zero register is not zero");
+      // contract_assert(register_t{}.num_ == registers.zero_reg,
+      //                 "zero register is not zero");
     };
     return registers.zero_reg;
   }
@@ -94,7 +97,7 @@ public:
   auto &operator[](this auto &&self, const size_t idx) noexcept
       [[clang::lifetimebound]] {
     precondition(idx < general_purpose_register_count, "index out of bounds");
-    return self.raw[idx];
+    return self.raw[idx].num();
   }
   auto &at(const size_t idx) const noexcept [[clang::lifetimebound]] {
     precondition(idx < general_purpose_register_count, "index out of bounds");
@@ -154,13 +157,13 @@ public:
     return std::mdspan<const std::byte, std::dextents<std::size_t, 2>>{
         reinterpret_cast<const std::byte *>(raw.data()),
         general_purpose_register_count,
-        register_t{}.size()};
+        register_t{}.bytes().size()};
   }
   auto bytes_view() noexcept [[clang::lifetimebound]] {
     return std::mdspan<std::byte, std::dextents<std::size_t, 2>>{
         reinterpret_cast<std::byte *>(raw.data()),
         general_purpose_register_count,
-        register_t{}.size()};
+        register_t{}.bytes().size()};
   }
   auto view() const noexcept [[clang::lifetimebound]] {
     return std::span<const register_t, general_purpose_register_count>{raw};

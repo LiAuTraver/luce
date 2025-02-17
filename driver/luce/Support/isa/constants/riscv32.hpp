@@ -1,10 +1,7 @@
 #pragma once
-
-// RISC-V 32-bit
-#include <array>
 #include <cstddef>
 #include <cstdint>
-
+#include <array>
 namespace accat::luce::isa::riscv32 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-const-variable"
@@ -38,3 +35,7 @@ inline static constexpr auto trap = std::array{
 }
 #pragma clang diagnostic pop
 } // namespace accat::luce::isa::riscv32
+
+namespace accat::luce::isa {
+using namespace riscv32;
+}
