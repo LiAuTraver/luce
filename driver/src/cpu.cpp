@@ -1,4 +1,6 @@
-﻿#include "deps.hh"
+﻿#include "Support/isa/IInstruction.hpp"
+#include "accat/auxilia/details/macros.hpp"
+#include "deps.hh"
 
 #include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
@@ -20,7 +22,7 @@ using auxilia::StatusOr;
 using CPU = CentralProcessingUnit;
 using enum CPU::State;
 
-CPU::CentralProcessingUnit(Mediator *parent) : Component(parent), mmu_(this) {}
+CPU::CentralProcessingUnit(Mediator *parent) : Icpu(parent), mmu_(this) {}
 
 CentralProcessingUnit::~CentralProcessingUnit() = default;
 auto CPU::detach_context() noexcept -> CPU & {
@@ -51,10 +53,10 @@ Status CPU::shuttle() {
   if (!maybe_bytes) {
     return maybe_bytes.as_status();
   }
-  context_->program_counter.num() += sizeof(instruction_t);
+  context_->program_counter.num() += sizeof(isa::instruction_size_t);
   auto bytes = std::move(maybe_bytes).value();
   auto &orig_bytes = context_->instruction_register.bytes();
-  for (const auto i : std::views::iota(0ull, sizeof(instruction_t))) {
+  for (const auto i : std::views::iota(0ull, sizeof(isa::instruction_size_t))) {
     orig_bytes[i] = bytes[i];
   }
   // convert little-endian to big-endian for more human-readable output
@@ -70,10 +72,11 @@ Status CPU::decode_and_execute() {
   if (std::ranges::equal(context_->instruction_register.bytes(),
                          isa::signal::trap)) {
     this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
+    return {};
   }
-  auto inst = static_cast<Monitor *>(this->mediator)->disassembler()->disassemble(context_->instruction_register.num());
-  // auto inst = isa::instruction::Factory::createInstruction(
-  //     context_->instruction_register.num());
+  auto inst = static_cast<Monitor *>(this->mediator)
+                  ->disassembler()
+                  ->disassemble(context_->instruction_register.num());
   contract_assert(inst,
                   "Failed to decode the instruction."
                   " This assert is designed for debugging purposes. "
@@ -82,7 +85,24 @@ Status CPU::decode_and_execute() {
 }
 auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   precondition(inst, "Instruction is nullptr");
-  inst->execute(this);
+  auto exec = inst->execute(this);
+  using enum isa::IInstruction::ExecutionStatus;
+  switch (exec) {
+  case kSuccess:
+    return {};
+  case kMemoryViolation:
+    TODO(...)
+  case kInvalidInstruction:
+    TODO(...)
+  case kEnvCall:
+    TODO(...)
+  case kEnvBreak:
+    spdlog::info("received an environment break signal; pausing the task");
+    this->send(Event::kPauseTask, [this]() { this->detach_context(); });
+    break;
+  case kUnknown:
+    TODO(...)
+  }
   return {};
 }
 auto CPU::fetch(const vaddr_t addr) const

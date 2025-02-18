@@ -9,7 +9,7 @@
 #include <type_traits>
 #include "Word.hpp"
 
-namespace accat::luce {
+namespace accat::luce::isa {
 class Icpu;
 }
 namespace accat::luce::isa {
@@ -28,7 +28,21 @@ public:
   virtual ~IInstruction() = default;
 
 public:
-  virtual void execute(Icpu *) const = 0;
+  enum class ExecutionStatus : std::uint8_t {
+    kSuccess = 0,
+    // kNormalOperation = kSuccess,
+    kMemoryViolation,
+    kInvalidInstruction,
+    kEnvCall,
+    kEnvBreak,
+    kUnknown
+  };
+
+public:
+  virtual ExecutionStatus execute(Icpu *) const = 0;
+
+protected:
+  using enum ExecutionStatus;
 };
 
-} // namespace accat::luce::isa::riscv32
+} // namespace accat::luce::isa

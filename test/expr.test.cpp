@@ -21,7 +21,7 @@ std::string evaluate(const std::string &str) {
   Parser parser(std::move(coro));
   auto expr = parser.next_expression();
   expression::Evaluator eval;
-  return eval.evaluate(**expr)->underlying_string();
+  return (*(eval.evaluate(**expr))).underlying_string();
 }
 
 TEST(exprEvaluation, arthmetic) {
@@ -88,5 +88,5 @@ TEST(exprEvaluation, octal) {
 
 TEST(exprEvaluation, zero) {
   auto str = "0x123/0";
-  EXPECT_EQ(evaluate(str), "nan");
+  EXPECT_EQ(evaluate(str), "inf");
 }

@@ -11,147 +11,188 @@
 #include "luce/Support/isa/riscv32/Instruction.hpp"
 #include "luce/Support/isa/riscv32/Decoder.hpp"
 
-namespace accat::luce::isa::riscv32::instruction {
+namespace accat::luce::isa::riscv32::instruction::base {
 using auxilia::as;
 #pragma region Cal
-void Add::execute(Icpu *cpu) const {
+auto Add::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] + gpr[rs2()];
+  return kSuccess;
 }
-void Sub::execute(Icpu *cpu) const {
+auto Sub::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] - gpr[rs2()];
+  return kSuccess;
 }
-void Xor::execute(Icpu *cpu) const {
+auto Xor::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] ^ gpr[rs2()];
+  return kSuccess;
 }
-void Or::execute(Icpu *cpu) const {
+auto Or::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] | gpr[rs2()];
+  return kSuccess;
 }
-void And::execute(Icpu *cpu) const {
+auto And::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] & gpr[rs2()];
+  return kSuccess;
 }
-void Sll::execute(Icpu *cpu) const {
+auto Sll::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] << (gpr[rs2()] & 0x1F);
+  gpr[rd()] = gpr[rs1()] << (gpr[rs2()] & 0x1F); // mask the shift
+  return kSuccess;
 }
-void Srl::execute(Icpu *cpu) const {
+auto Srl::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // logical right shift
-  gpr[rd()] = gpr[rs1()] >> (gpr[rs2()] & 0x1F);
+  gpr[rd()] = gpr[rs1()] >> (gpr[rs2()] & 0x1F); // ditto
+  return kSuccess;
 }
 
-void Sra::execute(Icpu *cpu) const {
+auto Sra::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // arithmetic right shift (MSB-extended)
-  gpr[rd()] = as<std::int32_t>(gpr[rs1()]) >> (gpr[rs2()] & 0x1F);
+  gpr[rd()] = as<signed_num_type>(gpr[rs1()]) >> (gpr[rs2()] & 0x1F);
+  return kSuccess;
 }
 
-void Slt::execute(Icpu *cpu) const {
+auto Slt::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = as<std::int32_t>(gpr[rs1()]) < as<std::int32_t>(gpr[rs2()]);
+  gpr[rd()] = as<signed_num_type>(gpr[rs1()]) < as<signed_num_type>(gpr[rs2()]);
+  return kSuccess;
 }
 
-void Sltu::execute(Icpu *cpu) const {
+auto Sltu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = as<num_type>(gpr[rs1()]) < as<num_type>(gpr[rs2()]);
+  return kSuccess;
 }
 #pragma endregion Cal
 #pragma region Imm
-void Addi::execute(Icpu *cpu) const {
+auto Addi::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] + imm();
+  return kSuccess;
 }
-void Xori::execute(Icpu *cpu) const {
+auto Xori::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] ^ imm();
+  return kSuccess;
 }
-void Ori::execute(Icpu *cpu) const {
+auto Ori::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] | imm();
+  return kSuccess;
 }
-void Andi::execute(Icpu *cpu) const {
+auto Andi::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = gpr[rs1()] & imm();
+  return kSuccess;
 }
-void Slli::execute(Icpu *cpu) const {
+auto Slli::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // rd = rs1 << imm[0:4]
   gpr[rd()] = gpr[rs1()] << (imm() & 0x1F);
+  return kSuccess;
 }
-void Srli::execute(Icpu *cpu) const {
+auto Srli::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // rd = rs1 >> imm[0:4]
   gpr[rd()] = gpr[rs1()] >> (imm() & 0x1F);
+  return kSuccess;
 }
-void Srai::execute(Icpu *cpu) const {
+auto Srai::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // rd = rs1 >> imm[0:4]
   // msb-extend
-  gpr[rd()] = as<std::int32_t>(gpr[rs1()]) >> (imm() & 0x1F);
+  gpr[rd()] = as<signed_num_type>(gpr[rs1()]) >> (imm() & 0x1F);
+  return kSuccess;
 }
-void Slti::execute(Icpu *cpu) const {
+auto Slti::execute(Icpu *cpu) const -> ExecutionStatus {
+  // signed
+  auto &gpr = cpu->gpr();
+  gpr[rd()] = as<signed_num_type>(gpr[rs1()] < imm());
+  return kSuccess;
+}
+auto Sltiu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = as<num_type>(gpr[rs1()] < imm());
-}
-void Sltiu::execute(Icpu *cpu) const {
-  auto &gpr = cpu->gpr();
-  gpr[rd()] = as<num_type>(gpr[rs1()] < imm());
+  return kSuccess;
 }
 
-void Lb::execute(Icpu *cpu) const {
+auto Lb::execute(Icpu *cpu) const -> ExecutionStatus {
+  // signed
   auto &gpr = cpu->gpr();
   auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
   if (!maybe_bytes) {
-    TODO(...)
+    return kMemoryViolation;
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = as<std::int32_t>(bytes & 0xFF);
+  gpr[rd()] = as<signed_num_type>(bytes & 0xFF);
+  return kSuccess;
 }
 
-void Lh::execute(Icpu *cpu) const {
+auto Lh::execute(Icpu *cpu) const -> ExecutionStatus {
+  // signed
   auto &gpr = cpu->gpr();
   auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
   if (!maybe_bytes) {
-    TODO(...)
+    return kMemoryViolation;
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = as<std::int32_t>(bytes & 0xFFFF);
+  gpr[rd()] = as<signed_num_type>(bytes & 0xFFFF);
+  return kSuccess;
 }
 
-void Lw::execute(Icpu *cpu) const {
+auto Lw::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
   if (!maybe_bytes) {
-    TODO(...)
+    return kMemoryViolation;
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = as<std::int32_t>(bytes);
+  gpr[rd()] = as<signed_num_type>(bytes);
+  return kSuccess;
 }
 
-void Lbu::execute(Icpu *cpu) const {
+auto Lbu::execute(Icpu *cpu) const -> ExecutionStatus {
+  // zero-extend(unsigned)
+  auto &gpr = cpu->gpr();
+  auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
+  if (!maybe_bytes) {
+    return kMemoryViolation;
+  }
+  auto bytes =
+      *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
+  gpr[rd()] = bytes & 0xFF;
+  return kSuccess;
+}
+
+auto Lhu::execute(Icpu *cpu) const -> ExecutionStatus {
   // zero-extend
-  TODO(...)
-}
-
-void Lhu::execute(Icpu *cpu) const {
-  // zero-extend
-  TODO(...)
+  auto &gpr = cpu->gpr();
+  auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
+  if (!maybe_bytes) {
+    return kMemoryViolation;
+  }
+  auto bytes =
+      *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
+  gpr[rd()] = bytes & 0xFFFF;
+  return kSuccess;
 }
 #pragma endregion Imm
 #pragma region Store
-void Sb::execute(Icpu *cpu) const {
+auto Sb::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // M[rs1+imm][0:7] = rs2[0:7]
   auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
   if (!maybe_bytes) {
-    TODO(...)
+    return kMemoryViolation;
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
@@ -159,16 +200,17 @@ void Sb::execute(Icpu *cpu) const {
   auto status =
       cpu->write(gpr[rs1()] + imm(), std::as_bytes(std::span{&bytes, 1}));
   if (!status) {
-    TODO(...)
+    return kMemoryViolation;
   }
+  return kSuccess;
 }
 
-void Sh::execute(Icpu *cpu) const {
+auto Sh::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // M[rs1+imm][0:15] = rs2[0:15]
   auto maybe_bytes = cpu->fetch(gpr[rs1()] + imm());
   if (!maybe_bytes) {
-    TODO(...)
+    return kMemoryViolation;
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
@@ -176,87 +218,109 @@ void Sh::execute(Icpu *cpu) const {
   auto status =
       cpu->write(gpr[rs1()] + imm(), std::as_bytes(std::span{&bytes, 2}));
   if (!status) {
-    TODO(...)
+    return kMemoryViolation;
   }
+  return kSuccess;
 }
 
-void Sw::execute(Icpu *cpu) const {
+auto Sw::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // M[rs1+imm][0:31] = rs2[0:31]
   auto status =
       cpu->write(gpr[rs1()] + imm(), std::as_bytes(std::span{&gpr[rs2()], 4}));
   if (!status) {
-    TODO(...)
+    return kMemoryViolation;
   }
+  return kSuccess;
 }
 #pragma endregion Store
 #pragma region Branch
-void Beq::execute(Icpu *cpu) const {
+auto Beq::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   if (gpr[rs1()] == gpr[rs2()]) {
-    cpu->context()->program_counter.num() += imm();
+    cpu->pc().num() += imm();
   }
+  return kSuccess;
 }
 
-void Bne::execute(Icpu *cpu) const {
+auto Bne::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   if (gpr[rs1()] != gpr[rs2()]) {
-    cpu->context()->program_counter.num() += imm();
+    cpu->pc().num() += imm();
   }
+  return kSuccess;
 }
 
-void Blt::execute(Icpu *cpu) const {
+auto Blt::execute(Icpu *cpu) const -> ExecutionStatus {
+  // signed
   auto &gpr = cpu->gpr();
-  if (as<std::int32_t>(gpr[rs1()]) < as<std::int32_t>(gpr[rs2()])) {
-    cpu->context()->program_counter.num() += imm();
+  if (as<signed_num_type>(gpr[rs1()]) < as<signed_num_type>(gpr[rs2()])) {
+    cpu->pc().num() += imm();
   }
+  return kSuccess;
 }
 
-void Bge::execute(Icpu *cpu) const {
+auto Bge::execute(Icpu *cpu) const -> ExecutionStatus {
+  // signed
   auto &gpr = cpu->gpr();
-  if (as<std::int32_t>(gpr[rs1()]) >= as<std::int32_t>(gpr[rs2()])) {
-    cpu->context()->program_counter.num() += imm();
+  if (as<signed_num_type>(gpr[rs1()]) >= as<signed_num_type>(gpr[rs2()])) {
+    cpu->pc().num() += imm();
   }
+  return kSuccess;
 }
 
-void Bltu::execute(Icpu *cpu) const {
-  TODO(...)
+auto Bltu::execute(Icpu *cpu) const -> ExecutionStatus {
+  // unsigned
+  auto &gpr = cpu->gpr();
+  if (as<num_type>(gpr[rs1()]) < as<num_type>(gpr[rs2()])) {
+    cpu->pc().num() += imm();
+  }
+  return kSuccess;
 }
 
-void Bgeu::execute(Icpu *cpu) const {
-  TODO(...)
+auto Bgeu::execute(Icpu *cpu) const -> ExecutionStatus {
+  // unsigned
+  auto &gpr = cpu->gpr();
+  if (as<num_type>(gpr[rs1()]) >= as<num_type>(gpr[rs2()])) {
+    cpu->pc().num() += imm();
+  }
+  return kSuccess;
 }
 #pragma endregion Branch
 #pragma region Jump
-void Jal::execute(Icpu *cpu) const {
+auto Jal::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = cpu->context()->program_counter.num() + 4;
-  cpu->context()->program_counter.num() += imm();
+  gpr[rd()] = cpu->pc().num() + 4;
+  cpu->pc().num() += imm();
+  return kSuccess;
 }
 
-void Jalr::execute(Icpu *cpu) const {
+auto Jalr::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  auto t = cpu->context()->program_counter.num() + 4;
-  cpu->context()->program_counter.num() = (gpr[rs1()] + imm());
+  auto t = cpu->pc().num() + 4;
+  cpu->pc().num() = (gpr[rs1()] + imm());
   gpr[rd()] = t;
+  return kSuccess;
 }
 #pragma endregion Jump
 #pragma region UpperImm
-void Lui::execute(Icpu *cpu) const {
+auto Lui::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr[rd()] = imm() << 12;
+  return kSuccess;
 }
-void Auipc::execute(Icpu *cpu) const {
+auto Auipc::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = cpu->context()->program_counter.num() + (imm() << 12);
+  gpr[rd()] = cpu->pc().num() + (imm() << 12);
+  return kSuccess;
 }
 #pragma endregion UpperImm
 #pragma region System
-void Ecall::execute(Icpu *cpu) const {
-  TODO(...)
+auto Ecall::execute(Icpu *cpu) const -> ExecutionStatus {
+  return kEnvCall;
 }
-void Ebreak::execute(Icpu *cpu) const {
-  TODO(...)
+auto Ebreak::execute(Icpu *cpu) const -> ExecutionStatus {
+  return kEnvBreak;
 }
 #pragma endregion System
-}
+} // namespace accat::luce::isa::riscv32::instruction::base

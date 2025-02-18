@@ -22,46 +22,6 @@
 //     0xdeadbeef, // some data
 // };
 // test framework
-
-struct Instruction {
-  virtual auto execute() const -> void = 0;
-  virtual ~Instruction() = default;
-};
-
-struct IDecoder {
-  virtual auto decode(uint32_t) -> std::unique_ptr<Instruction> = 0;
-  virtual ~IDecoder() = default;
-};
-
-struct RV32IDecoder : IDecoder {
-  auto decode(uint32_t) -> std::unique_ptr<Instruction> override {
-    // some implementation, returns concrete instruction
-    return nullptr;
-  }
-};
-struct Disassembler {
-  std::vector<std::unique_ptr<IDecoder>> decoders;
-  auto disassemble(uint32_t) -> std::unique_ptr<Instruction> {
-    for (auto &decoder : decoders) {
-      if (auto instr = decoder->decode(0); instr) {
-        return instr;
-      }
-    }
-    return nullptr;
-  };
-  void addDecoder(std::unique_ptr<IDecoder> decoder) {
-    decoders.emplace_back(std::move(decoder));
-  }
-};
 int main() {
-  Disassembler disassembler;
-  disassembler.addDecoder(std::make_unique<RV32IDecoder>());
-  auto instr = disassembler.disassemble(0);
-  if (instr) {
-    instr->execute();
-  }
-  else {
-  std::cout << "Unknown instruction. this is intended for this is just a demo" << std::endl;
-  }
   return 0;
 }

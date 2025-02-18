@@ -25,6 +25,7 @@ namespace accat::luce::isa {
 struct AC_EMPTY_BASES AC_NOVTABLE Word : auxilia::Printable {
 protected:
   using num_type = instruction_size_t;
+  using signed_num_type = std::make_signed_t<num_type>;
   using bytes_type = std::array<std::byte, instruction_size_bytes>;
   using bits_type = std::bitset<instruction_size_bytes * 8>;
   using bytes_view_type = std::span<const std::byte, instruction_size_bytes>;
@@ -44,16 +45,16 @@ private:
   using enum auxilia::FormatPolicy;
 
 public:
-  auto &bits(this auto &&self) noexcept {
+  inline auto &bits(this auto &&self) noexcept {
     return self.bits_;
   }
-  auto &num(this auto &&self) noexcept {
+  inline auto &num(this auto &&self) noexcept {
     return self.num_;
   }
-  auto &bytes(this auto &&self) noexcept {
+  inline auto &bytes(this auto &&self) noexcept {
     return self.bytes_;
   }
-  auto to_string(auxilia::FormatPolicy policy = kBrief) const noexcept {
+  inline auto to_string(auxilia::FormatPolicy policy = kBrief) const noexcept {
     if (policy == kBrief) // 0x00000000 (big-endian)
       return fmt::format("0x{:08x}", num());
     else if (policy == kDetailed) // 0x00 0x00 0x00 0x00 
@@ -61,10 +62,10 @@ public:
     else
       return fmt::format("{}", bits());
   }
-  auto data(this auto &&self) noexcept {
+  inline auto data(this auto &&self) noexcept {
     return self.bytes_.data();
   }
-  [[clang::reinitializes]] auto reset(const num_type num = 0ull) noexcept {
+  [[clang::reinitializes]]inline auto reset(const num_type num = 0ull) noexcept {
     num_ = num;
     return *this;
   }

@@ -117,12 +117,12 @@ AC_MIXIN_DECLARE_END
 #  error "Bad user. Bad code."
 #endif
 
-namespace accat::luce::isa::riscv32::instruction {
+namespace accat::luce::isa::riscv32::instruction::base {
 #pragma push_macro("ACOE")
 #define ACOE()                                                                 \
   using base_type = IInstruction;                                              \
   using base_type::base_type;                                                  \
-  virtual void execute(Icpu *) const override
+  virtual ExecutionStatus execute(Icpu *) const override
 // clang-format off
 struct Add    : IInstruction, mixin::RFormat { ACOE(); };
 struct Sub    : IInstruction, mixin::RFormat { ACOE(); };

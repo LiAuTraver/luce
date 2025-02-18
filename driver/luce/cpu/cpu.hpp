@@ -3,12 +3,14 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
+#include "cpu/cpu.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/Support/utils/Timer.hpp"
 #include "accat/auxilia/details/Status.hpp"
 #include "luce/config.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/isa/architecture.hpp"
+#include "luce/Support/isa/Icpu.hpp"
 #include "mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/macros.hpp>
@@ -25,97 +27,55 @@ namespace isa {
 class IDisassembler;
 }
 class Monitor;
-}
+} // namespace accat::luce
 namespace accat::luce::isa {
 class IInstruction;
 }
 namespace accat::luce {
-class Icpu {
-protected:
-  using vaddr_t = MemoryManagementUnit::vaddr_t;
-  using paddr_t = MemoryManagementUnit::paddr_t;
-
-public:
-  virtual auto fetch(vaddr_t) const
-      -> auxilia::StatusOr<std::span<const std::byte>> = 0;
-  virtual auto write(vaddr_t, const std::span<const std::byte>)
-      -> auxilia::Status = 0;
-  virtual auto pc() noexcept -> isa::Word & = 0;
-  virtual auto gpr() noexcept -> isa::GeneralPurposeRegisters & = 0;
-  virtual auto context() noexcept -> std::shared_ptr<Context> = 0;
-};
-class CentralProcessingUnit : public Component, public Icpu {
+class CentralProcessingUnit : public isa::Icpu {
   std::shared_ptr<Context> context_;
-  std::optional<pid_t> task_id_;
   MemoryManagementUnit mmu_;
   Timer cpu_timer_;
 
 public:
-  enum class State : uint8_t {
-    /// no program is running
-    kVacant = 0,
-    /// cpu is running and executing instructions
-    kRunning,
-    /// finished running the program
-  };
-
-private:
-  State state_ = State::kVacant;
-  using instruction_t = isa::instruction_size_t;
-  using instruction_bytes_t = std::array<std::byte, sizeof(instruction_t)>;
-
-public:
   CentralProcessingUnit(Mediator * = nullptr);
-  CentralProcessingUnit(const CentralProcessingUnit &) = delete;
-  auto operator=(const CentralProcessingUnit &) = delete;
-  CentralProcessingUnit(CentralProcessingUnit &&) noexcept = default;
-  CentralProcessingUnit &operator=(CentralProcessingUnit &&) noexcept = default;
   virtual ~CentralProcessingUnit() override;
+
 public:
-  auto &switch_context(std::shared_ptr<Context> context,
-                       const pid_t taskid) noexcept {
+  virtual auto switch_context(std::shared_ptr<Context> context,
+                              const pid_t taskid) noexcept -> Icpu & override {
     precondition(state_ == State::kVacant && task_id_ == std::nullopt,
                  "CPU is already running a program")
     context_ = context;
     task_id_ = taskid;
     return *this;
   }
-  constexpr auto is_vacant() const noexcept {
-    return state_ == State::kVacant;
-  }
-  auto detach_context() noexcept -> CentralProcessingUnit &;
-  auxilia::Status execute_shuttle();
-  auto context() noexcept -> std::shared_ptr<Context> override {
-    return context_;
-  }
-  auto fetch(vaddr_t) const
+
+public:
+  virtual auxilia::Status execute_shuttle() override;
+  virtual auto fetch(vaddr_t) const
       -> auxilia::StatusOr<std::span<const std::byte>> override;
+  virtual auto write(vaddr_t, const std::span<const std::byte>)
+      -> auxilia::Status override;
   auto pc() noexcept -> isa::Word & override {
     return context_->program_counter;
   }
-  auto write(vaddr_t, const std::span<const std::byte>)
-      -> auxilia::Status override;
   auto gpr() noexcept -> isa::GeneralPurposeRegisters & override {
     return *context_->general_purpose_registers();
   }
 
 private:
+  auto detach_context() noexcept -> CentralProcessingUnit &;
   auxilia::Status shuttle();
   auxilia::Status decode_and_execute();
   auxilia::Status execute(isa::IInstruction *);
-
-public:
-  auto task_id() const noexcept {
-    precondition(task_id_, "Task id is not set or invalid")
-    return *task_id_;
-  }
 };
 
 /// @implements Component
 class CPUs : public Component {
   // for debug and easy to understand, we use 1 cpus
   // std::array<CentralProcessingUnit, 1> cpus{};
-  CentralProcessingUnit cpu;
+  std::unique_ptr<isa::Icpu> cpu;
 
 public:
   CPUs() = default;
@@ -125,27 +85,30 @@ public:
   CPUs &operator=(CPUs &&) noexcept = default;
   ~CPUs() = default;
 
-  CPUs(Mediator *parent = nullptr) : Component(parent), cpu(parent) {}
+  CPUs(Mediator *parent = nullptr) : Component(parent) {
+    cpu = std::make_unique<CentralProcessingUnit>(parent);
+  }
 
 public:
   auxilia::Status execute_shuttle() {
-    if (cpu.is_vacant()) {
-      if (auto res = cpu.execute_shuttle(); !res) {
+    if (cpu->is_vacant()) {
+      if (auto res = cpu->execute_shuttle(); !res) {
         return res;
       }
+      return {};
     }
 
+    spdlog::warn(
+        "No CPU available. \n{}",
+        fmt::format(
+            fmt::fg(fmt::color::cyan),
+            "Note: currently not implemented for multi-core and parallel "
+            "execution"));
     return {};
-    // spdlog::warn(
-    //     "No CPU available. \n{}",
-    //     fmt::format(
-    //         fmt::fg(fmt::color::cyan),
-    //         "Note: currently not implemented for multi-core and parallel "
-    //         "execution"));
   }
   auxilia::Status attach_context(std::shared_ptr<Context> context,
                                  const pid_t taskid) {
-    cpu.switch_context(context, taskid);
+    cpu->switch_context(context, taskid);
     return {};
   }
 };

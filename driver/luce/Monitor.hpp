@@ -92,11 +92,6 @@ public:
       -> auxilia::Status;
 
 public:
-  auto decode_from_disassembler(const std::span<const std::byte>)
-      -> auxilia::StatusOr<auxilia::string> {
-    // return disassembler.decode(bytes);
-    TODO(...)
-  }
   auto registers() const noexcept {
     // currently only one task
     return process.context()->general_purpose_registers();
