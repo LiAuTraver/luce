@@ -10,7 +10,7 @@
 #include "accat/auxilia/defines.hpp"
 #include "accat/auxilia/details/format.hpp"
 namespace accat::luce::isa {
-struct AC_EMPTY_BASES AC_NOVTABLE Word : auxilia::Printable<Word> {
+struct AC_EMPTY_BASES AC_NOVTABLE Word : auxilia::Printable {
 protected:
   using num_type = instruction_size_t;
   using bytes_type = std::array<std::byte, instruction_size_bytes>;
@@ -29,6 +29,7 @@ private:
     bytes_type bytes_;
     bits_type bits_;
   };
+  using enum auxilia::FormatPolicy;
 
 public:
   auto &bits(this auto &&self) noexcept {
@@ -40,12 +41,9 @@ public:
   auto &bytes(this auto &&self) noexcept {
     return self.bytes_;
   }
-  auto to_string(auxilia::FormatPolicy policy =
-                     auxilia::FormatPolicy::kBrief) const noexcept {
-    using enum auxilia::FormatPolicy;
+  auto to_string(auxilia::FormatPolicy policy = kBrief) const noexcept {
     if (policy == kBrief)
       return fmt::format("0x{:08x}", num());
-
     else if (policy == kDetailed)
       return fmt::format("{:#04x}", fmt::join(bytes(), " "));
     else
@@ -70,7 +68,7 @@ public:
   Word(Word &&) = default;
   Word &operator=(Word &&) = default;
   ~Word() = default;
-  
+
   template <class... Args>
   constexpr Word(Args... args)
     requires((sizeof...(Args) == instruction_size_bytes) && ... &&

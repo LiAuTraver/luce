@@ -18,7 +18,7 @@ namespace accat::luce {
 class ArgumentLoader;
 }
 namespace accat::luce {
-class ExecutionContext : public auxilia::Printable<ExecutionContext> {
+class ExecutionContext : public auxilia::Printable {
 public:
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)

@@ -4,13 +4,19 @@
 
 #include "luce/repl/repl_fwd.hpp"
 #include "luce/Support/utils/Pattern.hpp"
+#include "luce/repl/evaluation.hpp"
 
 namespace accat::luce::repl {
 namespace expression {
 struct Visitor;
 struct Expr;
 } // namespace expression
-class WatchPoint : public auxilia::Printable<WatchPoint> {
+namespace evaluation {
+using variant_type =
+    auxilia::Variant<Undefined, Number, Byte, String, Boolean, Nil>;
+using result_type = auxilia::StatusOr<variant_type>;
+} // namespace evaluation
+class WatchPoint : public auxilia::Printable {
 public:
   using expr_ptr_t = std::shared_ptr<expression::Expr>;
   WatchPoint(const size_t id, const std::string &expr, expr_ptr_t exprAST)
@@ -20,7 +26,7 @@ public:
   string_type to_string(
       const auxilia::FormatPolicy policy = auxilia::FormatPolicy::kBrief) const;
   auto expr() const [[clang::lifetimebound]]
-  -> auxilia::Viewable<WatchPoint>::string_view_type {
+  -> auxilia::Viewable::string_view_type {
     return expr_;
   }
   auto id() const noexcept -> size_t {
@@ -45,7 +51,7 @@ private:
   expr_ptr_t AST_;
   result_type previous_result_;
 };
-class WatchPoints : public auxilia::Printable<WatchPoints> {
+class WatchPoints : public auxilia::Printable {
 public:
   using watchpoint_t = WatchPoint;
   using watchpoints_t = std::vector<watchpoint_t>;
@@ -83,7 +89,7 @@ public:
   Debugger(const Debugger &) = delete;
   Debugger &operator=(const Debugger &) = delete;
   Debugger(Debugger &&) noexcept;
-  Debugger &operator=(Debugger &&) noexcept ;
+  Debugger &operator=(Debugger &&) noexcept;
   virtual ~Debugger() override;
 
 public:
@@ -92,11 +98,11 @@ public:
   }
   auxilia::Status add_watchpoint(const std::string &);
   auxilia::Status delete_watchpoint(size_t);
-  void update_watchpoints(bool,bool);
+  void update_watchpoints(bool, bool);
 
 private:
   WatchPoints watchpoints_;
-  expression::Visitor* visitor_;
+  expression::Visitor *visitor_;
 };
 
 } // namespace accat::luce::repl

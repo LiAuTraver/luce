@@ -50,7 +50,7 @@ Status CPU::shuttle() {
   }
   context_->program_counter += sizeof(instruction_t);
   auto bytes = std::move(maybe_bytes).value();
-  auto& orig_bytes = context_->instruction_register.bytes();
+  auto &orig_bytes = context_->instruction_register.bytes();
   for (const auto i : std::views::iota(0ull, sizeof(instruction_t))) {
     orig_bytes[i] = bytes[i];
   }
@@ -76,7 +76,7 @@ Status CPU::decode_and_execute() {
                   "Currently, we are not handling this case.");
   return execute(inst.get());
 }
-auxilia::Status CentralProcessingUnit::execute(isa::Instruction* inst) {
+auxilia::Status CentralProcessingUnit::execute(isa::Instruction *inst) {
   precondition(inst, "Instruction is nullptr");
   inst->execute(this);
   return {};

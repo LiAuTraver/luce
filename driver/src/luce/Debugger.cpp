@@ -8,12 +8,10 @@
 #include <syncstream>
 #include <utility>
 
-#include "luce/repl/Debugger.hpp"
 #include "luce/repl/ExprVisitor.hpp"
+#include "luce/repl/Debugger.hpp"
 #include "luce/repl/Lexer.hpp"
 #include "luce/repl/Parser.hpp"
-#include "luce/repl/expression.hpp"
-
 namespace accat::luce::repl {
 using enum auxilia::FormatPolicy;
 using auxilia::FormatPolicy;

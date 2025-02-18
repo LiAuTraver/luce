@@ -3,9 +3,8 @@
 #include <memory>
 #include <span>
 
-#include "accat/auxilia/details/Status.hpp"
-#include "accat/auxilia/details/macros.hpp"
-#include "luce/Monitor.hpp"
+#include <accat/auxilia/auxilia.hpp>
+
 #include "luce/Task.hpp"
 #include "luce/cpu/cpu.hpp"
 

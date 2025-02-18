@@ -15,7 +15,7 @@
 
 namespace accat::luce::repl {
 using namespace std::literals;
-struct Token : auxilia::Printable<Token> {
+struct Token : auxilia::Printable {
   enum class Type : uint8_t {
     // clang-format off
     kMonostate = 0,

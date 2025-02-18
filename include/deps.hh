@@ -14,4 +14,3 @@
 #include <fmt.hh>
 #include <spdlog.hh>
 #include <scn.hh>
-#include <accat/auxilia/auxilia.hpp>

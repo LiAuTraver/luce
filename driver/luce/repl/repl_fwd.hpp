@@ -2,17 +2,10 @@
 
 #include <accat/auxilia/details/config.hpp>
 
-#include "luce/repl/evaluation.hpp"
-
-
 namespace accat::auxilia {
 template <typename> class StatusOr;
 template <typename...> class Variant;
 } // namespace accat::auxilia
-
-namespace accat::luce {}
-
-namespace accat::luce::repl {}
 
 namespace accat::luce::repl::expression {
 struct Expr;
@@ -38,7 +31,4 @@ struct Byte;
 struct String;
 struct Boolean;
 struct Nil;
-
-using variant_type = auxilia::Variant<Undefined, Number,Byte, String, Boolean, Nil>;
-using result_type = auxilia::StatusOr<variant_type>;
 } // namespace accat::luce::repl::evaluation

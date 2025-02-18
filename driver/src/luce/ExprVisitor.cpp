@@ -7,12 +7,14 @@
 #include <system_error>
 #include <utility>
 #include <variant>
+
+// order matters here
+#include "luce/repl/evaluation.hpp"
 #include <accat/auxilia/auxilia.hpp>
 
 #include "luce/repl/ExprVisitor.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/repl/Token.hpp"
-#include "luce/repl/evaluation.hpp"
 #include "luce/repl/expression.hpp"
 #include "luce/repl/repl_fwd.hpp"
 

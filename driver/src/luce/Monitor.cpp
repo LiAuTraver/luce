@@ -15,6 +15,7 @@
 #include <accat/auxilia/auxilia.hpp>
 
 #include "luce/Monitor.hpp"
+#include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 

@@ -13,9 +13,13 @@ protected:
   IVisitor() = default;
   virtual ~IVisitor() = default;
 };
-}
+} // namespace accat::luce::repl
+namespace accat::luce::repl::evaluation {
+using variant_type =
+    auxilia::Variant<Undefined, Number, Byte, String, Boolean, Nil>;
+using result_type = auxilia::StatusOr<variant_type>;
+} // namespace accat::luce::repl::evaluation
 namespace accat::luce::repl::expression {
-
 
 struct Visitor {
   virtual evaluation::result_type evaluate(const Expr &) = 0;
@@ -31,5 +35,4 @@ protected:
   Visitor() = default;
   virtual ~Visitor() = default;
 };
-}
-
+} // namespace accat::luce::repl::expression

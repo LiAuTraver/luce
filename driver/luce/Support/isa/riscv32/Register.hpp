@@ -20,7 +20,7 @@
 
 namespace accat::luce::isa::riscv32 {
 struct GeneralPurposeRegisters
-    : auxilia::Printable<GeneralPurposeRegisters> {
+    : auxilia::Printable {
 private:
   using enum auxilia::FormatPolicy;
   using self_type = GeneralPurposeRegisters;

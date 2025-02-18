@@ -9,7 +9,7 @@
 
 #include "luce/config.hpp"
 namespace accat::luce {
-class Image : public auxilia::Printable<Image> {
+class Image : public auxilia::Printable {
 public:
   Image() = default;
   Image(std::vector<std::byte> binary_data,
@@ -48,5 +48,5 @@ private:
   bool is_little_endian_ = std::endian::native == std::endian::little;
   std::vector<std::byte> binary_data_;
 };
-class ImageView : public auxilia::Printable<ImageView> {};
+class ImageView : public auxilia::Printable {};
 } // namespace accat::luce

@@ -7,21 +7,13 @@
 #include <variant>
 
 #include "./luce/repl/repl_fwd.hpp"
+#include <accat/auxilia/auxilia.hpp>
 
 namespace accat::luce::repl::evaluation {
 using namespace std::literals;
 
-struct Evaluatable {
-  friend constexpr bool operator==(const Evaluatable &,
-                                   const Evaluatable &) noexcept {
-    return true;
-  }
-  friend constexpr bool operator!=(const Evaluatable &,
-                                   const Evaluatable &) noexcept {
-    return false;
-  }
-};
-struct Value : Evaluatable {
+struct AC_EMPTY_BASES AC_NOVTABLE Evaluatable{};
+struct AC_EMPTY_BASES AC_NOVTABLE Value : Evaluatable {
   friend constexpr bool operator==(const Value &, const Value &) noexcept {
     return true;
   }
@@ -30,9 +22,7 @@ struct Value : Evaluatable {
   }
 };
 struct Undefined : /* extends */ auxilia::Monostate,
-                   /* implements */ Evaluatable,
-                   /* implements */ auxilia::Printable<Undefined>,
-                   /* implements */ auxilia::Viewable<Undefined> {
+                   /* implements */ Evaluatable {
   constexpr Undefined() = default;
   constexpr Undefined(const Undefined &) noexcept = default;
   constexpr Undefined(Undefined &&) noexcept = default;
@@ -62,7 +52,7 @@ struct Undefined : /* extends */ auxilia::Monostate,
   }
 };
 struct Number : /* implements */ Value,
-                /* implements */ auxilia::Printable<Number> {
+                /* implements */ auxilia::Printable {
   template <typename... Args> using match = auxilia::match<Args...>;
   using I = long long;
   using F = long double;
@@ -132,7 +122,7 @@ struct Number : /* implements */ Value,
   friend auto operator/(const Number &lhs, const Number &rhs) -> Number {
     using auxilia::as;
     if (rhs == 0)
-      return Number{std::numeric_limits<F>::signaling_NaN()};
+      return Number{std::numeric_limits<F>::infinity()};
     return std::visit(match{[](const I &l, const I &r) {
                               if (l % r == 0)
                                 return Number{l / r};
@@ -147,12 +137,12 @@ struct Number : /* implements */ Value,
   constexpr auto integer() const noexcept -> std::optional<I> {
     if (std::holds_alternative<I>(value))
       return std::make_optional(std::get<I>(value));
-    return {};
+    return std::nullopt;
   }
   constexpr auto floating() const noexcept -> std::optional<F> {
     if (std::holds_alternative<F>(value))
       return std::make_optional(std::get<F>(value));
-    return {};
+    return std::nullopt;
   }
 
 private:
@@ -160,7 +150,7 @@ private:
 };
 
 struct Byte : /* implements */ Value,
-              /* implements */ auxilia::Printable<Byte> {
+              /* implements */ auxilia::Printable {
   using ValueType = std::byte;
   constexpr Byte() = default;
   explicit constexpr Byte(ValueType value) : value(value) {}
@@ -178,7 +168,7 @@ struct Byte : /* implements */ Value,
   ValueType value;
 };
 struct String : /* implements */ Value,
-                /* implements */ auxilia::Printable<String> {
+                /* implements */ auxilia::Printable {
   constexpr String() = default;
   constexpr String(string_type value) : value(std::move(value)) {}
   constexpr ~String() = default;
@@ -202,8 +192,8 @@ struct String : /* implements */ Value,
   string_type value;
 };
 struct Boolean : /* implements */ Value,
-                 /* implements */ auxilia::Printable<Boolean>,
-                 /* implements */ auxilia::Viewable<Boolean> {
+                 /* implements */ auxilia::Printable,
+                 /* implements */ auxilia::Viewable {
   static Boolean make_true() {
     return {true};
   }
@@ -243,8 +233,8 @@ private:
 } inline constexpr True{true}, False{false};
 
 struct Nil : /* implements */ Value,
-             /* implements */ auxilia::Printable<Nil>,
-             /* implements */ auxilia::Viewable<Nil> {
+             /* implements */ auxilia::Printable,
+             /* implements */ auxilia::Viewable {
   constexpr Nil() noexcept = default;
   constexpr Nil(const Nil &) noexcept = default;
   constexpr Nil(Nil &&) noexcept = default;

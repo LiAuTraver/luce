@@ -2,16 +2,23 @@
 
 #include <memory>
 #include <accat/auxilia/auxilia.hpp>
+#include <string>
 
 #include "Token.hpp"
 #include "luce/repl/repl_fwd.hpp"
+namespace accat::luce::repl::evaluation {
+using variant_type =
+    auxilia::Variant<Undefined, Number, Byte, String, Boolean, Nil>;
+using result_type = auxilia::StatusOr<variant_type>;
+} // namespace accat::luce::repl::evaluation
+
 namespace accat::luce::repl::expression {
 struct Visitor;
 
 struct Expr {
   virtual auto
   to_string(const auxilia::FormatPolicy & = auxilia::FormatPolicy::kBrief) const
-      -> auxilia::Printable<Expr>::string_type = 0;
+      -> std::string = 0;
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type = 0;
 
@@ -24,8 +31,7 @@ protected:
 };
 
 struct Undefined : /* extends */ auxilia::Monostate,
-                   /* implements */ Expr,
-                   /* implements */ auxilia::Printable<Undefined> {
+                   /* implements */ Expr {
   token_t token;
   Undefined() = default;
   explicit Undefined(Token token) : token(std::move(token)) {}
@@ -41,7 +47,7 @@ struct Undefined : /* extends */ auxilia::Monostate,
     return os << u.to_string(kBrief);
   }
 };
-struct Literal : Expr, auxilia::Printable<Literal> {
+struct Literal : Expr, auxilia::Printable {
   token_t value;
   Literal() = default;
   explicit Literal(token_t value) : value(std::move(value)) {}
@@ -52,7 +58,7 @@ struct Literal : Expr, auxilia::Printable<Literal> {
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
 };
-struct Variable : Expr, auxilia::Printable<Variable> {
+struct Variable : Expr, auxilia::Printable {
   Variable() = default;
   explicit Variable(token_t name) : name(std::move(name)) {}
   virtual auto to_string(const auxilia::FormatPolicy &policy = kBrief) const
@@ -69,7 +75,7 @@ private:
   token_t name;
 };
 /// @note !, -, *(dereference), &(address-of)
-struct Unary : Expr, auxilia::Printable<Unary> {
+struct Unary : Expr, auxilia::Printable {
   token_t op;
   expr_ptr_t right;
   Unary() = default;
@@ -82,7 +88,7 @@ struct Unary : Expr, auxilia::Printable<Unary> {
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
 };
-struct Binary : Expr, auxilia::Printable<Binary> {
+struct Binary : Expr, auxilia::Printable {
   token_t op;
   expr_ptr_t left;
   expr_ptr_t right;
@@ -99,7 +105,7 @@ struct Binary : Expr, auxilia::Printable<Binary> {
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
 };
-struct Grouping : Expr, auxilia::Printable<Grouping> {
+struct Grouping : Expr, auxilia::Printable {
   expr_ptr_t expression;
   Grouping() = default;
   explicit Grouping(expr_ptr_t expression)
@@ -111,7 +117,7 @@ struct Grouping : Expr, auxilia::Printable<Grouping> {
   virtual auto accept(expression::Visitor &) const
       -> evaluation::result_type override final;
 };
-struct Logical : Expr, auxilia::Printable<Logical> {
+struct Logical : Expr, auxilia::Printable {
   token_t op;
   expr_ptr_t left;
   expr_ptr_t right;

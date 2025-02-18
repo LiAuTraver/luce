@@ -9,11 +9,12 @@
 #include <string>
 
 #include "luce/config.hpp"
-#include "luce/Monitor.hpp"
+#include "luce/repl/repl_fwd.hpp"
+#include "luce/repl/evaluation.hpp"
 #include "luce/repl/ExprVisitor.hpp"
+#include "luce/Monitor.hpp"
 #include "luce/repl/Lexer.hpp"
 #include "luce/repl/Parser.hpp"
-#include "luce/repl/evaluation.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 
 namespace accat::luce {

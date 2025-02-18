@@ -4,6 +4,8 @@
 #include <vector>
 #include <span>
 
+#include <accat/auxilia/auxilia.hpp>
+
 #include "Argument.hpp"
 
 /// @brief forward declaration, reduce compile time
