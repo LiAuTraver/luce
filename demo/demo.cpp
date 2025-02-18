@@ -54,5 +54,14 @@ struct Disassembler {
   }
 };
 int main() {
-  
+  Disassembler disassembler;
+  disassembler.addDecoder(std::make_unique<RV32IDecoder>());
+  auto instr = disassembler.disassemble(0);
+  if (instr) {
+    instr->execute();
+  }
+  else {
+  std::cout << "Unknown instruction. this is intended for this is just a demo" << std::endl;
+  }
+  return 0;
 }

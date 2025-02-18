@@ -19,19 +19,12 @@
 #include "../Word.hpp"
 
 namespace accat::luce::isa::riscv32 {
-struct GeneralPurposeRegisters
-    : auxilia::Printable {
+struct GeneralPurposeRegisters : auxilia::Printable {
 private:
   using enum auxilia::FormatPolicy;
   using self_type = GeneralPurposeRegisters;
 
 public:
-  // union register_t {
-  //   constexpr register_t() noexcept : num{0ull} {}
-  //   uint32_t num{};
-  //   std::array<std::byte, 4> bytes;
-  //   std::bitset<32> bits;
-  // };
   using register_t = Word;
   using registers_t = std::array<register_t, general_purpose_register_count>;
   using iSpan = auxilia::incontiguous_span<register_t>;
@@ -47,12 +40,7 @@ public:
     return *this;
   }
 
-  constexpr register_t /* not a reference */ zero() const noexcept {
-    dbg_block
-    {
-      // contract_assert(register_t{}.num_ == registers.zero_reg,
-      //                 "zero register is not zero");
-    };
+  constexpr const register_t &zero() const noexcept {
     return registers.zero_reg;
   }
   constexpr register_t &ra(this auto &&self) noexcept {

@@ -9,6 +9,8 @@
 #include <type_traits>
 
 #include "luce/cpu/cpu.hpp"
+
+#include "Support/isa/IDisassembler.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/Support/isa/architecture.hpp"
 
@@ -20,6 +22,7 @@ using enum CPU::State;
 
 CPU::CentralProcessingUnit(Mediator *parent) : Component(parent), mmu_(this) {}
 
+CentralProcessingUnit::~CentralProcessingUnit() = default;
 auto CPU::detach_context() noexcept -> CPU & {
   if (context_.use_count() == 1) {
     spdlog::warn("Seems like the context is in a broken state, destroying...");
@@ -44,11 +47,11 @@ Status CPU::execute_shuttle() {
   return res;
 }
 Status CPU::shuttle() {
-  auto maybe_bytes = fetch(context_->program_counter);
+  auto maybe_bytes = fetch(context_->program_counter.num());
   if (!maybe_bytes) {
     return maybe_bytes.as_status();
   }
-  context_->program_counter += sizeof(instruction_t);
+  context_->program_counter.num() += sizeof(instruction_t);
   auto bytes = std::move(maybe_bytes).value();
   auto &orig_bytes = context_->instruction_register.bytes();
   for (const auto i : std::views::iota(0ull, sizeof(instruction_t))) {
@@ -68,15 +71,16 @@ Status CPU::decode_and_execute() {
                          isa::signal::trap)) {
     this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
   }
-  auto inst = isa::instruction::Factory::createInstruction(
-      context_->instruction_register.num());
+  auto inst = static_cast<Monitor *>(this->mediator)->disassembler()->disassemble(context_->instruction_register.num());
+  // auto inst = isa::instruction::Factory::createInstruction(
+  //     context_->instruction_register.num());
   contract_assert(inst,
                   "Failed to decode the instruction."
                   " This assert is designed for debugging purposes. "
                   "Currently, we are not handling this case.");
   return execute(inst.get());
 }
-auxilia::Status CentralProcessingUnit::execute(isa::Instruction *inst) {
+auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   precondition(inst, "Instruction is nullptr");
   inst->execute(this);
   return {};

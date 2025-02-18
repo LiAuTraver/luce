@@ -10,6 +10,18 @@
 #include "accat/auxilia/defines.hpp"
 #include "accat/auxilia/details/format.hpp"
 namespace accat::luce::isa {
+/// @brief A class representing a word.
+/// @remark A few things to be clarified:
+/// - Word size is usually the size a general purpose register can hold.
+/// - Word size is usually the size of the largest addressable unit.
+/// - Word size has nothing to do with the size of the instruction,
+///       but as for riscv32, it is equal to the size of the instruction;
+///           as for riscv64, it is 64 bits whilst the instruction size is 32
+///           bits.
+///       exception: rv32C Compressed Instruction Set has 16-bit instructions;
+///                  riscv128 has 128-bit instructions.
+/// @note in the current implementation, we assume word size is larger than
+///       the size of the instruction. (which is not true, especially for x86)
 struct AC_EMPTY_BASES AC_NOVTABLE Word : auxilia::Printable {
 protected:
   using num_type = instruction_size_t;
@@ -25,7 +37,7 @@ protected:
 
 private:
   union {
-    num_type num_{};
+    num_type num_ = 0ull;
     bytes_type bytes_;
     bits_type bits_;
   };
@@ -42,9 +54,9 @@ public:
     return self.bytes_;
   }
   auto to_string(auxilia::FormatPolicy policy = kBrief) const noexcept {
-    if (policy == kBrief)
+    if (policy == kBrief) // 0x00000000 (big-endian)
       return fmt::format("0x{:08x}", num());
-    else if (policy == kDetailed)
+    else if (policy == kDetailed) // 0x00 0x00 0x00 0x00 
       return fmt::format("{:#04x}", fmt::join(bytes(), " "));
     else
       return fmt::format("{}", bits());
@@ -52,13 +64,18 @@ public:
   auto data(this auto &&self) noexcept {
     return self.bytes_.data();
   }
+  [[clang::reinitializes]] auto reset(const num_type num = 0ull) noexcept {
+    num_ = num;
+    return *this;
+  }
 
 public:
-  Word() noexcept = default;
-  explicit Word(num_type num) noexcept : num_(num) {}
-  explicit Word(std::array<std::byte, instruction_size_bytes> bytes) noexcept
+  constexpr Word() noexcept = default;
+  constexpr explicit Word(num_type num) noexcept : num_(num) {}
+  constexpr explicit Word(
+      std::array<std::byte, instruction_size_bytes> bytes) noexcept
       : bytes_(bytes) {}
-  explicit Word(std::bitset<instruction_size_bytes * 8> bits) noexcept
+  constexpr explicit Word(std::bitset<instruction_size_bytes * 8> bits) noexcept
       : bits_(bits) {}
   Word(const bytes_view_type bytes) noexcept {
     std::ranges::copy(bytes, bytes_.begin());

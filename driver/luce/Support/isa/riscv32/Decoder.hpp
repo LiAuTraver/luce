@@ -1,25 +1,19 @@
-#pragma once
+// rewrite this using registry-pattern
 #include "Instruction.hpp"
-
-namespace accat::luce::isa::riscv32::instruction {
-class Factory : public Word,
+#include "../IDecoder.hpp"
+#include "../IDisassembler.hpp"
+namespace accat::luce::isa::riscv32::instruction::base {
+class DecodeImpl : public Word,
                 mixin::opcode0To6Common,
                 mixin::rd7To12Common,
                 mixin::funct3nd12To15Common,
                 mixin::rs1st15To20Common,
                 mixin::rs2nd20To25Common {
-  using inst_t = Instruction;
+  using inst_t = IInstruction;
   using inst_ptr_t = std::unique_ptr<inst_t>;
-
+friend class Decoder;
 protected:
   using Word::Word;
-
-public:
-  static inst_ptr_t createInstruction(num_type);
-  static inst_ptr_t createInstruction(bytes_type);
-  static inst_ptr_t createInstruction(bits_type);
-
-protected:
   inst_ptr_t decode() const;
   inst_ptr_t decodeBaseRType() const;
   inst_ptr_t decodeBaseIType() const;
@@ -32,4 +26,15 @@ protected:
   inst_ptr_t decodeAuipc() const;
   inst_ptr_t decodeJal() const;
 };
-} // namespace accat::luce::isa::riscv32::instruction
+class Decoder : public IDecoder{
+public:
+  virtual auto decode(uint32_t) -> std::unique_ptr<IInstruction> override;
+  virtual ~Decoder() override;
+};
+} // namespace accat::luce::isa::riscv32::instruction::base
+namespace accat::luce::isa::riscv32 {
+class Disassembler : public IDisassembler {
+public:
+  virtual auto initializeDefault() -> IDisassembler& override;
+};
+} // namespace accat::luce::isa::riscv32

@@ -1,21 +1,10 @@
-#include "luce/Support/isa/architecture.hpp"
+#include "luce/Support/isa/riscv32/Decoder.hpp"
+#include "Support/isa/IDisassembler.hpp"
+#include "accat/auxilia/details/macros.hpp"
 
-#include "luce/Support/isa/riscv32/Factory.hpp"
-namespace accat::luce::isa::riscv32::instruction {
-#pragma region Decode
-auto Factory::createInstruction(const num_type code) -> inst_ptr_t {
-  Factory factory(code);
-  return factory.decode();
-}
-auto Factory::createInstruction(const bytes_type code) -> inst_ptr_t {
-  Factory factory(code);
-  return factory.decode();
-}
-auto Factory::createInstruction(const bits_type code) -> inst_ptr_t {
-  Factory factory(code);
-  return factory.decode();
-}
-auto Factory::decode() const -> inst_ptr_t {
+namespace accat::luce::isa::riscv32::instruction::base {
+#pragma region DecodeImpl
+auto DecodeImpl::decode() const -> inst_ptr_t {
   switch (opcode()) {
   case 0b0110011:
     return decodeBaseRType();
@@ -40,7 +29,7 @@ auto Factory::decode() const -> inst_ptr_t {
   }
   return nullptr;
 }
-auto Factory::decodeBaseRType() const -> inst_ptr_t {
+auto DecodeImpl::decodeBaseRType() const -> inst_ptr_t {
   precondition(opcode() == 0b0110011, "Not R-type");
   const auto f3 = funct3();
   const auto f7 = extractBits<25, 32>(num());
@@ -68,7 +57,7 @@ auto Factory::decodeBaseRType() const -> inst_ptr_t {
     return nullptr;
   }
 }
-auto Factory::decodeBaseIType() const -> inst_ptr_t {
+auto DecodeImpl::decodeBaseIType() const -> inst_ptr_t {
   const auto imm5To11 = extractBits<25, 32>(num());
   const auto f3 = funct3();
   if (f3 == 0x0) {
@@ -93,7 +82,7 @@ auto Factory::decodeBaseIType() const -> inst_ptr_t {
     return nullptr;
   }
 }
-Factory::inst_ptr_t Factory::decodeLoadIType() const {
+DecodeImpl::inst_ptr_t DecodeImpl::decodeLoadIType() const {
   switch (funct3()) {
   case 0x0:
     return std::make_unique<Lb>(num());
@@ -108,13 +97,13 @@ Factory::inst_ptr_t Factory::decodeLoadIType() const {
   }
   return nullptr;
 }
-Factory::inst_ptr_t Factory::decodeJalr() const {
+DecodeImpl::inst_ptr_t DecodeImpl::decodeJalr() const {
   precondition(opcode() == 0b1100111, "Not a JALR type");
   if (funct3() != 0x0)
     return nullptr;
   return std::make_unique<Jalr>(num());
 }
-Factory::inst_ptr_t Factory::decodeSpecialCategory() const {
+DecodeImpl::inst_ptr_t DecodeImpl::decodeSpecialCategory() const {
   precondition(opcode() == 0b1110011, "Not a system type");
   if (funct3() != 0x0)
     return nullptr;
@@ -128,7 +117,7 @@ Factory::inst_ptr_t Factory::decodeSpecialCategory() const {
     return nullptr;
   }
 }
-auto Factory::decodeSType() const -> inst_ptr_t {
+auto DecodeImpl::decodeSType() const -> inst_ptr_t {
   precondition(opcode() == 0b0100011, "Not a S-type");
 
   switch (funct3()) {
@@ -141,7 +130,7 @@ auto Factory::decodeSType() const -> inst_ptr_t {
   }
   return nullptr;
 }
-auto Factory::decodeBType() const -> inst_ptr_t {
+auto DecodeImpl::decodeBType() const -> inst_ptr_t {
   precondition(opcode() == 0b1100011, "Not a B-type");
 
   switch (funct3()) {
@@ -160,17 +149,34 @@ auto Factory::decodeBType() const -> inst_ptr_t {
   }
   return nullptr;
 }
-auto Factory::decodeLui() const -> inst_ptr_t {
+auto DecodeImpl::decodeLui() const -> inst_ptr_t {
   precondition(opcode() == 0b0110111, "Not a LUI type");
   return std::make_unique<Lui>(num());
 }
-auto Factory::decodeAuipc() const -> inst_ptr_t {
+auto DecodeImpl::decodeAuipc() const -> inst_ptr_t {
   precondition(opcode() == 0b0010111, "Not an AUIPC type");
   return std::make_unique<Auipc>(num());
 }
-auto Factory::decodeJal() const -> inst_ptr_t {
+auto DecodeImpl::decodeJal() const -> inst_ptr_t {
   precondition(opcode() == 0b1101111, "Not a JAL type");
   return std::make_unique<Jal>(num());
 }
-#pragma endregion Decode
-} // namespace accat::luce::isa::riscv32::instruction
+#pragma endregion DecodeImpl
+
+#pragma region Decoder
+auto Decoder::decode(uint32_t inst) -> std::unique_ptr<IInstruction> {
+  DecodeImpl decoder(inst);
+  return decoder.decode();
+}
+Decoder::~Decoder() = default;
+} // namespace accat::luce::isa::riscv32::instruction::base
+namespace accat::luce::isa::riscv32 {
+auto Disassembler::initializeDefault() -> IDisassembler & {
+  defer {
+    spdlog::info(
+        "Successfully initialized rv32i base integer instruction decoder.");
+  };
+  return this->addDecoder(std::make_unique<instruction::base::Decoder>());
+}
+} // namespace accat::luce::isa::riscv32
+#pragma endregion Decoder

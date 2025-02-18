@@ -15,6 +15,8 @@
 #include <accat/auxilia/auxilia.hpp>
 
 #include "luce/Monitor.hpp"
+
+#include "Support/isa/riscv32/Decoder.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/utils/Pattern.hpp"
@@ -33,6 +35,12 @@ using auxilia::Status;
 using auxilia::StatusOr;
 using fmt::fg;
 
+Monitor::Monitor() : memory_(this), bus(this), cpus(this), debugger_(this) {
+  // default just use riscv32
+  disassembler_ = std::make_shared<isa::riscv32::Disassembler>();
+  disassembler_->initializeDefault();
+}
+Monitor::~Monitor() = default;
 Status
 Monitor::notify(Component *, Event event, std::function<void(void)> callback) {
   switch (event) {

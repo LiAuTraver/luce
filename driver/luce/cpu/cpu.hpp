@@ -16,23 +16,38 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <fmt/ranges.h>
 
 namespace accat::luce {
+namespace isa {
+class IDisassembler;
+}
 class Monitor;
 }
-namespace accat::luce::isa::riscv32 {
-class Instruction;
+namespace accat::luce::isa {
+class IInstruction;
 }
 namespace accat::luce {
-class CentralProcessingUnit : public Component {
-  std::shared_ptr<Context> context_;
-  std::optional<pid_t> task_id_;
-  MemoryManagementUnit mmu_;
+class Icpu {
+protected:
   using vaddr_t = MemoryManagementUnit::vaddr_t;
   using paddr_t = MemoryManagementUnit::paddr_t;
 
+public:
+  virtual auto fetch(vaddr_t) const
+      -> auxilia::StatusOr<std::span<const std::byte>> = 0;
+  virtual auto write(vaddr_t, const std::span<const std::byte>)
+      -> auxilia::Status = 0;
+  virtual auto pc() noexcept -> isa::Word & = 0;
+  virtual auto gpr() noexcept -> isa::GeneralPurposeRegisters & = 0;
+  virtual auto context() noexcept -> std::shared_ptr<Context> = 0;
+};
+class CentralProcessingUnit : public Component, public Icpu {
+  std::shared_ptr<Context> context_;
+  std::optional<pid_t> task_id_;
+  MemoryManagementUnit mmu_;
   Timer cpu_timer_;
 
 public:
@@ -55,7 +70,7 @@ public:
   auto operator=(const CentralProcessingUnit &) = delete;
   CentralProcessingUnit(CentralProcessingUnit &&) noexcept = default;
   CentralProcessingUnit &operator=(CentralProcessingUnit &&) noexcept = default;
-
+  virtual ~CentralProcessingUnit() override;
 public:
   auto &switch_context(std::shared_ptr<Context> context,
                        const pid_t taskid) noexcept {
@@ -70,16 +85,24 @@ public:
   }
   auto detach_context() noexcept -> CentralProcessingUnit &;
   auxilia::Status execute_shuttle();
-  auto context() noexcept -> decltype(auto) {
+  auto context() noexcept -> std::shared_ptr<Context> override {
     return context_;
   }
-  auto fetch(vaddr_t) const -> auxilia::StatusOr<std::span<const std::byte>>;
-  auto write(vaddr_t, const std::span<const std::byte>) -> auxilia::Status;
+  auto fetch(vaddr_t) const
+      -> auxilia::StatusOr<std::span<const std::byte>> override;
+  auto pc() noexcept -> isa::Word & override {
+    return context_->program_counter;
+  }
+  auto write(vaddr_t, const std::span<const std::byte>)
+      -> auxilia::Status override;
+  auto gpr() noexcept -> isa::GeneralPurposeRegisters & override {
+    return *context_->general_purpose_registers();
+  }
 
 private:
   auxilia::Status shuttle();
   auxilia::Status decode_and_execute();
-  auxilia::Status execute(isa::Instruction *);
+  auxilia::Status execute(isa::IInstruction *);
 
 public:
   auto task_id() const noexcept {

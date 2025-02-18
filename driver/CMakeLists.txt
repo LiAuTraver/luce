@@ -9,7 +9,7 @@ include(llvm)
 
 include_directories(luce)
 add_library(driver OBJECT)
-file(GLOB_RECURSE LUCE_DRIVER_SOURCES "src/luce/*.cpp")
+file(GLOB_RECURSE LUCE_DRIVER_SOURCES "src/*.cpp")
 file(GLOB_RECURSE LUCE_HEADER_SOURCES "luce/*.hpp")
 
 target_compile_features(driver PUBLIC cxx_std_23)

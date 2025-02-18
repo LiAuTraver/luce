@@ -19,8 +19,12 @@
 #include "SystemBus.hpp"
 #include "Task.hpp"
 #include "cpu/cpu.hpp"
+
 #include "luce/Support/isa/architecture.hpp"
 
+namespace accat::luce::isa {
+class IDisassembler;
+}
 namespace accat::luce {
 namespace message::repl {
 using namespace std::literals;
@@ -59,17 +63,20 @@ class Monitor : public Mediator {
   Task process;
   CPUs cpus;
   Timer timer;
-  // Disassembler disassembler;
+  std::shared_ptr<isa::IDisassembler> disassembler_;
   repl::Debugger debugger_;
 
 public:
-  Monitor() : memory_(this), bus(this), cpus(this), debugger_(this) {}
-
+  Monitor();
+  virtual ~Monitor() override;
   auto &debugger(this auto &&self) noexcept {
     return self.debugger_;
   }
   auto &memory(this auto &&self) noexcept {
     return self.memory_;
+  }
+  auto &disassembler(this auto &&self) noexcept {
+    return self.disassembler_;
   }
 
 public:

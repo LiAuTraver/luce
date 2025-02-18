@@ -1,12 +1,12 @@
 #pragma once
 
-
 #include <spdlog/spdlog.h>
 #include <accat/auxilia/auxilia.hpp>
 
+#include "Support/isa/Word.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/Support/isa/architecture.hpp"
-#include "luce/Support/isa/riscv32/riscv32.hpp"
+#include "luce/Support/isa/riscv32/Register.hpp"
 
 namespace accat::luce {
 enum class [[clang::flag_enum]] Permission : uint8_t {
@@ -36,9 +36,9 @@ public:
 
 public:
   [[clang::reinitializes]] auto &restart() {
-    program_counter = 0x0;
-    stack_pointer = 0x0;
-    instruction_register = {};
+    program_counter.reset();
+    stack_pointer.reset();
+    instruction_register.reset();
     memory_bounds = {};
     gpr_.reset();
     privilege_level = PrivilegeLevel::kUser;
@@ -46,9 +46,9 @@ public:
   }
 
 public:
-  vaddr_t program_counter = 0x0;
-  vaddr_t stack_pointer = 0x0;
-  register_t instruction_register = {};
+  isa::Word program_counter;
+  isa::Word stack_pointer;
+  isa::Word instruction_register;
   std::pair<vaddr_t, vaddr_t> memory_bounds = {};
 
 private:
@@ -155,7 +155,7 @@ public:
   void terminate() {}
   auto &restart() {
     context_->restart();
-    context_->program_counter =
+    context_->program_counter.num() =
         address_space_.static_regions.text_segment.start;
     state_ = State::kNew;
     time_slice_ = 0;

@@ -10,28 +10,7 @@
 #include <span>
 #include <type_traits>
 #include "../Word.hpp"
-namespace accat::luce {
-class CentralProcessingUnit;
-}
-namespace accat::luce::isa::riscv32 {
-struct Instruction : Word {
-
-public:
-  Instruction() noexcept = default;
-  explicit Instruction(num_type num) noexcept : Word(num) {}
-  explicit Instruction(bytes_type bytes) noexcept : Word(bytes) {}
-  explicit Instruction(bits_type bits) noexcept : Word(bits) {}
-  Instruction(const std::span<const std::byte, 4> bytes) noexcept
-      : Word(bytes) {}
-  Instruction(const Instruction &) = delete;
-  Instruction &operator=(const Instruction &) = delete;
-  Instruction(Instruction &&) = default;
-  Instruction &operator=(Instruction &&) = default;
-  virtual ~Instruction() = default;
-  virtual void execute(CentralProcessingUnit *) const = 0;
-};
-
-} // namespace accat::luce::isa::riscv32
+#include "../IInstruction.hpp"
 namespace accat::luce::isa::riscv32::instruction::mixin {
 
 // we choose not to use CRTP but deducing this.
@@ -141,51 +120,52 @@ AC_MIXIN_DECLARE_END
 namespace accat::luce::isa::riscv32::instruction {
 #pragma push_macro("ACOE")
 #define ACOE()                                                                 \
-  using base_type = Instruction;                                               \
+  using base_type = IInstruction;                                              \
   using base_type::base_type;                                                  \
-  virtual void execute(CentralProcessingUnit *) const override
+  virtual void execute(Icpu *) const override
 // clang-format off
-struct Add    : Instruction, mixin::RFormat { ACOE(); };
-struct Sub    : Instruction, mixin::RFormat { ACOE(); };
-struct Xor    : Instruction, mixin::RFormat { ACOE(); };
-struct Or     : Instruction, mixin::RFormat { ACOE(); };
-struct And    : Instruction, mixin::RFormat { ACOE(); };
-struct Sll    : Instruction, mixin::RFormat { ACOE(); };
-struct Srl    : Instruction, mixin::RFormat { ACOE(); };
-struct Sra    : Instruction, mixin::RFormat { ACOE(); };
-struct Slt    : Instruction, mixin::RFormat { ACOE(); };
-struct Sltu   : Instruction, mixin::RFormat { ACOE(); };
-struct Addi   : Instruction, mixin::IFormat { ACOE(); };
-struct Xori   : Instruction, mixin::IFormat { ACOE(); };
-struct Ori    : Instruction, mixin::IFormat { ACOE(); };
-struct Andi   : Instruction, mixin::IFormat { ACOE(); };
-struct Slli   : Instruction, mixin::IFormat { ACOE(); };
-struct Srli   : Instruction, mixin::IFormat { ACOE(); };
-struct Srai   : Instruction, mixin::IFormat { ACOE(); };
-struct Slti   : Instruction, mixin::IFormat { ACOE(); };
-struct Sltiu  : Instruction, mixin::IFormat { ACOE(); };
-struct Lb     : Instruction, mixin::IFormat { ACOE(); };
-struct Lh     : Instruction, mixin::IFormat { ACOE(); };
-struct Lw     : Instruction, mixin::IFormat { ACOE(); };
-struct Lbu    : Instruction, mixin::IFormat { ACOE(); };
-struct Lhu    : Instruction, mixin::IFormat { ACOE(); };
-struct Sb     : Instruction, mixin::SFormat { ACOE(); };
-struct Sh     : Instruction, mixin::SFormat { ACOE(); };
-struct Sw     : Instruction, mixin::SFormat { ACOE(); };
-struct Beq    : Instruction, mixin::BFormat { ACOE(); };
-struct Bne    : Instruction, mixin::BFormat { ACOE(); };
-struct Blt    : Instruction, mixin::BFormat { ACOE(); };
-struct Bge    : Instruction, mixin::BFormat { ACOE(); };
-struct Bltu   : Instruction, mixin::BFormat { ACOE(); };
-struct Bgeu   : Instruction, mixin::BFormat { ACOE(); };
-struct Jal    : Instruction, mixin::JFormat { ACOE(); };
-struct Jalr   : Instruction, mixin::IFormat { ACOE(); };
-struct Lui    : Instruction, mixin::UFormat { ACOE(); };
-struct Auipc  : Instruction, mixin::UFormat { ACOE(); };
-struct Ecall  : Instruction, mixin::IFormat { ACOE(); };
-struct Ebreak : Instruction, mixin::IFormat { ACOE(); };
+struct Add    : IInstruction, mixin::RFormat { ACOE(); };
+struct Sub    : IInstruction, mixin::RFormat { ACOE(); };
+struct Xor    : IInstruction, mixin::RFormat { ACOE(); };
+struct Or     : IInstruction, mixin::RFormat { ACOE(); };
+struct And    : IInstruction, mixin::RFormat { ACOE(); };
+struct Sll    : IInstruction, mixin::RFormat { ACOE(); };
+struct Srl    : IInstruction, mixin::RFormat { ACOE(); };
+struct Sra    : IInstruction, mixin::RFormat { ACOE(); };
+struct Slt    : IInstruction, mixin::RFormat { ACOE(); };
+struct Sltu   : IInstruction, mixin::RFormat { ACOE(); };
+struct Addi   : IInstruction, mixin::IFormat { ACOE(); };
+struct Xori   : IInstruction, mixin::IFormat { ACOE(); };
+struct Ori    : IInstruction, mixin::IFormat { ACOE(); };
+struct Andi   : IInstruction, mixin::IFormat { ACOE(); };
+struct Slli   : IInstruction, mixin::IFormat { ACOE(); };
+struct Srli   : IInstruction, mixin::IFormat { ACOE(); };
+struct Srai   : IInstruction, mixin::IFormat { ACOE(); };
+struct Slti   : IInstruction, mixin::IFormat { ACOE(); };
+struct Sltiu  : IInstruction, mixin::IFormat { ACOE(); };
+struct Lb     : IInstruction, mixin::IFormat { ACOE(); };
+struct Lh     : IInstruction, mixin::IFormat { ACOE(); };
+struct Lw     : IInstruction, mixin::IFormat { ACOE(); };
+struct Lbu    : IInstruction, mixin::IFormat { ACOE(); };
+struct Lhu    : IInstruction, mixin::IFormat { ACOE(); };
+struct Sb     : IInstruction, mixin::SFormat { ACOE(); };
+struct Sh     : IInstruction, mixin::SFormat { ACOE(); };
+struct Sw     : IInstruction, mixin::SFormat { ACOE(); };
+struct Beq    : IInstruction, mixin::BFormat { ACOE(); };
+struct Bne    : IInstruction, mixin::BFormat { ACOE(); };
+struct Blt    : IInstruction, mixin::BFormat { ACOE(); };
+struct Bge    : IInstruction, mixin::BFormat { ACOE(); };
+struct Bltu   : IInstruction, mixin::BFormat { ACOE(); };
+struct Bgeu   : IInstruction, mixin::BFormat { ACOE(); };
+struct Jal    : IInstruction, mixin::JFormat { ACOE(); };
+struct Jalr   : IInstruction, mixin::IFormat { ACOE(); };
+struct Lui    : IInstruction, mixin::UFormat { ACOE(); };
+struct Auipc  : IInstruction, mixin::UFormat { ACOE(); };
+struct Ecall  : IInstruction, mixin::IFormat { ACOE(); };
+struct Ebreak : IInstruction, mixin::IFormat { ACOE(); };
 // clang-format on
 #undef ACOE
 #pragma pop_macro("ACOE")
 } // namespace accat::luce::isa::riscv32::instruction
+
 
