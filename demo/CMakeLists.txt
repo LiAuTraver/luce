@@ -15,8 +15,6 @@ target_link_libraries(demo PUBLIC
 target_precompile_headers(demo PUBLIC
   ${LUCE_EXTERNAL_DEPS_PCH}
 )
-add_llvm_deps_for(demo)
-
 add_executable(demo2
   demo2.cpp
 )
@@ -28,16 +26,14 @@ target_link_libraries(demo2 PUBLIC
 target_precompile_headers(demo2 PUBLIC
   ${LUCE_EXTERNAL_DEPS_PCH}
 )
-# copy_dlls(demo2 Support.isa)
-
-add_executable(demo3
-  demo3.cpp
-)
-target_link_libraries(demo3 PUBLIC
-  external_deps
-)
-target_precompile_headers(demo3 PUBLIC
-  ${LUCE_EXTERNAL_DEPS_PCH}
-)
+# add_executable(demo3
+#   demo3.cpp
+# )
+# target_link_libraries(demo3 PUBLIC
+#   external_deps
+# )
+# target_precompile_headers(demo3 PUBLIC
+#   ${LUCE_EXTERNAL_DEPS_PCH}
+# )
 
 add_folder(Demo)

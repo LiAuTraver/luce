@@ -16,7 +16,7 @@
 
 #include "luce/Monitor.hpp"
 
-#include "Support/isa/riscv32/Decoder.hpp"
+#include "luce/Support/isa/riscv32/Decoder.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/utils/Pattern.hpp"

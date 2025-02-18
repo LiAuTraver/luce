@@ -1,5 +1,5 @@
 #include "luce/Support/isa/riscv32/Decoder.hpp"
-#include "Support/isa/IDisassembler.hpp"
+#include "luce/Support/isa/IDisassembler.hpp"
 #include "accat/auxilia/details/macros.hpp"
 
 namespace accat::luce::isa::riscv32::instruction::base {

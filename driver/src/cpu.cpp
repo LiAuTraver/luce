@@ -1,4 +1,4 @@
-﻿#include "Support/isa/IInstruction.hpp"
+﻿#include "luce/Support/isa/IInstruction.hpp"
 #include "accat/auxilia/details/macros.hpp"
 #include "deps.hh"
 
@@ -12,7 +12,7 @@
 
 #include "luce/cpu/cpu.hpp"
 
-#include "Support/isa/IDisassembler.hpp"
+#include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/Support/isa/architecture.hpp"
 

@@ -490,6 +490,8 @@ FodyWeavers.xsd
 /.ijwb/
 /.aswb/
 /.clwb/
+# bazel dep symlinks
+external/
 
 ### Gradle template
 .gradle

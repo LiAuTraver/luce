@@ -3,7 +3,6 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
-#include "cpu/cpu.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/Support/utils/Timer.hpp"
 #include "accat/auxilia/details/Status.hpp"
@@ -11,7 +10,7 @@
 #include "luce/Task.hpp"
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/Support/isa/Icpu.hpp"
-#include "mmu.hpp"
+#include "luce/cpu/mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/macros.hpp>
 #include <array>

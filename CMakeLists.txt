@@ -3,18 +3,22 @@ cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 project(luce-project
   LANGUAGES C CXX
   VERSION 0.1.0
-  DESCRIPTION "A simple riscv64 emulator and its assets"
+  DESCRIPTION "A simple riscv32 emulator and its assets"
 )
 
 option(AC_CPP_DEBUG "set the environment variable AC_CPP_DEBUG to enable debug mode" OFF)
-option(LUCE_USE_LLVM "Use LLVM as the backend" OFF)
+option(LUCE_USE_LLVM "Use LLVM as the backend." OFF)
+
+if(LUCE_USE_LLVM)
+  message(FATAL_ERROR "I dropped the corresponding code of it, so this option does not work now.")
+endif()
 
 set(LUCE_PROJECT_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${LUCE_PROJECT_ROOT_DIR}/cmake")
 
 # module does NOT and with .cmake although the file is a cmake file
 # https://stackoverflow.com/questions/59326450/cmake-ignoring-cmake-module-path
-include(prelude) 
+include(prelude)
 include(folders)
 
 # if source dir is the same as project root dir,enable testing

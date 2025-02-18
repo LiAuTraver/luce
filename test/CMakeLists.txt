@@ -32,9 +32,6 @@ function(create_test_executable test_name)
     test_deps
   )
   gtest_discover_tests(${test_name})
-
-  # add_llvm_deps_for(${test_name})
-  # copy_dlls(${test_name} Support.isa)
 endfunction(create_test_executable)
 
 create_test_executable(endian.test endian.test.cpp)
