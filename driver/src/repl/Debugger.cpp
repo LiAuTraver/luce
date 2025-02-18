@@ -1,13 +1,5 @@
 #include "deps.hh"
 
-#include <fmt/color.h>
-#include <spdlog/spdlog.h>
-#include <algorithm>
-#include <iterator>
-#include <ranges>
-#include <syncstream>
-#include <utility>
-
 #include "luce/repl/ExprVisitor.hpp"
 #include "luce/repl/Debugger.hpp"
 #include "luce/repl/Lexer.hpp"

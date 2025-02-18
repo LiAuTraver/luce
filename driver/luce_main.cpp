@@ -1,5 +1,3 @@
-#include "deps.hh"
-
 #include "luce/config.hpp"
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/MainMemory.hpp"

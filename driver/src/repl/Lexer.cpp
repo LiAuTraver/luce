@@ -1,12 +1,5 @@
 #include "deps.hh"
 
-#include <algorithm>
-#include <charconv>
-#include <cstddef>
-#include <locale>
-#include <utility>
-#include <spdlog/spdlog.h>
-
 #include "luce/config.hpp"
 #include "luce/repl/Lexer.hpp"
 

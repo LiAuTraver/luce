@@ -1,8 +1,5 @@
 #include "deps.hh"
 
-#include <cstddef>
-#include <functional>
-
 #include "luce/MainMemory.hpp"
 
 namespace accat::luce {

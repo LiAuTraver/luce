@@ -1,17 +1,8 @@
-﻿#include "luce/Support/isa/IInstruction.hpp"
-#include "accat/auxilia/details/macros.hpp"
-#include "deps.hh"
+﻿#include "deps.hh"
 
-#include <fmt/ranges.h>
-#include <spdlog/spdlog.h>
-#include <algorithm>
-#include <cstddef>
-#include <ranges>
-#include <span>
-#include <type_traits>
 
 #include "luce/cpu/cpu.hpp"
-
+#include "luce/Support/isa/IInstruction.hpp"
 #include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Monitor.hpp"
 #include "luce/Support/isa/architecture.hpp"

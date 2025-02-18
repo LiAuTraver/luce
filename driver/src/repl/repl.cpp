@@ -1,13 +1,5 @@
 #include "deps.hh"
 
-#include <fmt/ostream.h>
-#include <spdlog/spdlog.h>
-#include <algorithm>
-#include <charconv>
-#include <iterator>
-#include <ranges>
-#include <string>
-
 #include "luce/config.hpp"
 #include "luce/repl/repl_fwd.hpp"
 #include "luce/repl/evaluation.hpp"

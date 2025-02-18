@@ -1,13 +1,5 @@
 #include "deps.hh"
 
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
-#include <charconv>
-#include <string>
-#include <system_error>
-#include <utility>
-#include <variant>
-
 // order matters here
 #include "luce/repl/evaluation.hpp"
 #include <accat/auxilia/auxilia.hpp>

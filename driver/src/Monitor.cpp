@@ -1,21 +1,8 @@
 ﻿#include "deps.hh"
 
-#include <fmt/color.h>
-#include <fmt/xchar.h>
-#include <spdlog/spdlog.h>
-#include <functional>
-#include <iostream>
-#include <ostream>
-#include <ranges>
-#include <stacktrace>
-#include <string>
-#include <syncstream>
-#include <utility>
-
 #include <accat/auxilia/auxilia.hpp>
 
 #include "luce/Monitor.hpp"
-
 #include "luce/Support/isa/riscv32/Decoder.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
@@ -43,14 +30,15 @@ Monitor::Monitor() : memory_(this), bus(this), cpus(this), debugger_(this) {
 Monitor::~Monitor() = default;
 Status
 Monitor::notify(Component *, Event event, std::function<void(void)> callback) {
+  defer {
+    if (callback)
+      callback();
+  };
   switch (event) {
   case kNone:
     spdlog::warn("nothing to do");
     break;
   case kTaskFinished: {
-    defer {
-      callback(); // cpu detaches context
-    };
     spdlog::info(
         "Hit good ol' {trapBytes:x}, program finished!",
         "trapBytes"_a = fmt::join(
@@ -66,8 +54,8 @@ Monitor::notify(Component *, Event event, std::function<void(void)> callback) {
     } else {
       spdlog::info("Restarting task");
       process.restart();
-      cpus.attach_context(process.context(), process.id());
     }
+    cpus.attach_context(process.context(), process.id());
     break;
   }
   case kPrintWatchPoint:
@@ -138,8 +126,7 @@ Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   return {};
 }
 Status Monitor::execute_n(const size_t steps) {
-  if (process.state == Task::State::kPaused ||
-      process.state == Task::State::kNew) {
+  if (process.state == Task::State::kNew) {
     process.state = Task::State::kRunning;
   } else if (process.state == Task::State::kTerminated) {
     spdlog::info("Program has terminated. Press `r` to restart.");

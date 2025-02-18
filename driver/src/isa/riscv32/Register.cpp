@@ -1,9 +1,8 @@
-#include <cstddef>
-#include <span>
+
 #include "accat/auxilia/details/format.hpp"
+#include "accat/auxilia/details/views.hpp"
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/Support/isa/riscv32/Register.hpp"
-#include "accat/auxilia/details/views.hpp"
 namespace accat::luce::isa::riscv32 {
 auto GeneralPurposeRegisters::to_string(
     const auxilia::FormatPolicy policy) const -> string_type {
