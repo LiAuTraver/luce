@@ -19,7 +19,7 @@ if(CXX_FLAGS_STYLES_MSVC)
     /JMC # just my code debugging
     /wd4834 # discarding return value of function with 'nodiscard' attribute
     /analyze- # don't run analysis when compiling (too slow)
-    /Zi /Od /Ob0 /Oy-
+    /Zi /Od /Oy-
     /GR # <- rtti (actually in my build i am not using rtti)
     /fsanitize=address 
     # /fsanitize=fuzzer

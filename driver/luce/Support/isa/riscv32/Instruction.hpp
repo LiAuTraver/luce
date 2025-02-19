@@ -11,6 +11,7 @@
 #include <type_traits>
 #include "../Word.hpp"
 #include "../IInstruction.hpp"
+#include "Support/isa/constants/riscv32.hpp"
 namespace accat::luce::isa::riscv32::instruction::mixin {
 
 // we choose not to use CRTP but deducing this.
@@ -91,7 +92,7 @@ AC_MIXIN_DECLARE_BEGIN(IFormat,
                        opcode0To6Common,
                        imm2StrCommon)
 auto imm(this auto &&self) noexcept {
-  return self.template concatBits<uint32_t, 7, 12, 25, 32>(
+  return self.template concatBits<instruction_size_t, 20, 32>(
       self.num()); // [7, 12) and
                    // [25, 32)
 }
@@ -107,7 +108,7 @@ AC_MIXIN_DECLARE_BEGIN(SFormat,
                        opcode0To6Common,
                        imm2StrCommon)
 auto imm(this auto &&self) noexcept {
-  return self.template concatBits<uint32_t, 7, 12, 25, 32>(
+  return self.template concatBits<instruction_size_t, 7, 12, 25, 32>(
       self.num()); // [7, 12) and
                    // [25, 32)
 }
@@ -123,8 +124,9 @@ AC_MIXIN_DECLARE_BEGIN(BFormat,
                        opcode0To6Common,
                        imm2StrCommon)
 auto imm(this auto &&self) noexcept {
-  return self.template concatBits<uint32_t, 8, 12, 25, 31, 7, 8, 31, 32>(
-      self.num());
+  return self
+      .template concatBits<instruction_size_t, 8, 12, 25, 31, 7, 8, 31, 32>(
+          self.num());
 }
 auto imm_str(this auto &&self) noexcept {
   return self.template imm_str_impl<12>();
@@ -133,7 +135,7 @@ AC_MIXIN_DECLARE_END
 
 AC_MIXIN_DECLARE_BEGIN(UFormat, rd7To12Common, opcode0To6Common, imm2StrCommon)
 auto imm(this auto &&self) noexcept {
-  return self.template concatBits<uint32_t, 12, 32>(self.num());
+  return self.template concatBits<instruction_size_t, 12, 32>(self.num());
 }
 auto imm_str(this auto &&self) noexcept {
   return self.template imm_str_impl<20>();
@@ -142,8 +144,9 @@ AC_MIXIN_DECLARE_END
 
 AC_MIXIN_DECLARE_BEGIN(JFormat, rd7To12Common, opcode0To6Common, imm2StrCommon)
 auto imm(this auto &&self) noexcept {
-  return self.template concatBits<uint32_t, 21, 31, 20, 21, 12, 20, 31, 32>(
-      self.num());
+  return self
+      .template concatBits<instruction_size_t, 21, 31, 20, 21, 12, 20, 31, 32>(
+          self.num());
 }
 auto imm_str(this auto &&self) noexcept {
   return self.template imm_str_impl<20>();

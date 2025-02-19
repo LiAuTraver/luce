@@ -29,6 +29,7 @@ public:
   virtual ~IInstruction() = default;
   auto to_string(auxilia::FormatPolicy policy = auxilia::FormatPolicy::kDefault)
       const noexcept -> string_type {
+    dbg(info, "Bits: {}", bits());
     if (policy == kDefault) {
       return asmStr();
     } else {

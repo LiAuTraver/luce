@@ -59,7 +59,6 @@ Status CPU::shuttle() {
   return decode_and_execute();
 }
 Status CPU::decode_and_execute() {
-  // TODO(todo: decode the instruction and perform the operation)
   if (std::ranges::equal(context_->instruction_register.bytes(),
                          isa::signal::trap)) {
     this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
