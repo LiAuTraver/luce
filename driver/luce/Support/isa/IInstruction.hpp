@@ -8,6 +8,7 @@
 #include <span>
 #include <type_traits>
 #include "Word.hpp"
+#include "accat/auxilia/details/format.hpp"
 
 namespace accat::luce::isa {
 class Icpu;
@@ -26,6 +27,14 @@ public:
   IInstruction(IInstruction &&) = default;
   IInstruction &operator=(IInstruction &&) = default;
   virtual ~IInstruction() = default;
+  auto to_string(auxilia::FormatPolicy policy = auxilia::FormatPolicy::kDefault)
+      const noexcept -> string_type {
+    if (policy == kDefault) {
+      return asmStr();
+    } else {
+      TODO(...)
+    }
+  }
 
 public:
   enum class ExecutionStatus : std::uint8_t {
@@ -40,6 +49,9 @@ public:
 
 public:
   virtual ExecutionStatus execute(Icpu *) const = 0;
+
+protected:
+  virtual auto asmStr() const noexcept -> string_type = 0;
 
 protected:
   using enum ExecutionStatus;

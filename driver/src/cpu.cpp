@@ -1,7 +1,7 @@
 ﻿#include "deps.hh"
 
-
 #include "luce/cpu/cpu.hpp"
+#include <spdlog/spdlog.h>
 #include "luce/Support/isa/IInstruction.hpp"
 #include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Monitor.hpp"
@@ -15,7 +15,7 @@ using enum CPU::State;
 
 CPU::CentralProcessingUnit(Mediator *parent) : Icpu(parent), mmu_(this) {}
 
-CentralProcessingUnit::~CentralProcessingUnit() = default;
+CPU::~CentralProcessingUnit() = default;
 auto CPU::detach_context() noexcept -> CPU & {
   if (context_.use_count() == 1) {
     spdlog::warn("Seems like the context is in a broken state, destroying...");
@@ -65,9 +65,9 @@ Status CPU::decode_and_execute() {
     this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
     return {};
   }
-  auto inst = static_cast<Monitor *>(this->mediator)
-                  ->disassembler()
-                  ->disassemble(context_->instruction_register.num());
+  auto inst = monitor()->disassembler()->disassemble(
+      context_->instruction_register.num());
+  spdlog::info("Decoded instruction: {}", inst->to_string());
   contract_assert(inst,
                   "Failed to decode the instruction."
                   " This assert is designed for debugging purposes. "
@@ -86,7 +86,8 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   case kInvalidInstruction:
     TODO(...)
   case kEnvCall:
-    TODO(...)
+    // TODO(...)
+    [[fallthrough]];
   case kEnvBreak:
     spdlog::info("received an environment break signal; pausing the task");
     this->send(Event::kPauseTask, [this]() { this->detach_context(); });
@@ -98,7 +99,7 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
 }
 auto CPU::fetch(const vaddr_t addr) const
     -> StatusOr<std::span<const std::byte>> {
-  return static_cast<Monitor *>(this->mediator)
+  return monitor()
       ->memory()
       .read_n(mmu_.virtual_to_physical(addr),
               isa::instruction_size_bytes)
@@ -108,10 +109,11 @@ auto CPU::fetch(const vaddr_t addr) const
 }
 auto CPU::write(const vaddr_t addr, const std::span<const std::byte> bytes)
     -> auxilia::Status {
-  return static_cast<Monitor *>(this->mediator)
-      ->memory()
-      .write_n(
-          mmu_.virtual_to_physical(addr), isa::instruction_size_bytes, bytes);
+  return monitor()->memory().write_n(
+      mmu_.virtual_to_physical(addr), isa::instruction_size_bytes, bytes);
+}
+auto CPU::monitor() const noexcept -> Monitor * {
+  return static_cast<Monitor *>(this->mediator);
 }
 
 } // namespace accat::luce

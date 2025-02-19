@@ -42,6 +42,8 @@ private:
     bytes_type bytes_;
     bits_type bits_;
   };
+
+protected:
   using enum auxilia::FormatPolicy;
 
 public:
@@ -57,7 +59,7 @@ public:
   inline auto to_string(auxilia::FormatPolicy policy = kBrief) const noexcept {
     if (policy == kBrief) // 0x00000000 (big-endian)
       return fmt::format("0x{:08x}", num());
-    else if (policy == kDetailed) // 0x00 0x00 0x00 0x00 
+    else if (policy == kDetailed) // 0x00 0x00 0x00 0x00
       return fmt::format("{:#04x}", fmt::join(bytes(), " "));
     else
       return fmt::format("{}", bits());
@@ -65,7 +67,8 @@ public:
   inline auto data(this auto &&self) noexcept {
     return self.bytes_.data();
   }
-  [[clang::reinitializes]]inline auto reset(const num_type num = 0ull) noexcept {
+  [[clang::reinitializes]] inline auto
+  reset(const num_type num = 0ull) noexcept {
     num_ = num;
     return *this;
   }

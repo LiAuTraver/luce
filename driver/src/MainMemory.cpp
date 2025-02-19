@@ -48,14 +48,14 @@ auto MainMemory::write_n(isa::physical_address_t addr,
   if (!memory.is_in_range(addr, addr + count)) {
     return {MakeMemoryAccessViolationError(addr)};
   }
-  std::ranges::copy(value.begin(), value.end(), &memory[addr]);
+  std::ranges::copy(value, &memory[addr]);
   return {};
 }
 void MainMemory::fill(const isa::physical_address_t start,
                       const size_t size,
                       const isa::minimal_addressable_unit_t value) {
   std::ranges::fill_n(
-      memory.begin() + start, size, static_cast<std::byte>(value));
+      memory.iter_at_address(start), size, static_cast<std::byte>(value));
 }
 auto MainMemory::load_program(const std::span<const std::byte> bytes,
                               const isa::physical_address_t start_addr,
@@ -79,7 +79,7 @@ auto MainMemory::load_program(const std::span<const std::byte> bytes,
 void MainMemory::generate(const isa::physical_address_t start,
                           const size_t size,
                           std::invocable auto &&generator) {
-  std::ranges::generate_n(memory.begin() + start, size, [&] {
+  std::ranges::generate_n(memory.iter_at_address(start), size, [&] {
     return static_cast<std::byte>(std::invoke(generator));
   });
 }

@@ -8,6 +8,20 @@ constexpr auto is_valid_base(const char c) noexcept -> bool {
   return c == 'x' || c == 'X' || c == 'b' || c == 'B' || c == 'o' || c == 'O' ||
          c == 'd' || c == 'D';
 }
+constexpr auto is_valid_digit_of_base(const char c, const int base) noexcept -> bool {
+  switch (base) {
+  case 2:
+    return c == '0' || c == '1';
+  case 8:
+    return c >= '0' && c <= '7';
+  case 10:
+    return std::isdigit(c, std::locale());
+  case 16:
+    return std::isxdigit(c, std::locale());
+  default:
+    return false;
+  }
+}
 } // namespace
 namespace accat::luce::repl {
 using auxilia::operator""s;
@@ -287,14 +301,14 @@ auto Lexer::lex_number() -> std::optional<number_value_t> {
       Base = 10;
     get(); // consume the 'x', 'b', or 'o'
   }
-  while (std::isdigit(peek(), std::locale())) {
+  while (is_valid_digit_of_base(peek(), Base)) {
     get();
   }
   bool is_floating_point = false;
   // maybe a '.'?
   if (peek() == '.' && std::isdigit(peek(1), std::locale())) {
     get(); // consume the '.'
-    while (std::isdigit(peek(), std::locale())) {
+    while (is_valid_digit_of_base(peek(), Base)) {
       get();
     }
     // 123.456

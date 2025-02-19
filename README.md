@@ -26,3 +26,8 @@ vcpkg install fmt spdlog argparse scnlib
 cmake --preset "MSVC-Debug" # or Clang-Debug, GNU-Debug
 cmake --build build/MSVC-Debug --parallel 32 --target luce
 ```
+### MSBuild
+Previously I handled the MSBuild manually and parallel with CMake's build scripts, but recently I dropped the support, instead use CMake to generate the project files and build with MSBuild.
+```powershell
+cmake --preset "MSVC-Visual-Studio-Debug" && cmake --open ./build/MSVC-Visual-Studio-Debug/
+```

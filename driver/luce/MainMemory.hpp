@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <stdexcept>
 
+#include "Support/isa/Word.hpp"
 #include "Support/isa/constants/riscv32.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 #include "config.hpp"
@@ -25,8 +26,10 @@ public:
   using polymorphic_allocator_t = auxilia::MemoryPool;
   std::pmr::vector<std::byte> real_data;
 
-  /// @param addr the address to check, not the index
   MemoryAccess();
+  /// @brief Access the memory at the given address. Equivalent to
+  ///
+  /// @param addr the address to check, not the index
   auto operator[](this auto &&self, const isa::physical_address_t addr)
       -> decltype(auto) {
     precondition(addr >= isa::physical_base_address &&
@@ -39,8 +42,12 @@ public:
   }
   // clang-format off
   constexpr auto at(const isa::physical_address_t addr) const { return real_data.at(addr - isa::physical_base_address); }
-  auto begin(this auto &&self) { return self.real_data.begin(); }
-  auto end(this auto &&self) { return self.real_data.end(); }
+  // does not provide non-const iterators
+  auto begin()const  { return real_data.begin(); }
+  auto end()const  { return real_data.end(); }
+  auto iter_at_address(this auto&& self, const isa::physical_address_t addr) {
+    return self.real_data.begin() + addr - isa::physical_base_address;
+  }
   auto cbegin() const noexcept { return real_data.cbegin(); }
   auto cend() const noexcept { return real_data.cend(); }
   auto size() const noexcept { return real_data.size(); }
@@ -48,8 +55,6 @@ public:
   auto data(this auto &&self) -> decltype(auto) { return self.real_data.data(); }
   auto address_of(const size_t offset) const { return isa::physical_base_address + offset; }
   // clang-format on
-#pragma warning(push)
-#pragma warning(disable : 4702) // unreachable code
   template <typename... Args>
   bool is_in_range(isa::physical_address_t addr, Args... addrs) const noexcept
     requires(std::convertible_to<Args, isa::physical_address_t> && ...)
@@ -60,7 +65,6 @@ public:
     return (is_in_range(addr) && ... && is_in_range(addrs));
   }
 };
-#pragma warning(pop)
 
 class LUCE_API MainMemory : public Component {
 
@@ -89,21 +93,19 @@ public:
       -> auxilia::StatusOr<std::byte>;
   auto read_n(isa::physical_address_t, size_t) const noexcept
       -> auxilia::StatusOr<std::span<const std::byte>>;
-  // auto read_word(const isa::physical_address_t addr) const noexcept {
-  //   // [[clang::musttail]]
-  //   return read_typed<isa::Word>(addr);
-  // }
+  auto read_word(const isa::Word addr) const noexcept {
+    return read_typed<isa::Word>(addr.num());
+  }
   auto write(isa::physical_address_t, isa::minimal_addressable_unit_t) noexcept
       -> auxilia::Status;
 
   auto write_n(isa::physical_address_t,
                size_t,
                std::span<const std::byte>) noexcept -> auxilia::Status;
-  // auto write_word(const isa::physical_address_t addr,
-  //                 const isa::Word value) noexcept {
-  //   // [[clang::musttail]]
-  //   return write_typed(addr, value);
-  // }
+  auto write_word(const isa::physical_address_t addr,
+                  const isa::Word value) noexcept {
+    return write_typed(addr, value.num());
+  }
   auto load_program(std::span<const std::byte>,
                     isa::physical_address_t,
                     isa::physical_address_t,
@@ -157,10 +159,8 @@ public:
     if (!memory.is_in_range(addr, addr + sizeof(T))) {
       return MakeMemoryAccessViolationError(addr);
     }
-    std::span<const T, 1> tmp{&value, 1};
-    std::ranges::copy(std::as_bytes({&value, 1}),
-                      memory.begin() + addr,
-                      memory.begin() + addr + sizeof(T));
+    std::ranges::copy(std::as_bytes(std::span<const T, 1>{&value, 1}),
+                      memory.iter_at_address(addr));
     return auxilia::OkStatus();
   }
 

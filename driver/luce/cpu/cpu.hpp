@@ -68,6 +68,7 @@ private:
   auxilia::Status shuttle();
   auxilia::Status decode_and_execute();
   auxilia::Status execute(isa::IInstruction *);
+  auto monitor()const noexcept -> Monitor *;
 };
 
 /// @implements Component

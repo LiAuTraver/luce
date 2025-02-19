@@ -11,7 +11,7 @@
         "--log",
         "${workspaceFolder}/luce.log",
         "--image",
-        "${workspaceFolder}/data/image.bin",
+        "${workspaceFolder}/data/flight.bin",
       ],
       "stopAtEntry": false,
       "cwd": "${command:cmake.launchTargetDirectory}",
