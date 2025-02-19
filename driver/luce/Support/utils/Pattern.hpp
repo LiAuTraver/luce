@@ -31,28 +31,6 @@ enum class Event : uint8_t {
   kPauseTask = 6,
   // todo: add more events
 };
-namespace event {
-constexpr auto to_string_view(const Event event) noexcept {
-  using namespace std::string_view_literals;
-  switch (event) {
-  case Event::kNone:
-    return "kNone"sv;
-  case Event::kLoadProgram:
-    return "kLoadProgram"sv;
-  case Event::kRunTask:
-    return "kRunTask"sv;
-  case Event::kTaskFinished:
-    return "kTaskFinished"sv;
-  case Event::kRestartOrResumeTask:
-    return "kRestartTask"sv;
-  case Event::kPrintWatchPoint:
-    return "kPrintWatchPoint"sv;
-  case Event::kPauseTask:
-    return "kPauseTask"sv;
-  }
-  return "kUnknown"sv;
-}
-} // namespace event
 struct Mediator {
 public:
   constexpr Mediator() = default;
@@ -60,7 +38,6 @@ public:
 public:
   virtual auxilia::Status
   notify(Component *, Event, std::function<void(void)> = []() {}) = 0;
-  // virtual auxilia::StatusOr<std::any> query(Component*, Event,
   auxilia::Status set_as_parent(Component *);
 
 protected:

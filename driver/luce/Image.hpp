@@ -39,7 +39,9 @@ public:
                                          : std::span(binary_data_).first(20),
                                      " "));
   }
-  bool is_little_endian() const noexcept { return is_little_endian_; }
+  bool is_little_endian() const noexcept {
+    return is_little_endian_;
+  }
   auto bytes_view() const noexcept -> std::span<const std::byte> {
     return binary_data_;
   }
@@ -48,5 +50,4 @@ private:
   bool is_little_endian_ = std::endian::native == std::endian::little;
   std::vector<std::byte> binary_data_;
 };
-class ImageView : public auxilia::Printable {};
 } // namespace accat::luce

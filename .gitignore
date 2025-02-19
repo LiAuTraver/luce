@@ -520,3 +520,7 @@ gradle-app.setting
 **/out
 **/target
 conan_installed/
+
+### CppDepend
+*.cdproj
+CppDependOut/

@@ -47,7 +47,7 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
     callback = EXIT_FAILURE;
     return callback;
   }
-  spdlog::info("Image loaded from: {}", imagePath);
+  spdlog::info("Image loaded from {}", imagePath);
   if (argument::program::batch.value == true)
     callback = monitor.run().raw_code();
   else

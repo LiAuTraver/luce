@@ -57,6 +57,23 @@ template <size_t Base = 16> auto opcode_str(this auto &&self) noexcept {
 }
 AC_MIXIN_DECLARE_END
 
+AC_MIXIN_DECLARE_BEGIN(imm2StrCommon)
+template <size_t Align> static consteval const char *getfmtStr() {
+  static_assert(Align > 0 && Align <= 32, "Invalid alignment");
+  if constexpr (Align == 12) {
+    return "{:#03x}";
+  } else if constexpr (Align == 20) {
+    return "{:#05x}";
+  } else {
+    return "{:#08x}";
+  }
+}
+template <size_t Align> auto imm_str_impl(this auto &&self) noexcept {
+  constexpr auto fmtStr = getfmtStr<Align>();
+  return fmt::format(fmtStr, self.imm());
+}
+AC_MIXIN_DECLARE_END
+
 AC_MIXIN_DECLARE_BEGIN(RFormat,
                        rs2nd20To25Common,
                        rs1st15To20Common,
@@ -68,22 +85,6 @@ auto funct7(this auto &&self) noexcept {
 }
 AC_MIXIN_DECLARE_END
 
-AC_MIXIN_DECLARE_BEGIN(imm2StrCommon)
-template <size_t Align> static consteval const char *getfmtStr() {
-  static_assert(Align > 0 && Align < 32, "Invalid alignment");
-  if constexpr (Align == 12) {
-    return "0x{:03x}";
-  } else if constexpr (Align == 20) {
-    return "0x{:05x}";
-  } else {
-    return "0x{:08x}";
-  }
-}
-template <size_t Align> auto imm_str_impl(this auto &&self) noexcept {
-  constexpr auto fmtStr = getfmtStr<Align>();
-  return fmt::format(fmtStr, self.imm());
-}
-AC_MIXIN_DECLARE_END
 
 AC_MIXIN_DECLARE_BEGIN(IFormat,
                        rs1st15To20Common,

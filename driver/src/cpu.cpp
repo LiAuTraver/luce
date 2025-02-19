@@ -1,7 +1,6 @@
 ﻿#include "deps.hh"
 
 #include "luce/cpu/cpu.hpp"
-#include <spdlog/spdlog.h>
 #include "luce/Support/isa/IInstruction.hpp"
 #include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Monitor.hpp"
@@ -66,11 +65,11 @@ Status CPU::decode_and_execute() {
   }
   auto inst = monitor()->disassembler()->disassemble(
       context_->instruction_register.num());
-  spdlog::info("Decoded instruction: {}", inst->to_string());
   contract_assert(inst,
                   "Failed to decode the instruction."
                   " This assert is designed for debugging purposes. "
                   "Currently, we are not handling this case.");
+  spdlog::info("Decoded instruction: {}", *inst);
   return execute(inst.get());
 }
 auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
