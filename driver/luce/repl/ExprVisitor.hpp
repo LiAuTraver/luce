@@ -4,7 +4,7 @@
 #include <string>
 
 #include "repl_fwd.hpp"
-#include "luce/utils/Pattern.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 #include "luce/repl/IVisitor.hpp"
 namespace accat::luce::repl::expression {
 struct ASTPrinter : Visitor {

@@ -1,4 +1,4 @@
-driver_srcs = glob(["src/*.cpp"]) + ["luce_main.cpp"] + ["DllMain.cpp"]
+driver_srcs = glob(["src/**/*.cpp"]) + ["luce_main.cpp"] + ["DllMain.cpp"]
 
 driver_includes = [
     "include",
@@ -14,6 +14,8 @@ cc_library(
         "/Zc:preprocessor",
         "/Iinclude",
         "/Idriver",
+        "/Zc:__cplusplus",
+        "/MDd",
     ],
     defines = [
         "AC_CPP_DEBUG",
@@ -28,5 +30,6 @@ cc_library(
         "@fmt",
         "@spdlog",
         "@scnlib",
+        "@argparse",
     ],
 )

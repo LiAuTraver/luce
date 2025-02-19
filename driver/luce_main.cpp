@@ -1,7 +1,5 @@
-#include "deps.hh"
-
 #include "luce/config.hpp"
-#include "Support/isa/architecture.hpp"
+#include "luce/Support/isa/architecture.hpp"
 #include "luce/MainMemory.hpp"
 #include "luce/Task.hpp"
 #include "exec.hpp"
@@ -9,7 +7,7 @@
 #include "luce/argument/ArgumentLoader.hpp"
 #include "luce/Image.hpp"
 #include "luce/Monitor.hpp"
-#include "Support/isa/riscv32/riscv32.hpp"
+#include "luce/Support/isa/architecture.hpp"
 
 LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   auto callback = 0;
@@ -27,11 +25,10 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   }
   auto context = auxilia::async(std::bind(&ExecutionContext::InitializeContext,
                                           std::ref(program_options)));
-
-  auto imageData = auxilia::async(auxilia::read_raw_bytes<>,
-                                  argument::program::image.value.empty()
-                                      ? defaultImagePath
-                                      : argument::program::image.value);
+  auto imagePath = argument::program::image.value.empty()
+                       ? defaultImagePath
+                       : argument::program::image.value;
+  auto imageData = auxilia::async(auxilia::read_raw_bytes<>, imagePath);
 
   auto maybeBytes = imageData.get();
   if (!maybeBytes) {
@@ -50,7 +47,7 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
     callback = EXIT_FAILURE;
     return callback;
   }
-
+  spdlog::info("Image loaded from: {}", imagePath);
   if (argument::program::batch.value == true)
     callback = monitor.run().raw_code();
   else

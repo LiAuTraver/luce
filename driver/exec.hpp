@@ -10,7 +10,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <accat/auxilia/auxilia.hpp>
-#include "Support/isa/architecture.hpp"
+#include "luce/Support/isa/architecture.hpp"
 #include <string>
 #include "luce/argument/Argument.hpp"
 
@@ -18,7 +18,7 @@ namespace accat::luce {
 class ArgumentLoader;
 }
 namespace accat::luce {
-class ExecutionContext : public auxilia::Printable<ExecutionContext> {
+class ExecutionContext : public auxilia::Printable {
 public:
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)

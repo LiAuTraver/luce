@@ -2,7 +2,7 @@
 
 #include <accat/auxilia/auxilia.hpp>
 
-#include "utils/Pattern.hpp"
+#include "luce/Support/utils/Pattern.hpp"
 #include "config.hpp"
 #include "luce/MainMemory.hpp"
 
