@@ -15,17 +15,17 @@ using enum CPU::State;
 CPU::CentralProcessingUnit(Mediator *parent) : Icpu(parent), mmu_(this) {}
 
 CPU::~CentralProcessingUnit() = default;
-auto CPU::detach_context() noexcept -> CPU & {
-  if (context_.use_count() == 1) {
-    spdlog::warn("Seems like the context is in a broken state, destroying...");
-  }
-  context_.reset();
-  task_id_.reset();
+auto CPU::detach_task() noexcept -> CPU & {
+  // if (task_.use_count() == 1) {
+  //   spdlog::warn("Seems like the context is in a broken state,
+  //   destroying...");
+  // }
+  // task_.reset();
   state_ = kVacant;
   return *this;
 }
 Status CPU::execute_shuttle() {
-  precondition(context_, "No program to execute")
+  precondition(task_, "No program to execute")
 
   auto executeShuttle = [&]() {
     state_ = kRunning;
@@ -39,32 +39,34 @@ Status CPU::execute_shuttle() {
   return res;
 }
 Status CPU::shuttle() {
-  auto maybe_bytes = fetch(context_->program_counter.num());
+  auto &ctx = task_->context();
+  auto maybe_bytes = fetch(ctx.program_counter.num());
   if (!maybe_bytes) {
     return maybe_bytes.as_status();
   }
-  context_->program_counter.num() += sizeof(isa::instruction_size_t);
+  ctx.program_counter.num() += sizeof(isa::instruction_size_t);
   auto bytes = std::move(maybe_bytes).value();
-  auto &orig_bytes = context_->instruction_register.bytes();
+  auto &orig_bytes = ctx.instruction_register.bytes();
   for (const auto i : std::views::iota(0ull, sizeof(isa::instruction_size_t))) {
     orig_bytes[i] = bytes[i];
   }
   // convert little-endian to big-endian for more human-readable output
   spdlog::info("Fetched instruction: {:#04x} (in big-endian: 0x{:02x})",
-               fmt::join(context_->instruction_register.bytes(), " "),
-               fmt::join(context_->instruction_register.bytes() |
+               fmt::join(ctx.instruction_register.bytes(), " "),
+               fmt::join(ctx.instruction_register.bytes() |
                              auxilia::ranges::views::swap_endian,
                          ""));
   return decode_and_execute();
 }
 Status CPU::decode_and_execute() {
-  if (std::ranges::equal(context_->instruction_register.bytes(),
+  if (std::ranges::equal(task_->context().instruction_register.bytes(),
                          isa::signal::trap)) {
-    this->send(Event::kTaskFinished, [this]() { this->detach_context(); });
+    task_->finish();
+    this->detach_task();
     return {};
   }
   auto inst = monitor()->disassembler()->disassemble(
-      context_->instruction_register.num());
+      task_->context().instruction_register.num());
   contract_assert(inst,
                   "Failed to decode the instruction."
                   " This assert is designed for debugging purposes. "
@@ -80,19 +82,26 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   case kSuccess:
     return {};
   case kMemoryViolation:
-    TODO(...)
+    spdlog::error("Memory violation detected. Pausing the task.");
+    goto ebreak;
   case kInvalidInstruction:
-    TODO(...)
+    spdlog::error("Invalid instruction detected. Pausing the task.");
+    goto ebreak;
+  case kEnvBreak:
+    goto ebreak;
   case kEnvCall:
     // TODO(...)
-    [[fallthrough]];
-  case kEnvBreak:
-    spdlog::info("received an environment break signal; pausing the task");
-    this->send(Event::kPauseTask, [this]() { this->detach_context(); });
+    spdlog::warn("Environment call detected, currently does nothing but resume "
+                 "the task.");
     break;
   case kUnknown:
-    TODO(...)
+    spdlog::error("Unknown error occurred. Pausing the task.");
+    goto ebreak;
   }
+  return {};
+ebreak:
+  spdlog::info("received an environment break signal; pausing the task");
+  task_->pause();
   return {};
 }
 auto CPU::fetch(const vaddr_t addr) const

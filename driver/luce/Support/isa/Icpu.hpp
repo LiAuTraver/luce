@@ -24,7 +24,6 @@ public:
 protected:
   using vaddr_t = isa::virtual_address_t;
   using paddr_t = isa::physical_address_t;
-  std::optional<pid_t> task_id_;
   State state_ = State::kVacant;
 
 public:
@@ -43,14 +42,9 @@ public:
   virtual auto pc() noexcept -> isa::Word & = 0;
   virtual auto gpr() noexcept -> isa::GeneralPurposeRegisters & = 0;
   virtual auxilia::Status execute_shuttle() = 0;
-  virtual auto switch_context(std::shared_ptr<Context>, const pid_t) noexcept
-      -> Icpu & = 0;
+  virtual auto switch_task(Task *) noexcept -> Icpu & = 0;
 
 public:
-  auto task_id() const noexcept -> pid_t {
-    precondition(task_id_, "Task id is not set or invalid")
-    return *task_id_;
-  }
   constexpr auto is_vacant() const noexcept {
     return state_ == State::kVacant;
   }

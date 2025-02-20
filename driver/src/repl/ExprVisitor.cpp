@@ -87,7 +87,7 @@ result_type Evaluator::visit(const Variable &expr) {
     precondition(this->mediator, "mediator must be set");
     if (auto maybe_bytes = static_cast<Monitor *>(this->mediator)
                                ->registers()
-                               ->read(ident.substr(1))) {
+                               .read(ident.substr(1))) {
       auto str = reinterpret_cast<const char *>(maybe_bytes->bytes().data());
       // convert to number, base 16
       auto num = 0ll;

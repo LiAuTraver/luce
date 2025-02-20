@@ -58,7 +58,7 @@ class Monitor : public Mediator {
   using vaddr_t = isa::virtual_address_t;
 
   MainMemory memory_;
-  SystemBus bus;
+  // SystemBus bus;
   // std::vector<Task> processes; // currently just one process
   Task process;
   CPUs cpus;
@@ -78,6 +78,13 @@ public:
   auto &disassembler(this auto &&self) noexcept {
     return self.disassembler_;
   }
+  auto &registers(this auto &&self) noexcept {
+    // currently only one task
+    return *self.process.context().general_purpose_registers();
+  }
+  // auto &current_task(this auto &&self) noexcept {
+  //   return self.process;
+  // }
 
 public:
   virtual auto notify(
@@ -91,13 +98,6 @@ public:
   auto register_task(const std::ranges::range auto &, paddr_t, paddr_t)
       -> auxilia::Status;
 
-public:
-  auto registers() const noexcept {
-    // currently only one task
-    return process.context()->general_purpose_registers();
-  }
-
-public:
 private:
   auto _do_register_task_unchecked(std::span<const std::byte>, paddr_t, paddr_t)
       -> auxilia::Status;

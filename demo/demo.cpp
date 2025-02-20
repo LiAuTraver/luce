@@ -39,5 +39,4 @@ int main() {
               << "imm: " << imm << "\n";
   }
   auto first = code.subspan(0, 4);
-  
 }

@@ -10,12 +10,12 @@ Task::Task(Mediator *parent)
 }
 Task &Task::set_address_space(const AddressSpace &newAddressSpace) noexcept {
   address_space_ = newAddressSpace;
-  context_ = std::make_shared<Context>();
-  context_->memory_bounds = {address_space_.static_regions.text_segment.start,
+  context_ = Context();
+  context_.memory_bounds = {address_space_.static_regions.text_segment.start,
                         address_space_.dynamic_regions.heap_break};
-  context_->program_counter.num() = address_space_.static_regions.text_segment.start;
-  context_->stack_pointer.num() = address_space_.dynamic_regions.stack.end;
-  context_->privilege_level = Context::PrivilegeLevel::kUser;
+  context_.program_counter.num() = address_space_.static_regions.text_segment.start;
+  context_.stack_pointer.num() = address_space_.dynamic_regions.stack.end;
+  context_.privilege_level = Context::PrivilegeLevel::kUser;
   return *this;
 }
 } // namespace accat::luce

@@ -31,7 +31,7 @@ namespace {
   return auxilia::InternalError("REPL exited unexpectedly");
 }
 } // namespace
-Monitor::Monitor() : memory_(this), bus(this), cpus(this), debugger_(this) {
+Monitor::Monitor() : memory_(this), cpus(this), debugger_(this) {
   // default just use riscv32
   disassembler_ = std::make_shared<isa::riscv32::Disassembler>();
   disassembler_->initializeDefault();
@@ -45,34 +45,17 @@ auto Monitor::notify(Component *,
       callback();
   };
   switch (event) {
-  case kNone:
-    spdlog::warn("nothing to do");
-    break;
-  case kTaskFinished: {
-    spdlog::info(
-        "Hit good ol' {trapBytes:x}, program finished!",
-        "trapBytes"_a = fmt::join(
-            isa::signal::trap | auxilia::ranges::views::swap_endian, ""));
-    // find the task and mark it as terminated
-    process.state = Task::State::kTerminated;
-    break;
-  }
   case kRestartOrResumeTask: {
     if (process.state == Task::State::kPaused) {
-      spdlog::info("Resuming task");
       process.resume();
     } else {
-      spdlog::info("Restarting task");
       process.restart();
+      cpus.attach_task(&process);
     }
-    cpus.attach_context(process.context(), process.id());
     break;
   }
-  case kPrintWatchPoint:
-    fmt::println("{}", debugger_.watchpoints());
-    break;
   case kPauseTask:
-    spdlog::info("Pausing task");
+    // pause all tasks
     process.pause();
     break;
   default:
@@ -82,9 +65,8 @@ auto Monitor::notify(Component *,
   return {};
 }
 Status Monitor::run() {
-  precondition(process.state == Task::State::kNew,
-               "No program loaded or the program has already running")
-  cpus.attach_context(process.context(), process.id());
+  process.start();
+  cpus.attach_task(&process);
   while (process.state != Task::State::kTerminated) {
     if (auto res = cpus.execute_shuttle(); !res) {
       spdlog::error("Error: {}", res.message());
@@ -95,24 +77,19 @@ Status Monitor::run() {
   return {};
 }
 Status Monitor::REPL() {
-  precondition(process.state == Task::State::kNew,
-               "No program loaded or the program has already running")
-
-  cpus.attach_context(process.context(), process.id());
+  process.start();
+  cpus.attach_task(&process);
 
   for (auto res : repl::repl(this) | std::views::common) {
     if (res)
       continue;
-
-    if (res.is_return())
-      return {};
 
     // error, return as is
     spdlog::error("Error: {}", res.message());
     dbg(error, AC_UTILS_STACKTRACE);
     return res;
   }
-  return Die();
+  [[unlikely]] return Die();
 }
 
 Status Monitor::_do_execute_n_unchecked(const size_t steps) {
@@ -132,7 +109,7 @@ Status Monitor::_do_execute_n_unchecked(const size_t steps) {
   return {};
 }
 Status Monitor::execute_n(const size_t steps) {
-  if (process.state == Task::State::kNew) {
+  if (process.state == Task::State::kReady) {
     process.state = Task::State::kRunning;
   } else if (process.state == Task::State::kTerminated) {
     spdlog::info("Program has terminated. Press `r` to restart.");

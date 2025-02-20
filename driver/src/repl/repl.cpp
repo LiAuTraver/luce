@@ -13,19 +13,14 @@ namespace accat::luce {
 using fmt::fg;
 using enum fmt::color;
 using auxilia::InvalidArgumentError;
-using auxilia::match;
 using auxilia::Monostate;
 using auxilia::Status;
 using auxilia::StatusOr;
+using auxilia::ranges::trim;
 } // namespace accat::luce
-namespace accat::luce::repl {
-auto repl(Monitor *) -> auxilia::Generator<Status>;
-}
 namespace accat::luce::repl::command {
 namespace {
-auto read(Monitor *) -> StatusOr<std::string>;
-
-StatusOr<std::string> read(Monitor *) {
+std::string read(Monitor *) {
   std::string input;
   for (;;) {
     std::string raw_input;
@@ -37,7 +32,7 @@ StatusOr<std::string> read(Monitor *) {
     if (!std::getline(std::cin, raw_input)) {
       if (std::cin.eof()) {
         fmt::println("\nGoodbye!");
-        return {auxilia::ReturnMe("End of input")};
+        std::exit(EXIT_SUCCESS);
       }
 
       if (std::cin.fail()) {
@@ -49,10 +44,7 @@ StatusOr<std::string> read(Monitor *) {
       dbg_break
       continue;
     }
-    // clang-format off
-    auto trimmed_input = auxilia::ranges::trim(raw_input);
-      ;
-    // clang-format on
+    auto trimmed_input = trim(raw_input);
     if (trimmed_input.empty() && input.empty())
       continue;
     else if (trimmed_input.starts_with('#'))
@@ -63,12 +55,12 @@ StatusOr<std::string> read(Monitor *) {
       continue;
     }
     input += std::move(trimmed_input);
-    return {std::move(input)};
+    return input;
   }
 }
 } // namespace
 struct ICommand {
-  virtual Status execute(Monitor *monitor) const = 0;
+  virtual void execute(Monitor *monitor) const = 0;
 
 protected:
   virtual ~ICommand() = default;
@@ -80,7 +72,7 @@ struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
   virtual ~Unknown() = default;
 
   string_type command;
-  virtual Status execute(Monitor *) const override final {
+  virtual void execute(Monitor *) const override final {
     if (command.empty())
       auxilia::println(
           stderr, fg(crimson), "luce: no command or subcommand provided");
@@ -90,46 +82,42 @@ struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
                        "luce: unknown command '{cmd}'. Type "
                        "'help' for more information.",
                        "cmd"_a = command);
-    return {};
   }
 };
 struct Help final : ICommand {
-  virtual Status execute(Monitor *) const override final {
+  virtual void execute(Monitor *) const override final {
     fmt::print(message::repl::Help);
-    return {};
   }
 };
 struct Exit final : ICommand {
-  virtual Status execute(Monitor *) const override final {
-    return auxilia::ReturnMe("exit!");
+  virtual void execute(Monitor *) const override final {
+    std::cout << "Goodbye!" << std::endl;
+    std::exit(EXIT_SUCCESS);
   }
 };
 struct Restart final : ICommand {
-  virtual Status execute(Monitor *monitor) const override final {
-    return monitor->notify(nullptr, Event::kRestartOrResumeTask);
+  virtual void execute(Monitor *monitor) const override final {
+    monitor->notify(nullptr, Event::kRestartOrResumeTask);
   }
 };
 struct Continue final : ICommand {
-  virtual Status execute(Monitor *monitor) const override final {
+  virtual void execute(Monitor *monitor) const override final {
     monitor->execute_n(1);
-    return {};
   }
 };
 struct Step final : ICommand {
   Step() = default;
   explicit Step(size_t steps) : steps(steps) {}
   size_t steps = 1;
-  virtual Status execute(Monitor *monitor) const override final {
+  virtual void execute(Monitor *monitor) const override final {
     monitor->execute_n(steps);
-    return {};
   }
 };
 struct AddWatchPoint final : ICommand {
   AddWatchPoint() = default;
   explicit AddWatchPoint(std::string expr) : expression(std::move(expr)) {}
-  virtual Status execute(Monitor *monitor) const override final {
+  virtual void execute(Monitor *monitor) const override final {
     monitor->debugger().add_watchpoint(expression);
-    return {};
   }
   std::string expression;
 };
@@ -137,33 +125,31 @@ struct DeleteWatchPoint final : ICommand {
   DeleteWatchPoint() = default;
   explicit DeleteWatchPoint(size_t id) : watchpointId(id) {}
   size_t watchpointId = 0;
-  virtual Status execute(Monitor *monitor) const override final {
+  virtual void execute(Monitor *monitor) const override final {
     if (auto res = monitor->debugger().delete_watchpoint(watchpointId)) {
       fmt::println("Deleted watchpoint {}", watchpointId);
     } else {
       spdlog::error("Error: {}", res.message());
     }
-    return {};
   }
 };
 struct Info final : ICommand {
 private:
   struct Registers final : ICommand {
-    virtual Status execute(Monitor *monitor) const override final {
-      auxilia::println(stdout, "{regs}", "regs"_a = *monitor->registers());
-      return {};
+    virtual void execute(Monitor *monitor) const override final {
+      auxilia::println(stdout, "{regs}", "regs"_a = monitor->registers());
     }
   };
   struct WatchPoints final : ICommand {
-    virtual Status execute(Monitor *monitor) const override final {
-      return monitor->notify(nullptr, Event::kPrintWatchPoint);
+    virtual void execute(Monitor *monitor) const override final {
+      fmt::println("{}", monitor->debugger().watchpoints());
     }
   };
 
 public:
   Info() = default;
   explicit Info(const std::string &subCommand) {
-    auto trimmed = auxilia::ranges::trim(subCommand);
+    auto trimmed = trim(subCommand);
     if (trimmed.empty()) {
       infoType.emplace(Unknown{subCommand});
       return;
@@ -179,17 +165,16 @@ public:
 public:
   using InfoType = auxilia::Variant<Unknown, Registers, WatchPoints>;
   InfoType infoType;
-  virtual Status execute(Monitor *monitor) const override final {
-    return infoType.visit([&](const auto &subCommand) -> Status {
-      return subCommand.execute(monitor);
-    });
+  virtual void execute(Monitor *monitor) const override final {
+    infoType.visit(
+        [&](const auto &subCommand) -> void { subCommand.execute(monitor); });
   }
 };
 
 struct Print final : ICommand {
   Print() = default;
   Print(std::string expr) : expression(std::move(expr)) {}
-  virtual Status execute(Monitor *monitor) const override final {
+  virtual void execute(Monitor *monitor) const override final {
     auto lexer = Lexer{};
     auto parser = Parser{lexer.load_string(expression).lex()};
     auto eval = expression::Evaluator{monitor};
@@ -215,7 +200,6 @@ struct Print final : ICommand {
                            "luce: error: {msg}",
                            "msg"_a = res1.message());
         });
-    return {};
   }
   std::string expression;
 };
@@ -270,7 +254,7 @@ StatusOr<command_t> inspect(std::string_view input) {
                                  "c: command does not take arguments")};
   }
   if (mainCommand == "si") {
-    if (auto args = auxilia::ranges::trim(input.substr(it - input.begin()));
+    if (auto args = trim(input.substr(it - input.begin()));
         !args.empty() && args.front() == '[' && args.back() == ']') {
       if (auto maybe_steps =
               scn::scan_int<size_t>(args.substr(1, args.size() - 2))) {
@@ -295,8 +279,7 @@ StatusOr<command_t> inspect(std::string_view input) {
   }
 
   if (mainCommand == "w") {
-    if (auto maybe_exprStr =
-            auxilia::ranges::trim(input.substr(it - input.begin()));
+    if (auto maybe_exprStr = trim(input.substr(it - input.begin()));
         !maybe_exprStr.empty()) {
       return {AddWatchPoint{{maybe_exprStr.begin(), maybe_exprStr.end()}}};
     }
@@ -314,32 +297,44 @@ StatusOr<command_t> inspect(std::string_view input) {
         InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
   }
 
-  return {Unknown{std::string(input)}};
+  return {InvalidArgumentError(fg(crimson),
+                               "luce: unknown command '{}'. Type 'help' for "
+                               "more information.",
+                               mainCommand)};
 }
 } // namespace accat::luce::repl::command
 namespace accat::luce::repl {
+namespace {
+void replImpl(Monitor *monitor) {
+  auto input = command::read(monitor);
+  if (auto res = command::inspect(input)) {
+    res->visit([&](const auto &cmd) -> void { cmd.execute(monitor); });
+  } else { // no command found or invalid command
+    auxilia::println(stderr,
+                     "{error} {msg}",
+                     "error"_a = format(fg(crimson), "error:"),
+                     "msg"_a = res.message());
+  }
+}
+} // namespace
 auto repl(Monitor *monitor) -> auxilia::Generator<Status> {
   precondition(monitor, "Monitor must not be nullptr")
-
+  std::exception_ptr eptr;
   fmt::println("{}", message::repl::Welcome);
 
   for (;;) {
-    auto maybe_input = command::read(monitor);
-    if (!maybe_input) {
-      co_yield {maybe_input.as_status()};
-    }
-    auto input = *std::move(maybe_input);
-    if (auto res = command::inspect(input)) {
-      co_yield res->visit(match{
-          [&](const auto &cmd) -> Status { return cmd.execute(monitor); },
-      });
-    } else { // no command found or invalid command
+    try {
+      replImpl(monitor);
+      co_yield {};
+    } catch (const std::exception &res) {
       auxilia::println(stderr,
                        "{error} {msg}",
                        "error"_a = fmt::format(fg(crimson), "error:"),
-                       "msg"_a = res.message());
-      co_yield {};
+                       "msg"_a = res.what());
+      eptr = std::current_exception();
     }
+    if (eptr)
+      co_yield auxilia::InternalError("REPL exited unexpectedly");
   }
   co_return;
 }

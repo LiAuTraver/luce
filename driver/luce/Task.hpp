@@ -62,20 +62,8 @@ public:
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
 
 private:
-  // union {
-  //   struct alignas(1) {
-  //     uint8_t carry : 1;
-  //     uint8_t zero : 1;
-  //     uint8_t negative : 1;
-  //     uint8_t overflow : 1;
-  //     uint8_t interrupt_enable : 1;
-  //     uint8_t supervisor : 1;
-  //     uint8_t reserved : 2;
-  //   } bits;
-  //   isa::minimal_addressable_unit_t raw;
-  // } status_flags;
-  //
-  // // Debug and profiling
+  // not using these yet
+  // Debug and profiling
   // struct DebugInfo {
   //   vaddr_t last_instruction_address;
   //   uint64_t instruction_count;
@@ -122,20 +110,17 @@ public:
   Task(Mediator * = nullptr);
 
 public:
-  // auxilia::Status run() {
-  //   precondition(mediator, "Task has no mediator. Check your code.")
-  //   if (state_ == State::kRunning) {
-  //     spdlog::warn("Task already running");
-  //     return {};
-  //   }
-  //   if (state_ != State::kNew && state_ != State::kReady) {
-  //     spdlog::warn("Task not in a runnable state");
-  //     return {};
-  //   }
-  //   state_ = State::kRunning;
-  //   return send(Event::kRunTask);
-  // }
+  auxilia::Status start() {
+    precondition(mediator, "Task has no mediator. Check your code.")
+    if (state_ != State::kNew) {
+      spdlog::warn("Task already started");
+      dbg_break
+    }
+    state_ = State::kReady;
+    return {};
+  }
   auto &pause() {
+    spdlog::info("Pausing task");
     if (state_ == State::kRunning) {
       state_ = State::kPaused;
     } else {
@@ -144,6 +129,7 @@ public:
     return *this;
   }
   auto &resume() {
+    spdlog::info("Resuming task");
     if (state_ == State::kPaused) {
       state_ = State::kRunning;
     } else {
@@ -151,11 +137,24 @@ public:
     }
     return *this;
   }
-  /// @brief (forcefully) terminate the task
-  void terminate() {}
+  auto &finish() {
+    state_ = State::kTerminated;
+    return *this;
+  }
+  // forcefully terminate the task
+  auto &terminate() {
+    spdlog::info("Terminating task");
+    state_ = State::kTerminated;
+    return *this;
+  }
   auto &restart() {
-    context_->restart();
-    context_->program_counter.num() =
+    if (state_ != State::kTerminated) {
+      spdlog::warn("Task not terminated");
+      return *this;
+    }
+    spdlog::info("Restarting task");
+    context_.restart();
+    context_.program_counter.num() =
         address_space_.static_regions.text_segment.start;
     state_ = State::kNew;
     time_slice_ = 0;
@@ -166,32 +165,27 @@ public:
   }
 
 private:
-  // Core task data
   State state_;
-  std::shared_ptr<Context> context_;
+  Context context_;
   AddressSpace address_space_;
 
-  // Task hierarchy
   std::shared_ptr<self_type> parent_;
   std::vector<std::shared_ptr<self_type>> children_;
 
-  // TODO: implement the following, currently not used
-
-  // Scheduling metadata
+  // metadata
   uint8_t priority_{0};
   uint32_t time_slice_{0};
   time_point creation_time_;
   time_point last_run_time_ = creation_time_;
   uint64_t total_cpu_time_{0};
 
-  // Resource management
+  // TODO: implement the following, currently not used
   struct ResourceLimits {
     size_t max_memory;
     size_t max_files;
     uint32_t max_threads;
   } limits_;
 
-  // I/O and resources
   std::vector<int> file_descriptors_;
   std::optional<int32_t> exit_code_;
 
@@ -211,8 +205,8 @@ private:
   Task &set_address_space(const AddressSpace &) noexcept;
 
 public:
-  auto context(this auto &&self) noexcept -> decltype(auto) {
-    return self.context_;
+  auto context() noexcept -> Context & {
+    return context_;
   }
 
 public:
@@ -224,14 +218,5 @@ public:
                     &Task::get_address_space,
                     &Task::set_address_space>
       address_space;
-
-private:
-  friend struct accat::auxilia::
-      Property<Task, State, Task &, &Task::get_state, &Task::set_state>;
-  friend struct accat::auxilia::Property<Task,
-                                         const AddressSpace &,
-                                         Task &,
-                                         &Task::get_address_space,
-                                         &Task::set_address_space>;
 };
 } // namespace accat::luce

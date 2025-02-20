@@ -40,21 +40,37 @@ public:
 
     return self.real_data[addr - isa::physical_base_address];
   }
-  // clang-format off
-  constexpr auto at(const isa::physical_address_t addr) const { return real_data.at(addr - isa::physical_base_address); }
+  constexpr auto at(const isa::physical_address_t addr) const {
+    return real_data.at(addr - isa::physical_base_address);
+  }
   // does not provide non-const iterators
-  auto begin()const  { return real_data.begin(); }
-  auto end()const  { return real_data.end(); }
-  auto iter_at_address(this auto&& self, const isa::physical_address_t addr) {
+  auto begin() const {
+    return real_data.begin();
+  }
+  auto end() const {
+    return real_data.end();
+  }
+  auto iter_at_address(this auto &&self, const isa::physical_address_t addr) {
     return self.real_data.begin() + addr - isa::physical_base_address;
   }
-  auto cbegin() const noexcept { return real_data.cbegin(); }
-  auto cend() const noexcept { return real_data.cend(); }
-  auto size() const noexcept { return real_data.size(); }
-  auto empty() const noexcept { return real_data.empty(); }
-  auto data(this auto &&self) -> decltype(auto) { return self.real_data.data(); }
-  auto address_of(const size_t offset) const { return isa::physical_base_address + offset; }
-  // clang-format on
+  auto cbegin() const noexcept {
+    return real_data.cbegin();
+  }
+  auto cend() const noexcept {
+    return real_data.cend();
+  }
+  auto size() const noexcept {
+    return real_data.size();
+  }
+  auto empty() const noexcept {
+    return real_data.empty();
+  }
+  auto data(this auto &&self) -> decltype(auto) {
+    return self.real_data.data();
+  }
+  auto addressof(const size_t offset) const {
+    return isa::physical_base_address + offset;
+  }
   template <typename... Args>
   bool is_in_range(isa::physical_address_t addr, Args... addrs) const noexcept
     requires(std::convertible_to<Args, isa::physical_address_t> && ...)
@@ -62,7 +78,8 @@ public:
     if constexpr (sizeof...(Args) == 0)
       return addr >= isa::physical_memory_begin &&
              addr < isa::physical_memory_end;
-    return (is_in_range(addr) && ... && is_in_range(addrs));
+    else // warning `unreachable code` if not using `else`
+      return (is_in_range(addr) && ... && is_in_range(addrs));
   }
 };
 

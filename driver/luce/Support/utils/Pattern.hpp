@@ -10,27 +10,25 @@
 #include "luce/config.hpp"
 
 namespace accat::luce {
+
 /// @interface Mediator
 struct Mediator;
 
 /// @struct Component
 struct Component;
-/// @note for magic_enum to perform cast, the enum value must be explicitly
-/// defined in the enum class
-/// @todo `procedual programming(switch enum) makes it clear, but also makes the
-/// program unmaintainable` -- Scott Meyers, More Effective C++.
-///       but currently I have no time to refactor this to use
-/// polymorphism/visitor pattern.
+
 enum class Event : uint8_t {
-  kNone = 0,
-  kLoadProgram = 1,
-  kRunTask = 2,
-  kTaskFinished = 3,
   kRestartOrResumeTask = 4,
-  kPrintWatchPoint = 5,
   kPauseTask = 6,
-  // todo: add more events
 };
+namespace tr {
+struct Command {
+  virtual auto execute(Mediator *, std::function<void(void)> = nullptr)
+      -> auxilia::Status = 0;
+
+  virtual ~Command() = default;
+};
+} // namespace tr
 struct Mediator {
 public:
   constexpr Mediator() = default;
@@ -99,5 +97,4 @@ inline auxilia::Status Mediator::set_as_parent(Component *child) {
   child->mediator = this;
   return {};
 }
-
 } // namespace accat::luce
