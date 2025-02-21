@@ -37,8 +37,8 @@ auto WatchPoint::update(expression::Visitor *visitor)
                   previous_result_ = res;
                   return {true, res};
                 }
-                if (*previous_result_ == res) {
-                  // both valid and equal, return false
+                if (*previous_result_ == res or previous_result_->empty()) {
+                  // both valid and equal, or no previous result, return false
                   return {false, res};
                 }
                 // both valid but not equal, update previous result and return

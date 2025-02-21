@@ -49,7 +49,8 @@ private:
   size_t id_;
   std::string expr_;
   expr_ptr_t AST_;
-  result_type previous_result_;
+  /// @note `Undefined` is the default value
+  result_type previous_result_ = {{evaluation::Undefined{}}};
 };
 class WatchPoints : public auxilia::Printable {
 public:

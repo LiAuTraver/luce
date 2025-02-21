@@ -30,7 +30,7 @@ inline static constexpr std::size_t instruction_alignment = 4;
 inline static constexpr std::size_t page_size = 0x1000; // 4KB
 inline static constexpr bool has_floating_point = true;
 namespace signal {
-inline static constexpr auto trap = std::array{
+inline static constexpr auto deadbeef = std::array{
     std::byte{0xef}, std::byte{0xbe}, std::byte{0xad}, std::byte{0xde}};
 }
 #pragma clang diagnostic pop

@@ -16,7 +16,7 @@ using auxilia::InvalidArgumentError;
 using auxilia::Monostate;
 using auxilia::Status;
 using auxilia::StatusOr;
-using auxilia::ranges::trim;
+using auxilia::views::trim;
 } // namespace accat::luce
 namespace accat::luce::repl::command {
 namespace {
@@ -217,37 +217,38 @@ using command_t = auxilia::Variant<Unknown,
 
 StatusOr<command_t> inspect(std::string_view input) {
   // extract out the first command
-  auto it = std::ranges::find_if(input, auxilia::isspacelike);
+  const auto it = std::ranges::find_if(input, auxilia::isspacelike);
   std::string_view mainCommand;
-  if (it == input.end()) {
+  const auto itAtEnd = it == input.end();
+  if (itAtEnd) {
     // input itself is the command with no arguments
     mainCommand = input;
   } else {
     mainCommand = input.substr(0, it - input.begin());
   }
   if (mainCommand == "exit" or mainCommand == "q") {
-    if (it == input.end()) {
+    if (itAtEnd) {
       return {Exit{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "exit: command does not take arguments")};
   }
   if (mainCommand == "help") {
-    if (it == input.end()) {
+    if (itAtEnd) {
       return {Help{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "help: command does not take arguments")};
   }
   if (mainCommand == "r") {
-    if (it == input.end()) {
+    if (itAtEnd) {
       return {Restart{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "r: command does not take arguments")};
   }
   if (mainCommand == "c") {
-    if (it == input.end()) {
+    if (itAtEnd) {
       return {Continue{}};
     }
     return {InvalidArgumentError(fg(crimson),
@@ -317,6 +318,9 @@ void replImpl(Monitor *monitor) {
   }
 }
 } // namespace
+// coroutine was the previous way to implement the REPL,
+//    but now it's not necessary.
+// TODO: remove the coroutine
 auto repl(Monitor *monitor) -> auxilia::Generator<Status> {
   precondition(monitor, "Monitor must not be nullptr")
   std::exception_ptr eptr;

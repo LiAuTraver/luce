@@ -13,7 +13,7 @@ using auxilia::FormatPolicy;
 #pragma region Cal
 auto Add::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] + gpr[rs2()];
+  gpr.write_at(rd()) = gpr[rs1()] + gpr[rs2()];
   return kSuccess;
 }
 auto Add::asmStr() const noexcept -> string_type {
@@ -21,7 +21,7 @@ auto Add::asmStr() const noexcept -> string_type {
 }
 auto Sub::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] - gpr[rs2()];
+  gpr.write_at(rd()) = gpr[rs1()] - gpr[rs2()];
   return kSuccess;
 }
 auto Sub::asmStr() const noexcept -> string_type {
@@ -29,7 +29,7 @@ auto Sub::asmStr() const noexcept -> string_type {
 }
 auto Xor::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] ^ gpr[rs2()];
+  gpr.write_at(rd()) = gpr[rs1()] ^ gpr[rs2()];
   return kSuccess;
 }
 auto Xor::asmStr() const noexcept -> string_type {
@@ -37,7 +37,7 @@ auto Xor::asmStr() const noexcept -> string_type {
 }
 auto Or::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] | gpr[rs2()];
+  gpr.write_at(rd()) = gpr[rs1()] | gpr[rs2()];
   return kSuccess;
 }
 auto Or::asmStr() const noexcept -> string_type {
@@ -45,7 +45,7 @@ auto Or::asmStr() const noexcept -> string_type {
 }
 auto And::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] & gpr[rs2()];
+  gpr.write_at(rd()) = gpr[rs1()] & gpr[rs2()];
   return kSuccess;
 }
 auto And::asmStr() const noexcept -> string_type {
@@ -53,7 +53,7 @@ auto And::asmStr() const noexcept -> string_type {
 }
 auto Sll::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] << (gpr[rs2()] & 0x1F); // mask the shift
+  gpr.write_at(rd()) = gpr[rs1()] << (gpr[rs2()] & 0x1F); // mask the shift
   return kSuccess;
 }
 auto Sll::asmStr() const noexcept -> string_type {
@@ -62,7 +62,7 @@ auto Sll::asmStr() const noexcept -> string_type {
 auto Srl::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // logical right shift
-  gpr[rd()] = gpr[rs1()] >> (gpr[rs2()] & 0x1F); // ditto
+  gpr.write_at(rd()) = gpr[rs1()] >> (gpr[rs2()] & 0x1F); // ditto
   return kSuccess;
 }
 auto Srl::asmStr() const noexcept -> string_type {
@@ -72,7 +72,7 @@ auto Srl::asmStr() const noexcept -> string_type {
 auto Sra::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // arithmetic right shift (MSB-extended)
-  gpr[rd()] = as<signed_num_type>(gpr[rs1()]) >> (gpr[rs2()] & 0x1F);
+  gpr.write_at(rd()) = as<signed_num_type>(gpr[rs1()]) >> (gpr[rs2()] & 0x1F);
   return kSuccess;
 }
 auto Sra::asmStr() const noexcept -> string_type {
@@ -81,7 +81,8 @@ auto Sra::asmStr() const noexcept -> string_type {
 
 auto Slt::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = as<signed_num_type>(gpr[rs1()]) < as<signed_num_type>(gpr[rs2()]);
+  gpr.write_at(rd()) =
+      as<signed_num_type>(gpr[rs1()]) < as<signed_num_type>(gpr[rs2()]);
   return kSuccess;
 }
 auto Slt::asmStr() const noexcept -> string_type {
@@ -90,7 +91,7 @@ auto Slt::asmStr() const noexcept -> string_type {
 
 auto Sltu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = as<num_type>(gpr[rs1()]) < as<num_type>(gpr[rs2()]);
+  gpr.write_at(rd()) = as<num_type>(gpr[rs1()]) < as<num_type>(gpr[rs2()]);
   return kSuccess;
 }
 auto Sltu::asmStr() const noexcept -> string_type {
@@ -100,7 +101,7 @@ auto Sltu::asmStr() const noexcept -> string_type {
 #pragma region Imm
 auto Addi::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] + imm();
+  gpr.write_at(rd()) = gpr[rs1()] + imm();
   return kSuccess;
 }
 auto Addi::asmStr() const noexcept -> string_type {
@@ -108,7 +109,7 @@ auto Addi::asmStr() const noexcept -> string_type {
 }
 auto Xori::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] ^ imm();
+  gpr.write_at(rd()) = gpr[rs1()] ^ imm();
   return kSuccess;
 }
 auto Xori::asmStr() const noexcept -> string_type {
@@ -116,7 +117,7 @@ auto Xori::asmStr() const noexcept -> string_type {
 }
 auto Ori::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] | imm();
+  gpr.write_at(rd()) = gpr[rs1()] | imm();
   return kSuccess;
 }
 auto Ori::asmStr() const noexcept -> string_type {
@@ -124,7 +125,7 @@ auto Ori::asmStr() const noexcept -> string_type {
 }
 auto Andi::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = gpr[rs1()] & imm();
+  gpr.write_at(rd()) = gpr[rs1()] & imm();
   return kSuccess;
 }
 auto Andi::asmStr() const noexcept -> string_type {
@@ -133,7 +134,7 @@ auto Andi::asmStr() const noexcept -> string_type {
 auto Slli::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // rd = rs1 << imm[0:4]
-  gpr[rd()] = gpr[rs1()] << (imm() & 0x1F);
+  gpr.write_at(rd()) = gpr[rs1()] << (imm() & 0x1F);
   return kSuccess;
 }
 auto Slli::asmStr() const noexcept -> string_type {
@@ -142,7 +143,7 @@ auto Slli::asmStr() const noexcept -> string_type {
 auto Srli::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // rd = rs1 >> imm[0:4]
-  gpr[rd()] = gpr[rs1()] >> (imm() & 0x1F);
+  gpr.write_at(rd()) = gpr[rs1()] >> (imm() & 0x1F);
   return kSuccess;
 }
 auto Srli::asmStr() const noexcept -> string_type {
@@ -152,7 +153,7 @@ auto Srai::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   // rd = rs1 >> imm[0:4]
   // msb-extend
-  gpr[rd()] = as<signed_num_type>(gpr[rs1()]) >> (imm() & 0x1F);
+  gpr.write_at(rd()) = as<signed_num_type>(gpr[rs1()]) >> (imm() & 0x1F);
   return kSuccess;
 }
 auto Srai::asmStr() const noexcept -> string_type {
@@ -161,7 +162,7 @@ auto Srai::asmStr() const noexcept -> string_type {
 auto Slti::execute(Icpu *cpu) const -> ExecutionStatus {
   // signed
   auto &gpr = cpu->gpr();
-  gpr[rd()] = as<signed_num_type>(gpr[rs1()] < imm());
+  gpr.write_at(rd()) = as<signed_num_type>(gpr[rs1()] < imm());
   return kSuccess;
 }
 auto Slti::asmStr() const noexcept -> string_type {
@@ -169,7 +170,7 @@ auto Slti::asmStr() const noexcept -> string_type {
 }
 auto Sltiu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = as<num_type>(gpr[rs1()] < imm());
+  gpr.write_at(rd()) = as<num_type>(gpr[rs1()] < imm());
   return kSuccess;
 }
 auto Sltiu::asmStr() const noexcept -> string_type {
@@ -185,7 +186,7 @@ auto Lb::execute(Icpu *cpu) const -> ExecutionStatus {
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = as<signed_num_type>(bytes & 0xFF);
+  gpr.write_at(rd()) = as<signed_num_type>(bytes & 0xFF);
   return kSuccess;
 }
 auto Lb::asmStr() const noexcept -> string_type {
@@ -201,7 +202,7 @@ auto Lh::execute(Icpu *cpu) const -> ExecutionStatus {
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = as<signed_num_type>(bytes & 0xFFFF);
+  gpr.write_at(rd()) = as<signed_num_type>(bytes & 0xFFFF);
   return kSuccess;
 }
 auto Lh::asmStr() const noexcept -> string_type {
@@ -216,7 +217,7 @@ auto Lw::execute(Icpu *cpu) const -> ExecutionStatus {
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = as<signed_num_type>(bytes);
+  gpr.write_at(rd()) = as<signed_num_type>(bytes);
   return kSuccess;
 }
 auto Lw::asmStr() const noexcept -> string_type {
@@ -232,7 +233,7 @@ auto Lbu::execute(Icpu *cpu) const -> ExecutionStatus {
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = bytes & 0xFF;
+  gpr.write_at(rd()) = bytes & 0xFF;
   return kSuccess;
 }
 auto Lbu::asmStr() const noexcept -> string_type {
@@ -248,7 +249,7 @@ auto Lhu::execute(Icpu *cpu) const -> ExecutionStatus {
   }
   auto bytes =
       *reinterpret_cast<const num_type *>(std::move(maybe_bytes)->data());
-  gpr[rd()] = bytes & 0xFFFF;
+  gpr.write_at(rd()) = bytes & 0xFFFF;
   return kSuccess;
 }
 auto Lhu::asmStr() const noexcept -> string_type {
@@ -386,7 +387,7 @@ auto Bgeu::asmStr() const noexcept -> string_type {
 #pragma region Jump
 auto Jal::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = cpu->pc().num() + 4;
+  gpr.write_at(rd()) = cpu->pc().num() + 4;
   cpu->pc().num() += imm();
   return kSuccess;
 }
@@ -398,7 +399,7 @@ auto Jalr::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   auto t = cpu->pc().num() + 4;
   cpu->pc().num() = (gpr[rs1()] + imm());
-  gpr[rd()] = t;
+  gpr.write_at(rd()) = t;
   return kSuccess;
 }
 auto Jalr::asmStr() const noexcept -> string_type {
@@ -408,7 +409,7 @@ auto Jalr::asmStr() const noexcept -> string_type {
 #pragma region UpperImm
 auto Lui::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = imm() << 12;
+  gpr.write_at(rd()) = imm() << 12;
   return kSuccess;
 }
 auto Lui::asmStr() const noexcept -> string_type {
@@ -416,7 +417,7 @@ auto Lui::asmStr() const noexcept -> string_type {
 }
 auto Auipc::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr[rd()] = cpu->pc().num() + (imm() << 12);
+  gpr.write_at(rd()) = cpu->pc().num() + (imm() << 12);
   return kSuccess;
 }
 auto Auipc::asmStr() const noexcept -> string_type {

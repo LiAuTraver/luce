@@ -39,31 +39,6 @@ public:
     raw = std::move(that.raw);
     return *this;
   }
-
-  constexpr const register_t &zero() const noexcept {
-    return registers.zero_reg;
-  }
-  constexpr register_t &ra(this auto &&self) noexcept {
-    return self.registers.ra;
-  }
-  constexpr register_t &sp(this auto &&self) noexcept {
-    return self.registers.sp;
-  }
-  constexpr register_t &gp(this auto &&self) noexcept {
-    return self.registers.gp;
-  }
-  constexpr register_t &tp(this auto &&self) noexcept {
-    return self.registers.tp;
-  }
-  auto arguments(this auto &&self) noexcept {
-    return iSpan{{&self.registers.a0, 8}};
-  }
-  auto saved(this auto &&self) noexcept {
-    return iSpan{{&self.registers.s0, 2}, {&self.registers.s2, 8}};
-  }
-  auto temporary(this auto &&self) noexcept {
-    return iSpan{{&self.registers.t0, 3}, {&self.registers.t3, 4}};
-  }
   [[clang::reinitializes]] auto &
   reset(const registers_t &newVal = {}) noexcept {
     raw = newVal;
@@ -76,40 +51,49 @@ public:
     }
     return std::nullopt;
   }
-  auto &operator[](this auto &&self, const std::string_view str) noexcept
+  /// @brief return the register's underlying number by register name, only
+  /// readable.
+  const auto &operator[](this auto &&self, const std::string_view str) noexcept
       [[clang::lifetimebound]] {
     auto res = self.get_register_by_string(str);
     precondition(res, "register not found");
     return *res;
   }
-  auto &operator[](this auto &&self, const size_t idx) noexcept
+  /// @brief return the register's underlying number by index, only readable.
+  const auto &operator[](this auto &&self, const size_t idx) noexcept
       [[clang::lifetimebound]] {
-    precondition(idx < general_purpose_register_count, "index out of bounds");
     return self.raw[idx].num();
   }
+  /// @brief return the register by index.
   auto &at(const size_t idx) const noexcept [[clang::lifetimebound]] {
-    precondition(idx < general_purpose_register_count, "index out of bounds");
     return raw[idx];
   }
+  /// @brief return the register by register name.
   auto &at(const std::string_view str) const noexcept [[clang::lifetimebound]] {
     auto reg = get_register_by_string(str);
     contract_assert(reg, "register not found");
     return *reg;
   }
+  auto &write_at(const size_t idx) noexcept [[clang::lifetimebound]] {
+    static register_t garbage{};
+    if (idx == 0)
+      return garbage.num();
+    return raw[idx].num();
+  }
   /// @return previous value, if the register is not writable, return nullopt
   auto write(const std::string_view str, const register_t val)
       -> std::optional<register_t> {
-    // if the register is not writable, return nullopt
-    if (auto reg = get_register_by_string(str); reg) {
-      if (reg == &registers.zero_reg) {
-        spdlog::warn("attempted to write to zero register");
-        return std::nullopt;
-      }
-      auto prev = *reg;
-      *reg = val;
-      return std::make_optional(prev);
-    }
-    return std::nullopt;
+    auto reg = get_register_by_string(str);
+    if (!reg)
+      return std::nullopt;
+
+    if (reg == &registers.zero_reg)
+      // do nothing
+      return std::make_optional(register_t{0});
+
+    auto prev = *reg;
+    *reg = val;
+    return std::make_optional(prev);
   }
   auto to_string(auxilia::FormatPolicy policy = kDefault) const -> string_type;
 
@@ -120,6 +104,8 @@ private:
     return const_cast<register_t *>(
         const_cast<const decltype(self) &>(self)._get_impl(str));
   }
+  string_type _format_default_str() const;
+  string_type _fmt_detailed_str() const;
   auto _get_impl(std::string_view str) const noexcept -> const register_t *;
 
 private:
@@ -159,6 +145,30 @@ public:
   auto view() noexcept [[clang::lifetimebound]] {
     return std::span<register_t, general_purpose_register_count>{raw};
   }
+  // constexpr const register_t &zero() const noexcept {
+  //   return registers.zero_reg;
+  // }
+  // constexpr register_t &ra(this auto &&self) noexcept {
+  //   return self.registers.ra;
+  // }
+  // constexpr register_t &sp(this auto &&self) noexcept {
+  //   return self.registers.sp;
+  // }
+  // constexpr register_t &gp(this auto &&self) noexcept {
+  //   return self.registers.gp;
+  // }
+  // constexpr register_t &tp(this auto &&self) noexcept {
+  //   return self.registers.tp;
+  // }
+  // auto arguments(this auto &&self) noexcept {
+  //   return iSpan{{&self.registers.a0, 8}};
+  // }
+  // auto saved(this auto &&self) noexcept {
+  //   return iSpan{{&self.registers.s0, 2}, {&self.registers.s2, 8}};
+  // }
+  // auto temporary(this auto &&self) noexcept {
+  //   return iSpan{{&self.registers.t0, 3}, {&self.registers.t3, 4}};
+  // }
 };
 
 } // namespace accat::luce::isa::riscv32

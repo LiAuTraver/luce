@@ -9,6 +9,7 @@
 #include "luce/Support/isa/riscv32/Register.hpp"
 namespace accat::luce {
 class Context;
+class Task;
 }
 namespace accat::luce::isa {
 class Icpu : public Component {

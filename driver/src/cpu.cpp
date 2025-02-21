@@ -59,23 +59,16 @@ Status CPU::shuttle() {
   return decode_and_execute();
 }
 Status CPU::decode_and_execute() {
-  if (std::ranges::equal(task_->context().instruction_register.bytes(),
-                         isa::signal::trap)) {
-    task_->finish();
-    this->detach_task();
-    return {};
-  }
   auto inst = monitor()->disassembler()->disassemble(
       task_->context().instruction_register.num());
-  contract_assert(inst,
-                  "Failed to decode the instruction."
-                  " This assert is designed for debugging purposes. "
-                  "Currently, we are not handling this case.");
+  if (!inst) {
+    spdlog::error("Failed to decode the instruction.");
+    return trap();
+  }
   spdlog::info("Decoded instruction: {}", *inst);
   return execute(inst.get());
 }
 auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
-  precondition(inst, "Instruction is nullptr");
   auto exec = inst->execute(this);
   using enum isa::IInstruction::ExecutionStatus;
   switch (exec) {
@@ -83,24 +76,29 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
     return {};
   case kMemoryViolation:
     spdlog::error("Memory violation detected. Pausing the task.");
-    goto ebreak;
+    break;
   case kInvalidInstruction:
     spdlog::error("Invalid instruction detected. Pausing the task.");
-    goto ebreak;
+    break;
   case kEnvBreak:
-    goto ebreak;
+    spdlog::info("received an environment break signal; pausing the task");
+    break;
   case kEnvCall:
     // TODO(...)
     spdlog::warn("Environment call detected, currently does nothing but resume "
-                 "the task.");
-    break;
+                 "the task. this is a TODO.");
+    return {};
   case kUnknown:
     spdlog::error("Unknown error occurred. Pausing the task.");
-    goto ebreak;
+    break;
   }
-  return {};
-ebreak:
-  spdlog::info("received an environment break signal; pausing the task");
+  return trap();
+}
+auto CentralProcessingUnit::trap() -> Status {
+  if (std::ranges::equal(task_->context().instruction_register.bytes(),
+                         isa::signal::deadbeef))
+    spdlog::info("Hit good ol' deadbeef, pausing the task.");
+
   task_->pause();
   return {};
 }

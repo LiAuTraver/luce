@@ -65,6 +65,8 @@ private:
   auxilia::Status shuttle();
   auxilia::Status decode_and_execute();
   auxilia::Status execute(isa::IInstruction *);
+  /// used to handle generic exceptions,subject to change
+  auto trap() -> auxilia::Status;
   auto monitor() const noexcept -> Monitor *;
 };
 
