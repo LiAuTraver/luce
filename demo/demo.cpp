@@ -1,3 +1,4 @@
+#if __has_include(<mdspan>)
 #include <bitset>
 #include <cstddef>
 #include <mdspan>
@@ -40,3 +41,6 @@ int main() {
   }
   auto first = code.subspan(0, 4);
 }
+#else
+int main(){}
+#endif

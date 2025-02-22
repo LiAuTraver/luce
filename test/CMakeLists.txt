@@ -8,7 +8,6 @@ include(CTest)
 include(GoogleTest)
 
 find_package(GTest CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
 
 include(folders)
 include(dependencies)
@@ -28,7 +27,6 @@ function(create_test_executable test_name)
   add_executable(${test_name} ${ARGN})
   target_link_libraries(${test_name} PRIVATE
     $<TARGET_OBJECTS:driver>
-    # Support.isa
     test_deps
   )
   gtest_discover_tests(${test_name})

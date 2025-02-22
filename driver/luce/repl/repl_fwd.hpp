@@ -8,6 +8,7 @@ template <typename...> class Variant;
 } // namespace accat::auxilia
 
 namespace accat::luce::repl::expression {
+struct Visitor;
 struct Expr;
 struct Undefined;
 struct Grouping;

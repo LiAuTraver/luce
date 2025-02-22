@@ -42,7 +42,7 @@ module;
 // <intrin.h> defines some types outside of `extern "C"` or `extern "C++"`.
 #  include <intrin.h>
 
-export module std;
+export module std; // NOLINT
 
 #  pragma warning(push)
 #  pragma warning(disable : 5244) // '#include <meow>' in the purview of module

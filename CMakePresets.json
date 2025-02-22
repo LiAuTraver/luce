@@ -46,6 +46,11 @@
       "inherits": [
         "common"
       ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "C:/Program Files/LLVM/bin/clang.exe",
         "CMAKE_CXX_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe"
@@ -53,6 +58,27 @@
       "environment": {
         "CC": "C:/Program Files/LLVM/bin/clang.exe",
         "CXX": "C:/Program Files/LLVM/bin/clang++.exe"
+      }
+    },
+    {
+      "name": "Clang",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${hostSystemName}-${presetName}",
+      "inherits": [
+        "common"
+      ],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      },
+      "environment": {
+        "CC": "clang",
+        "CXX": "clang++"
       }
     },
     {

@@ -29,7 +29,7 @@ public:
   virtual ~IInstruction() = default;
   auto to_string(auxilia::FormatPolicy policy = auxilia::FormatPolicy::kDefault)
       const noexcept -> string_type {
-    dbg(info, "Bits: 0b{}", bits());
+    dbg(trace, "Bits: 0b{}", bits());
     if (policy == kDefault) {
       return asmStr();
     } else {
@@ -39,8 +39,13 @@ public:
 
 public:
   enum class ExecutionStatus : std::uint8_t {
+    // normal instruction execution, advancing PC by default
     kSuccess = 0,
-    // kNormalOperation = kSuccess,
+    // not advancing PC, e.g., branch instructions
+    kSuccessAndNotAdvancePC,
+
+    // TODO: advance pc?
+
     kMemoryViolation,
     kInvalidInstruction,
     kEnvCall,

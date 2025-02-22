@@ -35,7 +35,7 @@ Status CPU::execute_shuttle() {
     return shuttle();
   };
   auto [res, elapsed] = cpu_timer_.measure(executeShuttle);
-  spdlog::info("CPU execution time: {} ms", elapsed);
+  spdlog::trace("CPU execution time: {} ms", elapsed);
   return res;
 }
 Status CPU::shuttle() {
@@ -44,7 +44,6 @@ Status CPU::shuttle() {
   if (!maybe_bytes) {
     return maybe_bytes.as_status();
   }
-  ctx.program_counter.num() += sizeof(isa::instruction_size_t);
   auto bytes = std::move(maybe_bytes).value();
   auto &orig_bytes = ctx.instruction_register.bytes();
   for (const auto i : std::views::iota(0ull, sizeof(isa::instruction_size_t))) {
@@ -73,6 +72,9 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   using enum isa::IInstruction::ExecutionStatus;
   switch (exec) {
   case kSuccess:
+    task_->context().program_counter.num() += sizeof(isa::instruction_size_t);
+    [[fallthrough]];
+  case kSuccessAndNotAdvancePC:
     return {};
   case kMemoryViolation:
     spdlog::error("Memory violation detected. Pausing the task.");
@@ -81,12 +83,18 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
     spdlog::error("Invalid instruction detected. Pausing the task.");
     break;
   case kEnvBreak:
+    // TODO: pc.
     spdlog::info("received an environment break signal; pausing the task");
+    // temporary solution
+    task_->context().program_counter.num() += sizeof(isa::instruction_size_t);
     break;
   case kEnvCall:
     // TODO(...)
+    // advancing the PC after the call, todo.
     spdlog::warn("Environment call detected, currently does nothing but resume "
                  "the task. this is a TODO.");
+    // temporary solution
+    task_->context().program_counter.num() += sizeof(isa::instruction_size_t);
     return {};
   case kUnknown:
     spdlog::error("Unknown error occurred. Pausing the task.");

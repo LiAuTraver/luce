@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <scn/scan.h>
 #include <cstddef>
 #include <functional>
 #include <iostream>
@@ -94,6 +93,7 @@ public:
 
   auxilia::Status run();
   auxilia::Status REPL();
+  auxilia::Status resume();
   auxilia::Status execute_n(size_t);
   auto register_task(const std::ranges::range auto &, paddr_t, paddr_t)
       -> auxilia::Status;

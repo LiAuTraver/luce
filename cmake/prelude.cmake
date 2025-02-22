@@ -48,7 +48,7 @@ else()
   message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
-find_package(Python3 COMPONENTS Interpreter)
+find_package(Python3 COMPONENTS Interpreter QUIET)
 
 if(NOT Python3_Interpreter_FOUND)
   message(WARNING "Python3 interpreter was not found. dll may not be copied to the target directory.")

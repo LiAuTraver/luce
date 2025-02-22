@@ -4,6 +4,8 @@
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/Support/isa/riscv32/Register.hpp"
 namespace accat::luce::isa::riscv32 {
+GeneralPurposeRegisters::register_t GeneralPurposeRegisters::garbage = {};
+
 using auxilia::operator""_raw;
 using GPR = GeneralPurposeRegisters;
 namespace {

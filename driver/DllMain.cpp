@@ -27,14 +27,12 @@ LUCE_API BOOL APIENTRY DllMain(HMODULE hModule,
   }
   return TRUE;
 }
-#endif
 // /// @note MSVC linker can't resolve fuzzer symbols across DLL boundary
 // extern "C" LUCE_API int LLVMFuzzerTestOneInput(const uint8_t *Data,
 //                                                size_t Size) {
-//   // Your fuzzing logic here
-//   // Example:
 //   if (Size > 0) {
-//     // Test your driver with the fuzzer-generated data
 //   }
-//   return 0; // Non-zero return values are reserved for future use
+//   return 0; // Non-zero return values are reserved
 // }
+
+#endif

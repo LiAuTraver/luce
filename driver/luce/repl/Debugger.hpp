@@ -5,17 +5,12 @@
 #include "luce/repl/repl_fwd.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/repl/evaluation.hpp"
-
-namespace accat::luce::repl {
-namespace expression {
-struct Visitor;
-struct Expr;
-} // namespace expression
-namespace evaluation {
+namespace accat::luce::repl::evaluation {
 using variant_type =
     auxilia::Variant<Undefined, Number, Byte, String, Boolean, Nil>;
 using result_type = auxilia::StatusOr<variant_type>;
-} // namespace evaluation
+} // namespace accat::luce::repl::evaluation
+namespace accat::luce::repl {
 class WatchPoint : public auxilia::Printable {
 public:
   using expr_ptr_t = std::shared_ptr<expression::Expr>;
@@ -76,7 +71,7 @@ public:
   string_type to_string(
       const auxilia::FormatPolicy policy = auxilia::FormatPolicy::kBrief) const;
 
-  bool update(expression::Visitor *visitor, bool);
+  bool update(expression::Visitor *visitor);
 
 private:
   watchpoints_t watchpoints_;
@@ -99,7 +94,7 @@ public:
   }
   auxilia::Status add_watchpoint(const std::string &);
   auxilia::Status delete_watchpoint(size_t);
-  void update_watchpoints(bool, bool);
+  void update_watchpoints(bool);
 
 private:
   WatchPoints watchpoints_;

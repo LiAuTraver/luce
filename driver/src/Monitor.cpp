@@ -7,6 +7,7 @@
 #include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/utils/Pattern.hpp"
+#include "luce/argument/Argument.hpp"
 
 namespace accat::luce::repl {
 extern auto repl(Monitor *)
@@ -65,12 +66,40 @@ auto Monitor::notify(Component *,
   return {};
 }
 Status Monitor::run() {
+
   process.start();
   cpus.attach_task(&process);
-  while (process.state != Task::State::kTerminated) {
+
+  return resume();
+}
+auto Monitor::resume() -> Status {
+  // prevent infinite loop for debugging
+  int epoch = 0;
+  while (process.state != Task::State::kTerminated or
+         process.state != Task::State::kPaused) {
+    if (epoch++ >= 100) {
+      spdlog::critical("To prevent infinite loop, program paused.");
+      this->notify(nullptr, Event::kPauseTask);
+
+      if (!argument::program::batch.value)
+        // not batch mode, back to REPL
+        return {};
+      else {
+        fmt::println(stdout,
+                     "Press `r` to resume the program, or any other key to "
+                     "exit the program.");
+
+        if (auto c = ::getchar(); c == 'r') {
+          this->notify(nullptr, Event::kRestartOrResumeTask);
+          epoch = 0;
+          continue;
+        }
+        spdlog::info("Exiting program.");
+        return {};
+      }
+    }
+
     if (auto res = cpus.execute_shuttle(); !res) {
-      spdlog::error("Error: {}", res.message());
-      dbg(error, AC_UTILS_STACKTRACE);
       return res;
     }
   }
@@ -104,7 +133,10 @@ Status Monitor::_do_execute_n_unchecked(const size_t steps) {
     }
     if (auto res = cpus.execute_shuttle(); !res)
       return res;
-    this->debugger_.update_watchpoints(true, true);
+    this->debugger_.update_watchpoints(
+        argument::program::batch.value ? false // don't notify(keep running)
+                                       : true  // notify and pause if wp changed
+    );
   }
   return {};
 }

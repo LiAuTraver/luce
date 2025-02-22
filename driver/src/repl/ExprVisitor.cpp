@@ -55,7 +55,7 @@ result_type Evaluator::visit(const Literal &expr) {
         expr.value.lexeme().begin() + 1,
         expr.value.lexeme().end() - 1}}}}; // remove `"` from the string
   case kNumber:
-    return {{evaluation::Number{expr.value.number()}}};
+    return {{evaluation::Number::from_variant(expr.value.number())}};
   case kFalse:
     return {{evaluation::False}};
   case kNil:
@@ -81,27 +81,18 @@ result_type Evaluator::visit(const Literal &expr) {
 result_type Evaluator::visit(const Variable &expr) {
   const auto ident = expr.identifier();
   if (ident.front() == '$') {
-    if (ident.size() <= 2) {
+    if (ident.size() <= 2)
       return {InvalidArgumentError("'{}' is not a valid identifier", ident)};
-    }
-    precondition(this->mediator, "mediator must be set");
+
+    if (!this->mediator)
+      return {auxilia::UnavailableError("Running evaluator without mediator, "
+                                        "accessing registers is unavailable.")};
+
     if (auto maybe_bytes = static_cast<Monitor *>(this->mediator)
                                ->registers()
-                               .read(ident.substr(1))) {
-      auto str = reinterpret_cast<const char *>(maybe_bytes->bytes().data());
-      // convert to number, base 16
-      auto num = 0ll;
-      if (*str == '\0') {
-        // value of 0
-        return {evaluation::Number{num}};
-      }
-      std::from_chars_result res =
-          std::from_chars(str, str + maybe_bytes->bytes().size(), num, 16);
-      if (res.ec == std::errc{}) {
-        return {{evaluation::Number{num}}};
-      }
-      return {InvalidArgumentError("failed to convert '{}' to number", str)};
-    }
+                               .read(ident.substr(1)))
+      return {{evaluation::Number::make_integer(maybe_bytes->num())}};
+
     return {InvalidArgumentError("unknown register: {}", ident.substr(1))};
   }
   // TODO(variable evaluation is not implemented)
@@ -118,7 +109,7 @@ result_type Evaluator::visit(const Unary &expr) {
   if (right.empty()) { // holds a unknown (represents monostate)
     return {};
   }
-  auto pattern = match{
+  auto pattern = match(
       [&](const evaluation::Number &num) -> result_type {
         switch (expr.op.type()) {
         case kMinus:
@@ -139,8 +130,9 @@ result_type Evaluator::visit(const Unary &expr) {
                 return {res.as_status()};
               }
             }
-            spdlog::warn("Running evaluator without mediator, pointer "
-                         "dereference is unavailable.");
+            return {
+                InvalidArgumentError("Running evaluator without mediator, "
+                                     "pointer dereference is unavailable.")};
           }
           return {InvalidArgumentError("cannot dereference a number")};
         default:
@@ -200,7 +192,7 @@ result_type Evaluator::visit(const Unary &expr) {
         spdlog::error("Unknown unary evaluation type: {}",
                       typeid(whatever).name());
         return {InvalidArgumentError("unknown evaluation type")};
-      }};
+      });
   return right.visit(pattern);
 }
 result_type Evaluator::visit(const Binary &expr) {
@@ -214,7 +206,7 @@ result_type Evaluator::visit(const Binary &expr) {
   }
   auto left = *std::move(maybe_left);
   auto right = *std::move(maybe_right);
-  auto pattern = match{
+  auto pattern = match(
       [&](const evaluation::Number &lhs,
           const evaluation::Number &rhs) -> result_type {
         switch (expr.op.type()) {
@@ -295,7 +287,7 @@ result_type Evaluator::visit(const Binary &expr) {
                       typeid(lhs).name(),
                       typeid(rhs).name());
         return {InvalidArgumentError("unknown evaluation type")};
-      }};
+      });
   return std::visit(pattern, std::move(left).get(), std::move(right).get());
 }
 result_type Evaluator::visit(const Logical &expr) {
@@ -309,25 +301,25 @@ result_type Evaluator::visit(const Logical &expr) {
   }
   auto left = *std::move(maybe_left);
   auto right = *std::move(maybe_right);
-  auto pattern =
-      match{[&](const evaluation::Boolean &lhs,
-                const evaluation::Boolean &rhs) -> result_type {
-              switch (expr.op.type()) {
-              case kOr:
-                return {{lhs || rhs}};
-              case kAnd:
-                return {{lhs && rhs}};
-              default:
-                break;
-              }
-              return {InvalidArgumentError("unknown logical operator")};
-            },
-            [&](const auto &lhs, const auto &rhs) -> result_type {
-              spdlog::error("Unknown logical evaluation type: {} with {}",
-                            typeid(lhs).name(),
-                            typeid(rhs).name());
-              return {InvalidArgumentError("unknown evaluation type")};
-            }};
+  auto pattern = match(
+      [&](const evaluation::Boolean &lhs,
+          const evaluation::Boolean &rhs) -> result_type {
+        switch (expr.op.type()) {
+        case kOr:
+          return {{lhs || rhs}};
+        case kAnd:
+          return {{lhs && rhs}};
+        default:
+          break;
+        }
+        return {InvalidArgumentError("unknown logical operator")};
+      },
+      [&](const auto &lhs, const auto &rhs) -> result_type {
+        spdlog::error("Unknown logical evaluation type: {} with {}",
+                      typeid(lhs).name(),
+                      typeid(rhs).name());
+        return {InvalidArgumentError("unknown evaluation type")};
+      });
   return std::visit(pattern, std::move(left).get(), std::move(right).get());
 }
 } // namespace accat::luce::repl::expression

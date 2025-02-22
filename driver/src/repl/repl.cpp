@@ -1,3 +1,7 @@
+#include <cstddef>
+#include <string_view>
+#include <type_traits>
+#include "accat/auxilia/details/Status.hpp"
 #include "deps.hh"
 
 #include "luce/config.hpp"
@@ -20,6 +24,27 @@ using auxilia::views::trim;
 } // namespace accat::luce
 namespace accat::luce::repl::command {
 namespace {
+template <typename T>
+  requires std::is_arithmetic_v<T>
+auto to_number(const std::string_view sv) -> StatusOr<T> {
+  if constexpr (std::is_floating_point_v<T>) {
+    T F;
+    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), F);
+    if (ec != std::errc()) {
+      return InvalidArgumentError("Error converting string to number: {}",
+                                  std::make_error_code(ec).message());
+    }
+    return F;
+  } else {
+    T I;
+    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), I);
+    if (ec != std::errc()) {
+      return InvalidArgumentError("Error converting string to number: {}",
+                                  std::make_error_code(ec).message());
+    }
+    return I;
+  }
+}
 std::string read(Monitor *) {
   std::string input;
   for (;;) {
@@ -102,7 +127,8 @@ struct Restart final : ICommand {
 };
 struct Continue final : ICommand {
   virtual void execute(Monitor *monitor) const override final {
-    monitor->execute_n(1);
+    if (auto res = monitor->resume(); !res)
+      spdlog::error("Error: {}", res.message());
   }
 };
 struct Step final : ICommand {
@@ -204,6 +230,67 @@ struct Print final : ICommand {
   std::string expression;
 };
 
+struct Scan final : ICommand {
+  // x N expr -> result as address, output N words
+  Scan() = default;
+  Scan(size_t count, std::string expr)
+      : count(count), expression(std::move(expr)) {}
+  virtual ~Scan() = default;
+  virtual void execute(Monitor *monitor) const override final {
+    auto lexer = Lexer{};
+    auto parser = Parser{lexer.load_string(expression).lex()};
+    auto eval = expression::Evaluator{monitor};
+    parser.next_expression().transform([&](auto &&value) {
+      value->accept(eval)
+          .transform([&](auto &&value) {
+            auto ptr = auxilia::get_if<evaluation::Number>(&value);
+            if (!ptr) {
+              // does not hold a number
+              auxilia::println(stderr,
+                               fg(crimson),
+                               "luce: error: {msg}",
+                               "msg"_a =
+                                   "expression does not evaluate to a number");
+              return;
+            }
+            if (auto num = ptr->integer()) {
+              monitor->memory()
+                  .read_n(*num, count * isa::instruction_size_bytes)
+                  .transform([num](auto &&byteSpan) {
+                    // print the result as hex
+                    fmt::println(
+                        "Bytes start at address {addr:#10x}: {bytes:#04x}",
+                        "addr"_a = num,
+                        "bytes"_a = fmt::join(byteSpan, " "));
+                  })
+                  .transform_error([](auto &&err) {
+                    auxilia::println(stderr,
+                                     fg(crimson),
+                                     "luce: error: {msg}",
+                                     "msg"_a = err.message());
+                  });
+              return;
+            }
+            // holds a floating point number
+            auxilia::println(stderr,
+                             fg(crimson),
+                             "luce: error: expression does not evaluate to "
+                             "an integer: {num}",
+                             "num"_a = *ptr->floating());
+          })
+          // evaluation error
+          .transform_error([](auto &&err) {
+            auxilia::println(stderr,
+                             fg(crimson),
+                             "luce: error: {msg}",
+                             "msg"_a = err.message());
+          });
+    });
+  }
+  size_t count = 1;
+  std::string expression;
+};
+
 using command_t = auxilia::Variant<Unknown,
                                    Help,
                                    Exit,
@@ -213,7 +300,8 @@ using command_t = auxilia::Variant<Unknown,
                                    AddWatchPoint,
                                    DeleteWatchPoint,
                                    Info,
-                                   Print>;
+                                   Print,
+                                   Scan>;
 
 StatusOr<command_t> inspect(std::string_view input) {
   // extract out the first command
@@ -258,18 +346,16 @@ StatusOr<command_t> inspect(std::string_view input) {
     if (auto args = trim(input.substr(it - input.begin()));
         !args.empty() && args.front() == '[' && args.back() == ']') {
       if (auto maybe_steps =
-              scn::scan_int<size_t>(args.substr(1, args.size() - 2))) {
-        auto [steps] = std::move(maybe_steps)->values();
-        return {Step{steps}};
+              to_number<size_t>(args.substr(1, args.size() - 2))) {
+        return {Step{*maybe_steps}};
       } else {
         return {InvalidArgumentError(fg(crimson),
                                      "si: error parsing number: {}",
-                                     maybe_steps.error().msg())};
+                                     maybe_steps.message())};
       }
     }
 
-    return {
-        InvalidArgumentError(fg(crimson), "si: requires [number] as argument")};
+    return {Step{1}}; // default to 1
   }
   if (mainCommand == "p") {
     return {Print{input.substr(it - input.begin()).data()}};
@@ -290,12 +376,31 @@ StatusOr<command_t> inspect(std::string_view input) {
 
   if (mainCommand == "d") {
     if (auto maybe_watchpoint =
-            scn::scan_int<size_t>(input.substr(it - input.begin()))) {
-      auto [watchpoint] = std::move(maybe_watchpoint)->values();
-      return {DeleteWatchPoint{watchpoint}};
+            to_number<size_t>(input.substr(it - input.begin()))) {
+      return {DeleteWatchPoint{*maybe_watchpoint}};
     }
     return {
         InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
+  }
+  if (mainCommand == "x") {
+    // x N EXPR
+    if (auto args = trim(input.substr(it - input.begin())); !args.empty()) {
+      auto s = std::ranges::find_if(args, auxilia::isspacelike);
+      auto maybe_num = to_number<size_t>(args.substr(0, s - args.begin()));
+      if (!maybe_num) {
+        return {InvalidArgumentError(
+            fg(crimson), "x: error parsing number: {}", maybe_num.message())};
+      }
+      auto expr = trim(args.substr(s - args.begin()));
+      if (expr.empty()) {
+        return {InvalidArgumentError(fg(crimson),
+                                     "x: requires 'expression' as argument")};
+      }
+      return {Scan{*maybe_num, {expr.begin(), expr.end()}}};
+    }
+    return {InvalidArgumentError(fg(crimson),
+                                 "x: requires 'number' and 'expression' as "
+                                 "arguments")};
   }
 
   return {InvalidArgumentError(fg(crimson),

@@ -389,7 +389,7 @@ auto Jal::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   gpr.write_at(rd()) = cpu->pc().num() + 4;
   cpu->pc().num() += imm();
-  return kSuccess;
+  return kSuccessAndNotAdvancePC;
 }
 auto Jal::asmStr() const noexcept -> string_type {
   return fmt::format("jal x{}, {}", rd(), imm_str());
@@ -400,7 +400,7 @@ auto Jalr::execute(Icpu *cpu) const -> ExecutionStatus {
   auto t = cpu->pc().num() + 4;
   cpu->pc().num() = (gpr[rs1()] + imm());
   gpr.write_at(rd()) = t;
-  return kSuccess;
+  return kSuccessAndNotAdvancePC;
 }
 auto Jalr::asmStr() const noexcept -> string_type {
   return fmt::format("jalr x{}, x{}, {}", rd(), rs1(), imm_str());

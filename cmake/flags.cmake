@@ -20,10 +20,12 @@ if(CXX_FLAGS_STYLES_MSVC)
     /wd4834 # discarding return value of function with 'nodiscard' attribute
     /analyze- # don't run analysis when compiling (too slow)
     /Zi /Od /Oy-
-    /GR # <- rtti (actually in my build i am not using rtti)
-    /fsanitize=address 
+    /GR # <- rtti (actually not using rtti)
+    /fsanitize=address
+
     # /fsanitize=fuzzer
-    /guard:cf 
+    /guard:cf
+
     # /guard:ehcont
     /RTCsu /sdl
 
@@ -45,10 +47,11 @@ if(CXX_FLAGS_STYLES_MSVC)
     /DEBUG:FULL
 
     # /incremental is not compatible with /Brepro (dunno where it's from, probably LLVM's config)
-    /INCREMENTAL:NO
+    /INCREMENTAL
     /SUBSYSTEM:CONSOLE
     /MACHINE:X64
     /GUARD:CF # control flow protection
+
     # /GUARD:EHCONT # exception handler control
     # /bigobj # big object files
   )
@@ -72,7 +75,12 @@ elseif(CXX_FLAGS_STYLES_CLANGCL)
   )
 
 elseif(CXX_FLAGS_STYLES_CLANG)
-  # see below, this is not `todo`.
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # add_compile_options(-stdlib=libc++) # llvm libc++
+    add_compile_options(-stdlib=libstdc++) # gnu libstdc++
+  endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+  # flags see below
   message(STATUS "Use Clang debug flags")
 elseif(CXX_FLAGS_STYLES_GNU)
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -93,8 +101,9 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
   add_compile_options(
     -g3 -O0 -fno-inline -fstandalone-debug # Debug flags
     -frtti
-    # -fsanitize=address 
-    # -fsanitize=fuzzer 
+
+    # -fsanitize=address
+    # -fsanitize=fuzzer
     # -fsanitize=undefined
     -fcf-protection=full -fstack-protector-strong # control flow protection
 
@@ -104,9 +113,10 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
     -Wimplicit-fallthrough
   )
   add_link_options(
-    -g 
-    # -fsanitize=address 
-    # -fsanitize=fuzzer 
+    -g
+
+    # -fsanitize=address
+    # -fsanitize=fuzzer
     # -fsanitize=undefined
   )
 endif()

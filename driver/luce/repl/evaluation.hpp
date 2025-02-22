@@ -4,6 +4,7 @@
 #include <compare>
 #include <limits>
 #include <optional>
+#include <utility>
 #include <variant>
 
 #include "./luce/repl/repl_fwd.hpp"
@@ -58,9 +59,25 @@ struct Number : /* implements */ Value,
   using F = long double;
   using ValueType = std::variant<I, F>;
   constexpr Number() = default;
-  explicit constexpr Number(I value) : value(value) {}
-  explicit constexpr Number(F value) : value(value) {}
-  constexpr Number(ValueType value) : value(value) {}
+  inline static constexpr Number make_integer(I value) noexcept {
+    return Number{value};
+  }
+  inline static constexpr Number make_floating(F value) noexcept {
+    return Number{value};
+  }
+  inline static constexpr Number from_variant(ValueType &&value) noexcept {
+    return Number{std::forward<ValueType>(value)};
+  }
+
+protected:
+  inline explicit constexpr Number(I value) noexcept : value(value) {}
+  inline explicit constexpr Number(F value) noexcept : value(value) {}
+  inline explicit constexpr Number(ValueType &&value) noexcept
+      : value(std::move(value)) {}
+  inline explicit constexpr Number(const ValueType &value) noexcept
+      : value(value) {}
+
+public:
   constexpr ~Number() = default;
   auto to_string(const auxilia::FormatPolicy & =
                      auxilia::FormatPolicy::kDefault) const -> string_type {
@@ -73,13 +90,12 @@ struct Number : /* implements */ Value,
 
   friend auto operator<=>(const Number &lhs, const Number &rhs) {
     return std::visit(
-        match{[](const I &l, const I &r) -> std::partial_ordering {
-                return l <=> r;
-              },
+        match([](const I &l,
+                 const I &r) -> std::partial_ordering { return l <=> r; },
               [](const auto &l, const auto &r) -> std::partial_ordering {
                 using auxilia::as;
                 return as<F>(l) <=> as<F>(r);
-              }},
+              }),
         lhs.value,
         rhs.value);
   }
@@ -107,11 +123,11 @@ struct Number : /* implements */ Value,
   friend auto operator _binary_op_(const Number &lhs, const Number &rhs)       \
       ->Number {                                                               \
     return std::visit(                                                         \
-        match{[](const I &l, const I &r) { return Number{l _binary_op_ r}; },  \
+        match([](const I &l, const I &r) { return Number{l _binary_op_ r}; },  \
               [](const auto &l, const auto &r) {                               \
                 using auxilia::as;                                             \
                 return Number{as<F>(l) _binary_op_ as<F>(r)};                  \
-              }},                                                              \
+              }),                                                              \
         lhs.value,                                                             \
         rhs.value);                                                            \
   }
@@ -123,14 +139,15 @@ struct Number : /* implements */ Value,
     using auxilia::as;
     if (rhs == 0)
       return Number{std::numeric_limits<F>::infinity()};
-    return std::visit(match{[](const I &l, const I &r) {
-                              if (l % r == 0)
-                                return Number{l / r};
-                              return Number{as<F>(l) / as<F>(r)};
-                            },
-                            [](const auto &l, const auto &r) {
-                              return Number{as<F>(l) / as<F>(r)};
-                            }},
+    return std::visit(match(
+                          [](const I &l, const I &r) {
+                            if (l % r == 0)
+                              return Number{l / r};
+                            return Number{as<F>(l) / as<F>(r)};
+                          },
+                          [](const auto &l, const auto &r) {
+                            return Number{as<F>(l) / as<F>(r)};
+                          }),
                       lhs.value,
                       rhs.value);
   }

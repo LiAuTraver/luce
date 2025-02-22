@@ -32,23 +32,27 @@ auto WatchPoint::update(expression::Visitor *visitor)
   return *AST_->accept(*visitor)
               // result is valid
               .transform([this](auto &&res) -> RetType {
-                if (!previous_result_) {
-                  // previous result is invalid, update it and return true
+                defer {
+                  // don't forget to update previous result!!! #@!#@!#
                   previous_result_ = res;
+                };
+
+                if (!previous_result_)
+                  // previous result is invalid, update it and return true
                   return {true, res};
-                }
-                if (*previous_result_ == res or previous_result_->empty()) {
+
+                if (*previous_result_ == res or previous_result_->empty())
                   // both valid and equal, or no previous result, return false
                   return {false, res};
-                }
-                // both valid but not equal, update previous result and return
-                // true
-                previous_result_ = res;
+
+                // both valid but not equal, update previous result return true
                 return {true, res};
               })
               // result is invalid, return false
-              .transform_error(
-                  [](auto &&res) -> RetType { return {false, res}; });
+              .transform_error([this](auto &&res) -> RetType {
+                previous_result_ = res;
+                return {false, res};
+              });
 }
 auto WatchPoints::to_string(const FormatPolicy policy) const -> string_type {
   auto str = string_type{};
@@ -77,24 +81,18 @@ auto WatchPoints::to_string(const FormatPolicy policy) const -> string_type {
   }
   return str;
 }
-bool WatchPoints::update(expression::Visitor *visitor, const bool logging) {
+bool WatchPoints::update(expression::Visitor *visitor) {
   bool has_changed = false;
-  std::ranges::for_each(watchpoints_, [&](auto &wp) {
+  std::ranges::for_each(watchpoints_, [&](auto &&wp) {
     auto [changed, res] = wp.update(visitor);
     if (changed) {
       // if has changed, the res is guranateed to be valid
       has_changed = true;
-      if (logging)
-        spdlog::info(
-            "WatchPoint {}: {}", wp.id(), res->underlying_string(kBrief));
-      else
-        spdlog::debug(
-            "WatchPoint {}: {}", wp.id(), res->underlying_string(kBrief));
-    } else if (logging) {
-      spdlog::info("WatchPoint {}: no change", wp.id());
-    } else {
+      spdlog::info("WatchPoint {id} changed to: {value}",
+                   "id"_a = wp.id(),
+                   "value"_a = res->underlying_string(kBrief));
+    } else
       spdlog::trace("WatchPoint {}: no change", wp.id());
-    }
   });
   return has_changed;
 }
@@ -135,8 +133,8 @@ Status Debugger::delete_watchpoint(const size_t id) {
   return watchpoints_.remove(id) ? OkStatus()
                                  : NotFoundError("Watchpoint not found");
 }
-void Debugger::update_watchpoints(const bool notify, const bool logging) {
-  if (watchpoints_.update(visitor_, logging) && notify) {
+void Debugger::update_watchpoints(const bool notify) {
+  if (watchpoints_.update(visitor_) && notify) {
     this->send(Event::kPauseTask);
   }
 }

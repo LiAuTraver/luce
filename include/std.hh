@@ -1,3 +1,5 @@
+// borrow from Microsoft's STL
+
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
@@ -43,12 +45,16 @@
 #include <wctype.h>
 
 // <intrin.h> defines some types outside of `extern "C"` or `extern "C++"`.
+
+#if _WIN32
 #include <intrin.h>
+#endif
 
 // export module std;
 
 #pragma warning(push)
-#pragma warning(disable : 5244) // '#include <meow>' in the purview of module 'std' appears erroneous.
+#pragma warning(disable : 5244) // '#include <meow>' in the purview of module
+                                // 'std' appears erroneous.
 
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>

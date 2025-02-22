@@ -4,7 +4,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(argparse CONFIG REQUIRED)
 # find_package(capstone CONFIG REQUIRED)
-find_package(scn CONFIG REQUIRED)
+# find_package(scn CONFIG REQUIRED)
 # find_package(magic_enum CONFIG REQUIRED)
 find_package(auxilia QUIET)
 # find_package(zstd CONFIG REQUIRED)
@@ -21,7 +21,7 @@ target_link_libraries(external_deps INTERFACE
   spdlog::spdlog
   argparse::argparse
   # capstone::capstone
-  scn::scn
+  # scn::scn
   # magic_enum::magic_enum
   # ZLIB::ZLIB
   # zstd::libzstd
