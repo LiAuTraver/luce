@@ -144,19 +144,19 @@ struct Token : auxilia::Printable {
   }
 
 public:
-  auto lexeme() const noexcept [[clang::lifetimebound]] -> std::string_view {
+  auto lexeme() const AC_NOEXCEPT [[clang::lifetimebound]] -> std::string_view {
     precondition(type_ != Type::kNumber && type_ != Type::kLexError,
                  "lexeme() called on a non-lexeme token")
     return lexeme_;
   }
   // Changed number() to return a variant instead of long double.
-  auto number() const noexcept {
+  auto number() const AC_NOEXCEPT {
     precondition(type_ == Type::kNumber,
                  "number() called on a non-number token");
     using NumberType = std::variant<long long, long double>;
     return number_is_integer_ ? NumberType{num_ll_} : NumberType{num_ld_};
   }
-  auto error_message() const noexcept [[clang::lifetimebound]]
+  auto error_message() const AC_NOEXCEPT [[clang::lifetimebound]]
   -> std::string_view {
     precondition(type_ == Type::kLexError,
                  "error_message() called on a non-error token")

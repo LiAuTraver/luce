@@ -21,8 +21,8 @@ TEST(EndianTest, Test) {
       std::span{reinterpret_cast<const std::byte *>(bigEndianData.data()),
                 bigEndianData.size()};
 
-  fmt::print("Data : {:#04x}\n", fmt::join(little_endian_byte_span, " "));
-  fmt::print("Data2: {:#04x}\n", fmt::join(big_endian_byte_span, " "));
+  fmt::println("Data : {:#04x}", fmt::join(little_endian_byte_span, " "));
+  fmt::println("Data2: {:#04x}", fmt::join(big_endian_byte_span, " "));
 
   EXPECT_EQ(littleEndianData, bigEndianData);
 }

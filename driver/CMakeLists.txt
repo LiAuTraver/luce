@@ -7,7 +7,6 @@ include(folders)
 include(dependencies)
 include(llvm)
 
-include_directories(luce)
 add_library(driver OBJECT)
 file(GLOB_RECURSE LUCE_DRIVER_SOURCES "src/*.cpp")
 file(GLOB_RECURSE LUCE_HEADER_SOURCES "luce/*.hpp")

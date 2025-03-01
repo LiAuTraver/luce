@@ -1,6 +1,8 @@
+#pragma once
+
 #include "../../Word.hpp"
 #include "../../IInstruction.hpp"
-#include "Support/isa/constants/riscv32.hpp"
+#include "luce/Support/isa/constants/riscv32.hpp"
 namespace accat::luce::isa::riscv32::instruction::mixin {
 
 // we choose not to use CRTP but deducing this.
@@ -14,34 +16,39 @@ namespace accat::luce::isa::riscv32::instruction::mixin {
   ;
 
 AC_MIXIN_DECLARE_BEGIN(rs2nd20To25Common)
-auto rs2(this auto &&self) noexcept {
+constexpr auto rs2(this auto &&self) noexcept {
   return self.template extractBits<20, 25>(self.num()); // [20, 25)
 }
 AC_MIXIN_DECLARE_END
 
 AC_MIXIN_DECLARE_BEGIN(rs1st15To20Common)
-auto rs1(this auto &&self) noexcept {
+constexpr auto rs1(this auto &&self) noexcept {
   return self.template extractBits<15, 20>(self.num()); // [15, 20)
 }
 AC_MIXIN_DECLARE_END
 
-AC_MIXIN_DECLARE_BEGIN(funct3nd12To15Common)
-auto funct3(this auto &&self) noexcept {
+AC_MIXIN_DECLARE_BEGIN(funct3rd12To15Common)
+constexpr auto funct3(this auto &&self) noexcept {
   return self.template extractBits<12, 15>(self.num()); // [12, 15)
 }
 AC_MIXIN_DECLARE_END
-
+AC_MIXIN_DECLARE_BEGIN(funct7th25To32Common)
+constexpr auto funct7(this auto &&self) noexcept {
+  return self.template extractBits<25, 32>(self.num()); // [25, 32)
+}
+AC_MIXIN_DECLARE_END
 AC_MIXIN_DECLARE_BEGIN(rd7To12Common)
-auto rd(this auto &&self) noexcept {
+constexpr auto rd(this auto &&self) noexcept {
   return self.template extractBits<7, 12>(self.num()); // [7, 12)
 }
 AC_MIXIN_DECLARE_END
 
 AC_MIXIN_DECLARE_BEGIN(opcode0To6Common)
-auto opcode(this auto &&self) noexcept {
+constexpr auto opcode(this auto &&self) noexcept {
   return self.template extractBits<0, 7>(self.num()); // [0, 7)
 }
-template <size_t Base = 16> auto opcode_str(this auto &&self) noexcept {
+template <size_t Base = 16>
+constexpr auto opcode_str(this auto &&self) noexcept {
   return self.template formatBits<decltype(self.opcode())>(self.opcode());
 }
 AC_MIXIN_DECLARE_END
@@ -66,22 +73,19 @@ AC_MIXIN_DECLARE_END
 AC_MIXIN_DECLARE_BEGIN(RFormat,
                        rs2nd20To25Common,
                        rs1st15To20Common,
-                       funct3nd12To15Common,
+                       funct3rd12To15Common,
                        rd7To12Common,
-                       opcode0To6Common)
-auto funct7(this auto &&self) noexcept {
-  return self.template extractBits<25, 32>(self.num()); // [25, 32)
-}
+                       opcode0To6Common,
+                       funct7th25To32Common)
 AC_MIXIN_DECLARE_END
-
 
 AC_MIXIN_DECLARE_BEGIN(IFormat,
                        rs1st15To20Common,
-                       funct3nd12To15Common,
+                       funct3rd12To15Common,
                        rd7To12Common,
                        opcode0To6Common,
                        imm2StrCommon)
-auto imm(this auto &&self) noexcept {
+constexpr auto imm(this auto &&self) noexcept {
   return self.template concatBits<instruction_size_t, 20, 32>(
       self.num()); // [7, 12) and
                    // [25, 32)
@@ -94,10 +98,10 @@ AC_MIXIN_DECLARE_END
 AC_MIXIN_DECLARE_BEGIN(SFormat,
                        rs2nd20To25Common,
                        rs1st15To20Common,
-                       funct3nd12To15Common,
+                       funct3rd12To15Common,
                        opcode0To6Common,
                        imm2StrCommon)
-auto imm(this auto &&self) noexcept {
+constexpr auto imm(this auto &&self) noexcept {
   return self.template concatBits<instruction_size_t, 7, 12, 25, 32>(
       self.num()); // [7, 12) and
                    // [25, 32)
@@ -110,7 +114,7 @@ AC_MIXIN_DECLARE_END
 AC_MIXIN_DECLARE_BEGIN(BFormat,
                        rs2nd20To25Common,
                        rs1st15To20Common,
-                       funct3nd12To15Common,
+                       funct3rd12To15Common,
                        opcode0To6Common,
                        imm2StrCommon)
 auto imm(this auto &&self) noexcept {
@@ -143,4 +147,3 @@ auto imm_str(this auto &&self) noexcept {
 }
 AC_MIXIN_DECLARE_END
 } // namespace accat::luce::isa::riscv32::instruction::mixin
-

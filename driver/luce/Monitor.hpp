@@ -81,9 +81,6 @@ public:
     // currently only one task
     return *self.process.context().general_purpose_registers();
   }
-  // auto &current_task(this auto &&self) noexcept {
-  //   return self.process;
-  // }
 
 public:
   virtual auto notify(
@@ -111,15 +108,14 @@ auxilia::Status Monitor::register_task(const std::ranges::range auto &program,
   using myType = std::remove_cvref_t<decltype(program)>;
   using myValueType = std::ranges::range_value_t<myType>;
   if constexpr (std::same_as<myType, std::span<std::byte>> ||
-                std::same_as<myType, std::span<const std::byte>>) {
+                std::same_as<myType, std::span<const std::byte>>)
     bytes = program;
-  } else if constexpr (std::same_as<myValueType, const std::byte> ||
-                       std::same_as<myValueType, std::byte>) {
+  else if constexpr (std::same_as<myValueType, const std::byte> ||
+                     std::same_as<myValueType, std::byte>)
     bytes = std::span{program};
-  } else {
-    auto dataSpan = std::span{program};
-    bytes = std::as_bytes(dataSpan);
-  }
+  else
+    bytes = std::as_bytes(std::span{program});
+
   block_size = (std::min)(block_size, isa::physical_memory_size);
 
   contract_assert(bytes.size() > 0 && bytes.size() <= block_size,

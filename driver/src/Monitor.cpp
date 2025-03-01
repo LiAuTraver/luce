@@ -3,7 +3,7 @@
 #include <accat/auxilia/auxilia.hpp>
 
 #include "luce/Monitor.hpp"
-#include "luce/Support/isa/riscv32/Decoder.hpp"
+#include "luce/Support/isa/riscv32/Disassembler.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/utils/Pattern.hpp"

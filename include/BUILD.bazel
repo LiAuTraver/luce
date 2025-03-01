@@ -7,10 +7,14 @@ cc_library(
         "/std:c++latest",
         "/Zc:preprocessor",
         "/Isource/auxilia/include",
+        "/wd4068",
     ],
     defines = [
-        "SPDLOG_FMT_EXTERNAL",
         "AC_CPP_DEBUG",
+        "SPDLOG_FMT_EXTERNAL",
+        "FMT_SHARED",
+        "SPDLOG_COMPILED_LIB",
+        "_CRT_SECURE_NO_WARNINGS",
     ],
     visibility = ["//visibility:public"],
     deps = [

@@ -220,11 +220,11 @@ struct Print final : ICommand {
                                  "msg"_a = res2.message());
               });
         })
-        .transform_error([](auto &&res1) {
+        .transform_error([](auto &&err) {
           auxilia::println(stderr,
                            fg(crimson),
                            "luce: error: {msg}",
-                           "msg"_a = res1.message());
+                           "msg"_a = err.message());
         });
   }
   std::string expression;

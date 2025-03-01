@@ -16,10 +16,14 @@ cc_library(
         "/Idriver",
         "/Zc:__cplusplus",
         "/MDd",
+        "/wd4068",  # disable warning C4068: unknown pragma
     ],
     defines = [
         "AC_CPP_DEBUG",
         "SPDLOG_FMT_EXTERNAL",
+        "FMT_SHARED",
+        "SPDLOG_COMPILED_LIB",
+        "_CRT_SECURE_NO_WARNINGS",
     ],
     includes = driver_includes,
     linkstatic = True,
@@ -27,9 +31,8 @@ cc_library(
     deps = [
         "//include:external_deps",
         "//source/auxilia",
+        "@argparse",
         "@fmt",
         "@spdlog",
-        "@scnlib",
-        "@argparse",
     ],
 )

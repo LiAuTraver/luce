@@ -1,16 +1,7 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <bitset>
-#include <cstddef>
-#include <cstdint>
-#include <bit>
-#include <memory>
-#include <span>
-#include <type_traits>
-
 #include "mixin.hpp"
+#include "luce/Support/isa/IDecoder.hpp"
 
 namespace accat::luce::isa::riscv32::instruction::base {
 // don't ask
@@ -61,4 +52,9 @@ INST(Ebreak, I);
 #define AC_RESTORE_YOUR_FXXKING_MACRO
 #include "debunk_your_macro-inl.hpp"
 
+class Decoder : public IDecoder {
+public:
+  virtual auto decode(uint32_t) -> std::unique_ptr<IInstruction> override;
+  virtual ~Decoder() override = default;
+};
 } // namespace accat::luce::isa::riscv32::instruction::base

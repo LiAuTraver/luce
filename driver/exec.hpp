@@ -56,7 +56,7 @@ public:
         std::exit(EXIT_SUCCESS);
       }
     };
-    return ctx;
+    return (ctx);
   }
 
   ExecutionContext(const ExecutionContext &) = delete;

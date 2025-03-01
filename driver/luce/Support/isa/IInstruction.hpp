@@ -33,7 +33,8 @@ public:
     if (policy == kDefault) {
       return asmStr();
     } else {
-      TODO(...)
+      // TODO(...)
+      return asmStr();
     }
   }
 

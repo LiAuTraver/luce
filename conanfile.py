@@ -15,12 +15,11 @@ class LuceProject(conan.ConanFile):
     author = "LiAuTraver"
     description = "A riscv32 emulator written in C++"
     topics = ("riscv32", "emulator", "cpp")
-    homepage = "not.defined.yet"
+    homepage = "github.com/liautraver/luce"
 
     settings = "os", "compiler", "build_type", "arch"
     generators = "BazelDeps", "BazelToolchain"
     requires = (
-        "scnlib/4.0.1",
         "fmt/11.0.2",
         "spdlog/1.15.0",
         "argparse/3.1",

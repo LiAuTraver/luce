@@ -6,7 +6,10 @@
 #include <cstddef>
 #include <span>
 #include <string>
+#include <string_view>
 
+#include "accat/auxilia/details/Status.hpp"
+#include "accat/auxilia/details/bit.hpp"
 #include "luce/config.hpp"
 namespace accat::luce {
 class Image : public auxilia::Printable {
@@ -16,7 +19,17 @@ public:
         std::endian endianess = std::endian::native)
       : is_little_endian_(endianess == std::endian::little ? true : false),
         binary_data_(std::move(binary_data)) {}
+  auto operator=(Image &&other) noexcept -> Image & = default;
+  Image(Image &&other) noexcept = default;
   ~Image() = default;
+  template <std::endian Endianess = std::endian::native>
+  static auxilia::StatusOr<Image> FromPath(const std::string_view path) {
+    if (auto maybe_data = auxilia::read_raw_bytes<Endianess>(path)) {
+      return Image{std::move(maybe_data.value()), Endianess};
+    } else {
+      return maybe_data.as_status();
+    }
+  }
 
 public:
   auto to_string(const auxilia::FormatPolicy &format_policy =

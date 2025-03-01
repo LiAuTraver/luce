@@ -1,16 +1,36 @@
-load("//test:luce_add_test.bzl", "luce_add_test")
+load("@rules_cc//cc:defs.bzl", "cc_test")
 
-luce_add_test(
-    name = "expr.test",
-    src = "expr.test.cpp",
-)
-
-luce_add_test(
-    name = "endian.test",
-    src = "endian.test.cpp",
-)
-
-luce_add_test(
-    name = "memory.load.test",
-    src = "memory.load.test.cpp",
+cc_test(
+    name = "luce.test",
+    srcs = [
+        "decoder.test.cpp",
+        "endian.test.cpp",
+        "expr.test.cpp",
+        "memory.load.test.cpp",
+    ],
+    copts = [
+        "/Iexternal/gtest/googletest/include",
+        "/Iexternal/gtest/googletest",
+        "/std:c++latest",
+        "/Isource/auxilia/include",
+        "/Idriver",
+        "/Iinclude",
+        "/Zc:preprocessor",
+        "/wd4068",
+    ],
+    defines = [
+        "AC_CPP_DEBUG",
+        "SPDLOG_FMT_EXTERNAL",
+        "FMT_SHARED",
+        "SPDLOG_COMPILED_LIB",
+        "_CRT_SECURE_NO_WARNINGS",
+    ],
+    visibility = ["//.git:__pkg__"],
+    deps = [
+        "//driver",
+        "//source/auxilia",
+        "@fmt",
+        "@googletest//:gtest_main",
+        "@spdlog",
+    ],
 )

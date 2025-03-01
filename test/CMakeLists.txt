@@ -32,7 +32,5 @@ function(create_test_executable test_name)
   gtest_discover_tests(${test_name})
 endfunction(create_test_executable)
 
-create_test_executable(endian.test endian.test.cpp)
-create_test_executable(memory.load.test memory.load.test.cpp)
-create_test_executable(expr.test expr.test.cpp)
+create_test_executable(luce.test endian.test.cpp memory.load.test.cpp expr.test.cpp decoder.test.cpp)
 add_folder(Test)

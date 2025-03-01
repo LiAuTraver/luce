@@ -61,7 +61,7 @@
       }
     },
     {
-      "name": "Clang",
+      "name": "Clang-Linux",
       "hidden": true,
       "binaryDir": "${sourceDir}/build/${hostSystemName}-${presetName}",
       "inherits": [
@@ -180,6 +180,26 @@
       "hidden": false,
       "inherits": [
         "Clang"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "Clang-Linux-Debug",
+      "hidden": false,
+      "inherits": [
+        "Clang-Linux"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Clang-Linux-Release",
+      "hidden": false,
+      "inherits": [
+        "Clang-Linux"
       ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"

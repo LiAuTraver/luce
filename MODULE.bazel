@@ -9,7 +9,7 @@ module(
 
 load_conan_dependencies = use_extension("//conan_installed:conan_deps_module_extension.bzl", "conan_extension")
 # use_repo(load_conan_dependencies, "capstone")
-use_repo(load_conan_dependencies, "scnlib")
+# use_repo(load_conan_dependencies, "scnlib")
 use_repo(load_conan_dependencies, "fmt")
 use_repo(load_conan_dependencies, "spdlog")
 use_repo(load_conan_dependencies, "argparse")

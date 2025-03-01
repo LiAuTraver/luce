@@ -1,13 +1,11 @@
 #include "luce/config.hpp"
-#include "luce/Support/isa/architecture.hpp"
-#include "luce/MainMemory.hpp"
-#include "luce/Task.hpp"
 #include "exec.hpp"
+#include "luce/Support/isa/IDisassembler.hpp"
+#include "luce/Support/isa/riscv32/instruction/Multiply.hpp"
 #include "luce/argument/Argument.hpp"
 #include "luce/argument/ArgumentLoader.hpp"
 #include "luce/Image.hpp"
 #include "luce/Monitor.hpp"
-#include "luce/Support/isa/architecture.hpp"
 
 LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   auto callback = 0;
@@ -23,25 +21,29 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
     callback = res.raw_code();
     return callback;
   }
-  auto context = auxilia::async(std::bind(&ExecutionContext::InitializeContext,
-                                          std::ref(program_options)));
+  [[maybe_unused]]
+  auto &context = ExecutionContext::InitializeContext(program_options);
+
   auto imagePath = argument::program::image.value.empty()
                        ? defaultImagePath
                        : argument::program::image.value;
-  auto imageData = auxilia::async(auxilia::read_raw_bytes<>, imagePath);
 
-  auto maybeBytes = imageData.get();
-  if (!maybeBytes) {
-    spdlog::error("Failed to read image: {}", maybeBytes.message());
+  auto imageFut = auxilia::async(Image::FromPath<>, imagePath);
+
+  auto monitor = Monitor{};
+
+  monitor.disassembler()->addDecoder(
+      std::make_unique<isa::riscv32::instruction::multiply::Decoder>());
+
+  auto image = imageFut.get();
+  if (!image) {
+    spdlog::error("Failed to read image: {}", image.message());
     callback = EXIT_FAILURE;
     return callback;
   }
 
-  auto image = Image{*std::move(maybeBytes), std::endian::little};
-
-  auto monitor = Monitor{};
   if (auto res = monitor.register_task(
-          image.bytes_view(), isa::virtual_base_address, 0x100);
+          image->bytes_view(), isa::virtual_base_address, 0x100);
       !res) {
     spdlog::error("Failed to load program: {}", res.message());
     callback = EXIT_FAILURE;
