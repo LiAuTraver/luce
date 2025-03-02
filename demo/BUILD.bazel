@@ -1,11 +1,11 @@
-# load("//demo:luce_add_demo.bzl", "luce_add_demo")
+load("//demo:luce_add_demo.bzl", "luce_add_demo")
 
-# luce_add_demo(
-#     name = "demo",
-#     srcs = "demo.cpp",
-# )
+luce_add_demo(
+    name = "demo",
+    srcs = ["demo.cpp"],
+)
 
-# luce_add_demo(
-#     name = "demo2",
-#     srcs = "demo2.cpp",
-# )
+luce_add_demo(
+    name = "demo2",
+    srcs = ["demo2.cpp"],
+)
