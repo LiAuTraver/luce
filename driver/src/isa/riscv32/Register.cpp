@@ -8,6 +8,78 @@ GeneralPurposeRegisters::register_t GeneralPurposeRegisters::garbage = {};
 
 using auxilia::operator""_raw;
 using GPR = GeneralPurposeRegisters;
+
+inline static constexpr auto fmtDefault = R"(
+  x0 (zero): {}
+  x1 (ra)  : {}
+  x2 (sp)  : {}
+  x3 (gp)  : {}
+  x4 (tp)  : {}
+  x5 (t0)  : {}
+  x6 (t1)  : {}
+  x7 (t2)  : {}
+  x8 (s0)  : {}
+  x9 (s1)  : {}
+  x10 (a0) : {}
+  x11 (a1) : {}
+  x12 (a2) : {}
+  x13 (a3) : {}
+  x14 (a4) : {}
+  x15 (a5) : {}
+  x16 (a6) : {}
+  x17 (a7) : {}
+  x18 (s2) : {}
+  x19 (s3) : {}
+  x20 (s4) : {}
+  x21 (s5) : {}
+  x22 (s6) : {}
+  x23 (s7) : {}
+  x24 (s8) : {}
+  x25 (s9) : {}
+  x26 (s10): {}
+  x27 (s11): {}
+  x28 (t3) : {}
+  x29 (t4) : {}
+  x30 (t5) : {}
+  x31 (t6) : {}
+  )"_raw;
+inline static constexpr auto fmtDetailed = R"(
+  zero register  (x0): {}
+  return address (x1): {}
+  stack pointer  (x2): {}
+  global pointer (x3): {}
+  thread pointer (x4): {}
+  temporary registers:
+            t0   (x5): {}
+            t1   (x6): {}
+            t2   (x7): {}
+            t3  (x28): {}
+            t4  (x29): {}
+            t5  (x30): {}
+            t6  (x31): {}
+  argument registers:
+            a0  (x10): {}
+            a1  (x11): {}
+            a2  (x12): {}
+            a3  (x13): {}
+            a4  (x14): {}
+            a5  (x15): {}
+            a6  (x16): {}
+            a7  (x17): {}
+  saved registers:
+            s0   (x8): {}
+            s1   (x9): {}
+            s2  (x18): {}
+            s3  (x19): {}
+            s4  (x20): {}
+            s5  (x21): {}
+            s6  (x22): {}
+            s7  (x23): {}
+            s8  (x24): {}
+            s9  (x25): {}
+            s10 (x26): {}
+            s11 (x27): {}
+  )"_raw;
 namespace {
 inline constexpr auto D =
     [](auto &&reg) AC_STATIC_CALL_OPERATOR constexpr noexcept {
@@ -19,7 +91,7 @@ auto GPR::to_string(const auxilia::FormatPolicy policy) const -> string_type {
   if (policy == kDefault) {
     str += _format_default_str();
   } else if (policy == kDetailed) {
-    str = _fmt_detailed_str();
+    str = _format_detailed_str();
   } else if (policy == kBrief) {
     // 0x00000000 0x00000000
     str.reserve(352);
@@ -33,113 +105,82 @@ auto GPR::to_string(const auxilia::FormatPolicy policy) const -> string_type {
 }
 auto GPR::_get_impl(const std::string_view str) const noexcept
     -> const register_t * {
+  const auto C = [&str](const std::string_view name) constexpr noexcept {
+    return str == name;
+  };
   const auto I = [this](const size_t offset) constexpr noexcept {
     return raw.data() + offset;
   };
-  if (str == "zero") {
+  if (C("zero"))
     return I(0);
-  } else if (str == "ra") {
+  if (C("ra"))
     return I(1);
-  } else if (str == "sp") {
+  if (C("sp"))
     return I(2);
-  } else if (str == "gp") {
+  if (C("gp"))
     return I(3);
-  } else if (str == "tp") {
+  if (C("tp"))
     return I(4);
-  } else if (str == "t0") {
+  if (C("t0"))
     return I(5);
-  } else if (str == "t1") {
+  if (C("t1"))
     return I(6);
-  } else if (str == "t2") {
+  if (C("t2"))
     return I(7);
-  } else if (str == "s0") {
+  if (C("s0"))
     return I(8);
-  } else if (str == "s1") {
+  if (C("s1"))
     return I(9);
-  } else if (str == "a0") {
+  if (C("a0"))
     return I(10);
-  } else if (str == "a1") {
+  if (C("a1"))
     return I(11);
-  } else if (str == "a2") {
+  if (C("a2"))
     return I(12);
-  } else if (str == "a3") {
+  if (C("a3"))
     return I(13);
-  } else if (str == "a4") {
+  if (C("a4"))
     return I(14);
-  } else if (str == "a5") {
+  if (C("a5"))
     return I(15);
-  } else if (str == "a6") {
+  if (C("a6"))
     return I(16);
-  } else if (str == "a7") {
+  if (C("a7"))
     return I(17);
-  } else if (str == "s2") {
+  if (C("s2"))
     return I(18);
-  } else if (str == "s3") {
+  if (C("s3"))
     return I(19);
-  } else if (str == "s4") {
+  if (C("s4"))
     return I(20);
-  } else if (str == "s5") {
+  if (C("s5"))
     return I(21);
-  } else if (str == "s6") {
+  if (C("s6"))
     return I(22);
-  } else if (str == "s7") {
+  if (C("s7"))
     return I(23);
-  } else if (str == "s8") {
+  if (C("s8"))
     return I(24);
-  } else if (str == "s9") {
+  if (C("s9"))
     return I(25);
-  } else if (str == "s10") {
+  if (C("s10"))
     return I(26);
-  } else if (str == "s11") {
+  if (C("s11"))
     return I(27);
-  } else if (str == "t3") {
+  if (C("t3"))
     return I(28);
-  } else if (str == "t4") {
+  if (C("t4"))
     return I(29);
-  } else if (str == "t5") {
+  if (C("t5"))
     return I(30);
-  } else if (str == "t6") {
+  if (C("t6"))
     return I(31);
-  }
   return nullptr;
 }
 auto GPR::_format_default_str() const -> string_type {
   const auto &R = registers;
   // reg number, short name, 0x00000000
-  return fmt::format(R"(
-x0 (zero): {}
-x1 (ra)  : {}
-x2 (sp)  : {}
-x3 (gp)  : {}
-x4 (tp)  : {}
-x5 (t0)  : {}
-x6 (t1)  : {}
-x7 (t2)  : {}
-x8 (s0)  : {}
-x9 (s1)  : {}
-x10 (a0) : {}
-x11 (a1) : {}
-x12 (a2) : {}
-x13 (a3) : {}
-x14 (a4) : {}
-x15 (a5) : {}
-x16 (a6) : {}
-x17 (a7) : {}
-x18 (s2) : {}
-x19 (s3) : {}
-x20 (s4) : {}
-x21 (s5) : {}
-x22 (s6) : {}
-x23 (s7) : {}
-x24 (s8) : {}
-x25 (s9) : {}
-x26 (s10): {}
-x27 (s11): {}
-x28 (t3) : {}
-x29 (t4) : {}
-x30 (t5) : {}
-x31 (t6) : {}
-)"_raw, // remove leading and trailing newline
+  return fmt::format(fmtDefault, // remove leading and trailing newline
                      D(R.zero_reg),
                      D(R.ra),
                      D(R.sp),
@@ -173,46 +214,10 @@ x31 (t6) : {}
                      D(R.t5),
                      D(R.t6));
 }
-auto GPR::_fmt_detailed_str() const -> string_type {
+auto GPR::_format_detailed_str() const -> string_type {
   // full name, reg number, 0x00 0x00 0x00 0x00, group by classificaiton
   const auto &R = registers;
-  return fmt::format(R"(
-zero register  (x0): {}
-return address (x1): {}
-stack pointer  (x2): {}
-global pointer (x3): {}
-thread pointer (x4): {}
-temporary registers:
-          t0   (x5): {}
-          t1   (x6): {}
-          t2   (x7): {}
-          t3  (x28): {}
-          t4  (x29): {}
-          t5  (x30): {}
-          t6  (x31): {}
-argument registers:
-          a0  (x10): {}
-          a1  (x11): {}
-          a2  (x12): {}
-          a3  (x13): {}
-          a4  (x14): {}
-          a5  (x15): {}
-          a6  (x16): {}
-          a7  (x17): {}
-saved registers:
-          s0   (x8): {}
-          s1   (x9): {}
-          s2  (x18): {}
-          s3  (x19): {}
-          s4  (x20): {}
-          s5  (x21): {}
-          s6  (x22): {}
-          s7  (x23): {}
-          s8  (x24): {}
-          s9  (x25): {}
-          s10 (x26): {}
-          s11 (x27): {}
-)"_raw,
+  return fmt::format(fmtDetailed,
                      D(R.zero_reg),
                      D(R.ra),
                      D(R.sp),

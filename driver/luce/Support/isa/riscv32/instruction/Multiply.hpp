@@ -1,12 +1,12 @@
 #pragma once
 
 #include "luce/Support/isa/IDecoder.hpp"
-#include "mixin.hpp"
+#include "details/mixin.hpp"
 
 namespace accat::luce::isa::riscv32::instruction::multiply {
 // don't ask
 #define AC_UNDEF_YOUR_FXXKING_MACRO
-#include "debunk_your_macro-inl.hpp"
+#include "details/debunk_your_macro-inl.hpp"
 
 INST(Mul, R);
 INST(Mulh, R);
@@ -17,12 +17,9 @@ INST(Divu, R);
 INST(Rem, R);
 INST(Remu, R);
 
-#define AC_RESTORE_YOUR_FXXKING_MACRO
-#include "debunk_your_macro-inl.hpp"
+INST_DECODER();
 
-class Decoder : public IDecoder {
-public:
-  virtual auto decode(uint32_t) -> std::unique_ptr<IInstruction> override;
-  virtual ~Decoder() override = default;
-};
+#define AC_RESTORE_YOUR_FXXKING_MACRO
+#include "details/debunk_your_macro-inl.hpp"
+
 } // namespace accat::luce::isa::riscv32::instruction::multiply

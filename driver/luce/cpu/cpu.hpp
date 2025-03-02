@@ -13,14 +13,13 @@
 #include "luce/cpu/mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
 #include <accat/auxilia/details/macros.hpp>
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
 #include <optional>
-#include <fmt/ranges.h>
-
 namespace accat::luce {
 namespace isa {
 class IDisassembler;
@@ -35,6 +34,7 @@ class CentralProcessingUnit : public isa::Icpu {
   Task *task_;
   MemoryManagementUnit mmu_;
   Timer cpu_timer_;
+  std::optional<vaddr_t> atomic_address_;
 
 public:
   CentralProcessingUnit(Mediator * = nullptr);
@@ -43,71 +43,35 @@ public:
 public:
   virtual auto switch_task(Task *task) noexcept -> Icpu & override {
     precondition(state_ == State::kVacant, "CPU is already running a program")
+    atomic_address_.reset();
     task_ = task;
     return *this;
   }
 
 public:
-  virtual auxilia::Status execute_shuttle() override;
+  virtual auto execute_shuttle() -> auxilia::Status override;
   virtual auto fetch(vaddr_t) const
       -> auxilia::StatusOr<std::span<const std::byte>> override;
   virtual auto write(vaddr_t, const std::span<const std::byte>)
       -> auxilia::Status override;
-  auto pc() noexcept -> isa::Word & override {
+  virtual auto pc() noexcept -> isa::Word & override {
     return task_->context().program_counter;
   }
-  auto gpr() noexcept -> isa::GeneralPurposeRegisters & override {
+  virtual auto gpr() noexcept -> isa::GeneralPurposeRegisters & override {
     return *task_->context().general_purpose_registers();
+  }
+  virtual auto atomic_address() noexcept -> std::optional<vaddr_t> & override {
+    return atomic_address_;
   }
 
 private:
   auto detach_task() noexcept -> CentralProcessingUnit &;
-  auxilia::Status shuttle();
-  auxilia::Status decode_and_execute();
-  auxilia::Status execute(isa::IInstruction *);
+  auto shuttle() -> auxilia::Status;
+  auto decode_and_execute() -> auxilia::Status;
+  auto execute(isa::IInstruction *) -> auxilia::Status;
+  auto monitor() const noexcept -> Monitor *;
   /// used to handle generic exceptions,subject to change
   auto trap() -> auxilia::Status;
-  auto monitor() const noexcept -> Monitor *;
 };
 
-/// @implements Component
-class CPUs : public Component {
-  // for debug and easy to understand, we use 1 cpus
-  // std::array<CentralProcessingUnit, 1> cpus{};
-  std::unique_ptr<isa::Icpu> cpu;
-
-public:
-  CPUs() = default;
-  CPUs(const CPUs &) = delete;
-  auto operator=(const CPUs &) = delete;
-  CPUs(CPUs &&) noexcept = default;
-  CPUs &operator=(CPUs &&) noexcept = default;
-  virtual ~CPUs() override = default;
-
-  CPUs(Mediator *parent = nullptr) : Component(parent) {
-    cpu = std::make_unique<CentralProcessingUnit>(parent);
-  }
-
-public:
-  auxilia::Status execute_shuttle() {
-    if (cpu->is_vacant()) {
-      if (auto res = cpu->execute_shuttle(); !res) {
-        return res;
-      }
-      return {};
-    }
-
-    spdlog::warn(
-        "No CPU available. \n{}",
-        fmt::format(
-            fmt::fg(fmt::color::cyan),
-            "Note: currently not implemented for multi-core and parallel "
-            "execution"));
-    return {};
-  }
-  auto attach_task(Task *task) noexcept -> CPUs & {
-    cpu->switch_task(task);
-    return *this;
-  }
-};
 } // namespace accat::luce

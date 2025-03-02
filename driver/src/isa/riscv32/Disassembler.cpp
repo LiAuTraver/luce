@@ -13,4 +13,3 @@ auto Disassembler::initializeDefaultImpl() -> IDisassembler & {
   return this->addDecoder(std::make_unique<instruction::base::Decoder>());
 }
 } // namespace accat::luce::isa::riscv32
-#pragma endregion Decoder

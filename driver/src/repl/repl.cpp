@@ -308,41 +308,45 @@ StatusOr<command_t> inspect(std::string_view input) {
   const auto it = std::ranges::find_if(input, auxilia::isspacelike);
   std::string_view mainCommand;
   const auto itAtEnd = it == input.end();
-  if (itAtEnd) {
+  if (itAtEnd)
     // input itself is the command with no arguments
     mainCommand = input;
-  } else {
+  else
     mainCommand = input.substr(0, it - input.begin());
-  }
-  if (mainCommand == "exit" or mainCommand == "q") {
+
+  const auto C =
+      [&mainCommand](const std::string_view name) constexpr noexcept {
+        return mainCommand == name;
+      };
+  if (C("exit") or C("q")) {
     if (itAtEnd) {
       return {Exit{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "exit: command does not take arguments")};
   }
-  if (mainCommand == "help") {
+  if (C("help")) {
     if (itAtEnd) {
       return {Help{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "help: command does not take arguments")};
   }
-  if (mainCommand == "r") {
+  if (C("r")) {
     if (itAtEnd) {
       return {Restart{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "r: command does not take arguments")};
   }
-  if (mainCommand == "c") {
+  if (C("c")) {
     if (itAtEnd) {
       return {Continue{}};
     }
     return {InvalidArgumentError(fg(crimson),
                                  "c: command does not take arguments")};
   }
-  if (mainCommand == "si") {
+  if (C("si")) {
     if (auto args = trim(input.substr(it - input.begin()));
         !args.empty() && args.front() == '[' && args.back() == ']') {
       if (auto maybe_steps =
@@ -357,15 +361,15 @@ StatusOr<command_t> inspect(std::string_view input) {
 
     return {Step{1}}; // default to 1
   }
-  if (mainCommand == "p") {
+  if (C("p")) {
     return {Print{input.substr(it - input.begin()).data()}};
   }
 
-  if (mainCommand == "info") {
+  if (C("info")) {
     return {Info{input.substr(it - input.begin()).data()}};
   }
 
-  if (mainCommand == "w") {
+  if (C("w")) {
     if (auto maybe_exprStr = trim(input.substr(it - input.begin()));
         !maybe_exprStr.empty()) {
       return {AddWatchPoint{{maybe_exprStr.begin(), maybe_exprStr.end()}}};
@@ -374,7 +378,7 @@ StatusOr<command_t> inspect(std::string_view input) {
                                  "w: requires 'expression' as argument")};
   }
 
-  if (mainCommand == "d") {
+  if (C("d")) {
     if (auto maybe_watchpoint =
             to_number<size_t>(input.substr(it - input.begin()))) {
       return {DeleteWatchPoint{*maybe_watchpoint}};
@@ -382,7 +386,7 @@ StatusOr<command_t> inspect(std::string_view input) {
     return {
         InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
   }
-  if (mainCommand == "x") {
+  if (C("x")) {
     // x N EXPR
     if (auto args = trim(input.substr(it - input.begin())); !args.empty()) {
       auto s = std::ranges::find_if(args, auxilia::isspacelike);

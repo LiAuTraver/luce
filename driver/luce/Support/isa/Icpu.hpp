@@ -10,7 +10,7 @@
 namespace accat::luce {
 class Context;
 class Task;
-}
+} // namespace accat::luce
 namespace accat::luce::isa {
 class Icpu : public Component {
 public:
@@ -40,10 +40,14 @@ public:
       -> auxilia::StatusOr<std::span<const std::byte>> = 0;
   virtual auto write(vaddr_t, const std::span<const std::byte>)
       -> auxilia::Status = 0;
-  virtual auto pc() noexcept -> isa::Word & = 0;
-  virtual auto gpr() noexcept -> isa::GeneralPurposeRegisters & = 0;
+  virtual auto pc() noexcept [[clang::lifetimebound]] -> isa::Word & = 0;
+  virtual auto gpr() noexcept [[clang::lifetimebound]]
+  -> isa::GeneralPurposeRegisters & = 0;
+  virtual auto switch_task(Task *) noexcept [[clang::lifetimebound]]
+  -> Icpu & = 0;
+  virtual auto atomic_address() noexcept [[clang::lifetimebound]]
+  -> std::optional<vaddr_t> & = 0;
   virtual auxilia::Status execute_shuttle() = 0;
-  virtual auto switch_task(Task *) noexcept -> Icpu & = 0;
 
 public:
   constexpr auto is_vacant() const noexcept {

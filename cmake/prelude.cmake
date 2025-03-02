@@ -27,7 +27,10 @@ nonnull(CMAKE_CXX_COMPILER)
 message(STATUS "Compiler path: ${CMAKE_CXX_COMPILER}")
 message(STATUS "Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "Compiler version: ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "Simulate ID: ${CMAKE_CXX_SIMULATE_ID}")
+
+if(CMAKE_CXX_SIMULATE_ID)
+  message(STATUS "Simulate ID: ${CMAKE_CXX_SIMULATE_ID}")
+endif(CMAKE_CXX_SIMULATE_ID)
 
 set(CXX_FLAGS_STYLES_GNU OFF CACHE BOOL "Enable GNU style C++ flags")
 set(CXX_FLAGS_STYLES_CLANG OFF CACHE BOOL "Enable Clang style C++ flags")

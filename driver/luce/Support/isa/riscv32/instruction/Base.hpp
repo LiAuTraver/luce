@@ -1,12 +1,12 @@
 #pragma once
 
-#include "mixin.hpp"
+#include "details/mixin.hpp"
 #include "luce/Support/isa/IDecoder.hpp"
 
 namespace accat::luce::isa::riscv32::instruction::base {
 // don't ask
 #define AC_UNDEF_YOUR_FXXKING_MACRO
-#include "debunk_your_macro-inl.hpp"
+#include "details/debunk_your_macro-inl.hpp"
 
 INST(Add, R);
 INST(Sub, R);
@@ -48,13 +48,9 @@ INST(Auipc, U);
 INST(Ecall, I);
 INST(Ebreak, I);
 
+INST_DECODER();
+
 // restore your meow meow meow
 #define AC_RESTORE_YOUR_FXXKING_MACRO
-#include "debunk_your_macro-inl.hpp"
-
-class Decoder : public IDecoder {
-public:
-  virtual auto decode(uint32_t) -> std::unique_ptr<IInstruction> override;
-  virtual ~Decoder() override = default;
-};
+#include "details/debunk_your_macro-inl.hpp"
 } // namespace accat::luce::isa::riscv32::instruction::base

@@ -1,5 +1,6 @@
 #include "deps.hh"
-
+#include "luce/Support/utils/Pattern.hpp"
+#include "luce/Monitor.hpp"
 #include "luce/MainMemory.hpp"
 
 namespace accat::luce {
@@ -31,24 +32,28 @@ auto MainMemory::read_n(isa::physical_address_t addr,
   // different meaning
   return {std::as_bytes(std::span{&memory[addr], count})};
 }
-
+void MainMemory::_write_unchecked(isa::physical_address_t addr,
+                                  std::span<const std::byte> value) noexcept {
+  // TODO: implement lock(or similar) for MainMemory for atomic instructions
+  this->monitor()->cpus().check_atomic(addr, value.size());
+  std::ranges::copy(value, memory.iter_at_address(addr));
+}
 auto MainMemory::write(isa::physical_address_t addr,
                        isa::minimal_addressable_unit_t value) noexcept
     -> Status {
   if (!memory.is_in_range(addr)) {
     return {MakeMemoryAccessViolationError(addr)};
   }
-  memory[addr] = static_cast<std::byte>(value);
+  _write_unchecked(addr, std::as_bytes(std::span{&value, 1}));
   return {};
 }
 auto MainMemory::write_n(isa::physical_address_t addr,
                          const size_t count,
-                         std::span<const std::byte> value) noexcept
-    -> auxilia::Status {
+                         std::span<const std::byte> value) noexcept -> Status {
   if (!memory.is_in_range(addr, addr + count)) {
     return {MakeMemoryAccessViolationError(addr)};
   }
-  std::ranges::copy(value, &memory[addr]);
+  _write_unchecked(addr, value);
   return {};
 }
 void MainMemory::fill(const isa::physical_address_t start,
@@ -64,11 +69,7 @@ auto MainMemory::load_program(const std::span<const std::byte> bytes,
   if (!memory.is_in_range(start_addr, start_addr + block_size)) {
     return ResourceExhaustedError("Program too large for memory");
   }
-  // TODO(...)
-  // stupid way
-  for (size_t i = 0; i < bytes.size(); ++i) {
-    memory[start_addr + i] = bytes[i];
-  }
+  std::ranges::copy(bytes, memory.iter_at_address(start_addr));
   if (randomize) {
     this->generate(
         start_addr + bytes.size(), block_size - bytes.size(), auxilia::rand_u8);
@@ -82,5 +83,8 @@ void MainMemory::generate(const isa::physical_address_t start,
   std::ranges::generate_n(memory.iter_at_address(start), size, [&] {
     return static_cast<std::byte>(std::invoke(generator));
   });
+}
+auto MainMemory::monitor() const noexcept -> Monitor * {
+  return static_cast<Monitor *>(mediator);
 }
 } // namespace accat::luce

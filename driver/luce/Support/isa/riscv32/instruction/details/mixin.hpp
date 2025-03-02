@@ -1,8 +1,8 @@
 #pragma once
+#include <accat/auxilia/defines.hpp>
 
-#include "../../Word.hpp"
-#include "../../IInstruction.hpp"
 #include "luce/Support/isa/constants/riscv32.hpp"
+
 namespace accat::luce::isa::riscv32::instruction::mixin {
 
 // we choose not to use CRTP but deducing this.
@@ -30,6 +30,11 @@ AC_MIXIN_DECLARE_END
 AC_MIXIN_DECLARE_BEGIN(funct3rd12To15Common)
 constexpr auto funct3(this auto &&self) noexcept {
   return self.template extractBits<12, 15>(self.num()); // [12, 15)
+}
+AC_MIXIN_DECLARE_END
+AC_MIXIN_DECLARE_BEGIN(funct5th27To32Common)
+constexpr auto funct5(this auto &&self) noexcept {
+  return self.template extractBits<27, 32>(self.num()); // [27, 32)
 }
 AC_MIXIN_DECLARE_END
 AC_MIXIN_DECLARE_BEGIN(funct7th25To32Common)
@@ -146,4 +151,20 @@ auto imm_str(this auto &&self) noexcept {
   return self.template imm_str_impl<20>();
 }
 AC_MIXIN_DECLARE_END
+
+AC_MIXIN_DECLARE_BEGIN(ARFormat,
+                       mixin::rs2nd20To25Common,
+                       mixin::rs1st15To20Common,
+                       mixin::funct3rd12To15Common,
+                       funct5th27To32Common,
+                       mixin::rd7To12Common,
+                       mixin::opcode0To6Common)
+constexpr auto rl(this auto &&self) noexcept {
+  return self.template extractBits<25, 26>(self.num());
+}
+constexpr auto aq(this auto &&self) noexcept {
+  return self.template extractBits<26, 27>(self.num());
+}
+AC_MIXIN_DECLARE_END
+
 } // namespace accat::luce::isa::riscv32::instruction::mixin

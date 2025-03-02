@@ -8,9 +8,8 @@
 #include <string>
 #include <string_view>
 
-#include "accat/auxilia/details/Status.hpp"
-#include "accat/auxilia/details/bit.hpp"
 #include "luce/config.hpp"
+
 namespace accat::luce {
 class Image : public auxilia::Printable {
 public:
@@ -24,11 +23,10 @@ public:
   ~Image() = default;
   template <std::endian Endianess = std::endian::native>
   static auxilia::StatusOr<Image> FromPath(const std::string_view path) {
-    if (auto maybe_data = auxilia::read_raw_bytes<Endianess>(path)) {
+    if (auto maybe_data = auxilia::read_raw_bytes<Endianess>(path))
       return Image{std::move(maybe_data.value()), Endianess};
-    } else {
+    else
       return maybe_data.as_status();
-    }
   }
 
 public:

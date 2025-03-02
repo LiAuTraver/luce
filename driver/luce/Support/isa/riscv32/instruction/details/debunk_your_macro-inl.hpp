@@ -8,6 +8,7 @@
 #ifdef AC_UNDEF_YOUR_FXXKING_MACRO
 #  undef AC_UNDEF_YOUR_FXXKING_MACRO
 
+#  pragma push_macro("AR")
 #  pragma push_macro("R")
 #  pragma push_macro("I")
 #  pragma push_macro("S")
@@ -17,6 +18,8 @@
 #  pragma push_macro("INST")
 #  pragma push_macro("INST_IMPL")
 #  pragma push_macro("CONCAT_HELPER")
+#  pragma push_macro("INST_DECODER")
+#  undef AR
 #  undef R
 #  undef I
 #  undef S
@@ -26,6 +29,7 @@
 #  undef INST
 #  undef INST_IMPL
 #  undef CONCAT_HELPER
+#  undef INST_DECODER
 
 #  define INST_IMPL(_name_, _fmt_)                                             \
     struct _name_ : IInstruction, mixin::_fmt_ {                               \
@@ -39,11 +43,19 @@
     }
 #  define CONCAT_HELPER(_name_, _fmt_) _name_##_fmt_
 #  define INST(_name_, _fmt_) INST_IMPL(_name_, CONCAT_HELPER(_fmt_, Format))
+#  define INST_DECODER()                                                       \
+    class Decoder : public IDecoder {                                          \
+    public:                                                                    \
+      virtual auto decode(uint32_t) -> std::unique_ptr<IInstruction> override; \
+      virtual ~Decoder() override = default;                                   \
+    }
 #elif defined(AC_RESTORE_YOUR_FXXKING_MACRO)
 #  undef AC_RESTORE_YOUR_FXXKING_MACRO
 #  undef INST
 #  undef CONCAT_HELPER
 #  undef INST_IMPL
+#  undef INST_DECODER
+#  pragma pop_macro("INST_DECODER")
 #  pragma pop_macro("INST")
 #  pragma pop_macro("INST_IMPL")
 #  pragma pop_macro("CONCAT_HELPER")
@@ -53,7 +65,8 @@
 #  pragma pop_macro("S")
 #  pragma pop_macro("I")
 #  pragma pop_macro("R")
-#elif defined(__INTELLISENSE__)
+#  pragma pop_macro("AR")
+#elif defined(__INTELLISENSE__) || defined(__RESHARPER__)
 // pass
 #else
 #  error                                                                       \

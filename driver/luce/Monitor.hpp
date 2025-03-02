@@ -11,6 +11,7 @@
 #include <accat/auxilia/auxilia.hpp>
 
 #include "MainMemory.hpp"
+#include "cpu/cpus.hpp"
 #include "repl/Debugger.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/Support/utils/Timer.hpp"
@@ -60,7 +61,7 @@ class Monitor : public Mediator {
   // SystemBus bus;
   // std::vector<Task> processes; // currently just one process
   Task process;
-  CPUs cpus;
+  CPUs cpus_;
   Timer timer;
   std::shared_ptr<isa::IDisassembler> disassembler_;
   repl::Debugger debugger_;
@@ -80,6 +81,9 @@ public:
   auto &registers(this auto &&self) noexcept {
     // currently only one task
     return *self.process.context().general_purpose_registers();
+  }
+  auto &cpus(this auto &&self) noexcept {
+    return self.cpus_;
   }
 
 public:

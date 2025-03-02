@@ -3,14 +3,11 @@
 #include <spdlog/common.h>
 
 #include "luce/Support/isa/IDisassembler.hpp"
-
 #include "luce/Support/isa/riscv32/Disassembler.hpp"
 #include "luce/Support/isa/riscv32/instruction/Multiply.hpp"
-#include "luce/Support/isa/IDisassembler.hpp"
 
 using namespace accat::auxilia;
 using namespace accat::luce::isa;
-using namespace accat::luce::isa::riscv32;
 using enum FormatPolicy;
 
 AC_SPDLOG_INITIALIZATION(luce, info)

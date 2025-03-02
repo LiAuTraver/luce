@@ -1,3 +1,5 @@
+#include <memory>
+#include "luce/Support/isa/riscv32/instruction/Atomic.hpp"
 #include "luce/config.hpp"
 #include "exec.hpp"
 #include "luce/Support/isa/IDisassembler.hpp"
@@ -16,8 +18,10 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   program_options.load_arguments(program_arguments);
 
   if (auto res = program_options.parse_arguments(args); !res) {
-    fmt::print(stderr, fmt::fg(fmt::color::fire_brick), "Error: ");
-    fmt::println(stderr, "{err_msg}", "err_msg"_a = res.message());
+    auxilia::println(stderr,
+                     fg(fmt::color::fire_brick),
+                     "Error: {err_msg}",
+                     "err_msg"_a = res.message());
     callback = res.raw_code();
     return callback;
   }
@@ -32,8 +36,9 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
 
   auto monitor = Monitor{};
 
-  monitor.disassembler()->addDecoder(
-      std::make_unique<isa::riscv32::instruction::multiply::Decoder>());
+  monitor.disassembler()
+      ->addDecoder(std::make_unique<isa::instruction::multiply::Decoder>())
+      .addDecoder(std::make_unique<isa::instruction::atomic::Decoder>());
 
   auto image = imageFut.get();
   if (!image) {

@@ -32,7 +32,7 @@ namespace {
   return auxilia::InternalError("REPL exited unexpectedly");
 }
 } // namespace
-Monitor::Monitor() : memory_(this), cpus(this), debugger_(this) {
+Monitor::Monitor() : memory_(this), cpus_(this), debugger_(this) {
   // default just use riscv32
   disassembler_ = std::make_shared<isa::riscv32::Disassembler>();
   disassembler_->initializeDefault();
@@ -51,7 +51,7 @@ auto Monitor::notify(Component *,
       process.resume();
     } else {
       process.restart();
-      cpus.attach_task(&process);
+      cpus_.attach_task(&process);
     }
     break;
   }
@@ -68,7 +68,7 @@ auto Monitor::notify(Component *,
 Status Monitor::run() {
 
   process.start();
-  cpus.attach_task(&process);
+  cpus_.attach_task(&process);
 
   return resume();
 }
@@ -99,7 +99,7 @@ auto Monitor::resume() -> Status {
       }
     }
 
-    if (auto res = cpus.execute_shuttle(); !res) {
+    if (auto res = cpus_.execute_shuttle(); !res) {
       return res;
     }
   }
@@ -107,7 +107,7 @@ auto Monitor::resume() -> Status {
 }
 Status Monitor::REPL() {
   process.start();
-  cpus.attach_task(&process);
+  cpus_.attach_task(&process);
 
   for (auto res : repl::repl(this) | std::views::common) {
     if (res)
@@ -131,7 +131,7 @@ Status Monitor::_do_execute_n_unchecked(const size_t steps) {
       spdlog::info("Program is paused. Press `r` to resume.");
       return {};
     }
-    if (auto res = cpus.execute_shuttle(); !res)
+    if (auto res = cpus_.execute_shuttle(); !res)
       return res;
     this->debugger_.update_watchpoints(
         argument::program::batch.value ? false // don't notify(keep running)

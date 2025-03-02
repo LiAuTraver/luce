@@ -51,7 +51,8 @@ public:
     return real_data.end();
   }
   auto iter_at_address(this auto &&self, const isa::physical_address_t addr) {
-    return self.real_data.begin() + addr - isa::physical_base_address;
+    auto offset = addr - isa::physical_base_address;
+    return self.real_data.begin() + offset;
   }
   auto cbegin() const noexcept {
     return real_data.cbegin();
@@ -82,12 +83,13 @@ public:
       return (is_in_range(addr) && ... && is_in_range(addrs));
   }
 };
-
+class Monitor;
 class LUCE_API MainMemory : public Component {
 
   MemoryAccess memory;
 
 private:
+  auto monitor() const noexcept -> Monitor *;
   static consteval auto _make_fmt_str() {
     constexpr auto C = sizeof(isa::physical_address_t) * 2;
     static_assert(C == 8 || C == 16, "Invalid address size");
@@ -100,10 +102,8 @@ private:
   MakeMemoryAccessViolationError(isa::physical_address_t addr) noexcept {
     return auxilia::OutOfRangeError(_make_fmt_str(), addr);
   }
-
-public:
-  MainMemory(Mediator *parent) : Component(parent) {}
-  ~MainMemory() = default;
+  void _write_unchecked(isa::physical_address_t,
+                        std::span<const std::byte>) noexcept;
 
 public:
   auto read(isa::physical_address_t) const noexcept
@@ -176,16 +176,15 @@ public:
     if (!memory.is_in_range(addr, addr + sizeof(T))) {
       return MakeMemoryAccessViolationError(addr);
     }
-    std::ranges::copy(std::as_bytes(std::span<const T, 1>{&value, 1}),
-                      memory.iter_at_address(addr));
-    return auxilia::OkStatus();
+    _write_unchecked(addr, std::as_bytes(std::span{&value, 1}));
+    return {};
   }
 
-private:
+public:
+  MainMemory(Mediator *parent) : Component(parent) {}
+  ~MainMemory() = default;
   MainMemory(const MainMemory &) = delete;
   MainMemory &operator=(const MainMemory &) = delete;
-
-public:
   MainMemory(MainMemory &&) noexcept = default;
   MainMemory &operator=(MainMemory &&) noexcept = default;
 };

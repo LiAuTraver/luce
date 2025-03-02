@@ -103,7 +103,7 @@ private:
         const_cast<const decltype(self) &>(self)._get_impl(str));
   }
   string_type _format_default_str() const;
-  string_type _fmt_detailed_str() const;
+  string_type _format_detailed_str() const;
   auto _get_impl(std::string_view str) const noexcept -> const register_t *;
 
 private:
