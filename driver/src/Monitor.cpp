@@ -32,10 +32,10 @@ namespace {
   return auxilia::InternalError("REPL exited unexpectedly");
 }
 } // namespace
-Monitor::Monitor() : memory_(this), cpus_(this), debugger_(this) {
-  // default just use riscv32
-  disassembler_ = std::make_shared<isa::riscv32::Disassembler>();
-  disassembler_->initializeDefault();
+Monitor::Monitor(std::unique_ptr<isa::IDisassembler>&& disassembler)
+    : memory_(this), cpus_(this), debugger_(this) {
+  contract_assert(disassembler, "Disassembler cannot be null");
+  disassembler_ = std::move(disassembler);
 }
 Monitor::~Monitor() = default;
 auto Monitor::notify(Component *,

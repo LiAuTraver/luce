@@ -10,8 +10,14 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <accat/auxilia/auxilia.hpp>
-#include "luce/Support/isa/architecture.hpp"
+#include <memory>
 #include <string>
+
+#include "luce/Support/isa/IDisassembler.hpp"
+#include "luce/Support/isa/architecture.hpp"
+#include "luce/Support/isa/riscv32/Disassembler.hpp"
+#include "luce/Support/isa/riscv32/instruction/Multiply.hpp"
+#include "luce/Support/isa/riscv32/instruction/Atomic.hpp"
 #include "luce/argument/Argument.hpp"
 
 namespace accat::luce {
@@ -19,7 +25,6 @@ class ArgumentLoader;
 }
 namespace accat::luce {
 class ExecutionContext : public auxilia::Printable {
-public:
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)
 
@@ -46,9 +51,23 @@ public:
         spdlog::logger{"luce", {console_sink, file_sink}}));
     return;
   }
+  void initDisasm() {
+    this->disassembler = std::make_unique<isa::Disassembler>();
+    disassembler->initializeDefault()
+        .addDecoder(std::make_unique<isa::instruction::multiply::Decoder>())
+        .addDecoder(std::make_unique<isa::instruction::atomic::Decoder>());
+  }
+
+public:
+  std::unique_ptr<isa::IDisassembler> disassembler;
+
+public:
   static auto &InitializeContext(const ArgumentLoader &) {
+    static bool has_initialized = false;
     static ExecutionContext ctx;
-    ctx.initLog();
+    if (has_initialized)
+      return (ctx);
+
     defer {
       // just for testing purposes for argument parsing
       if (argument::program::testing.value) {
@@ -56,6 +75,8 @@ public:
         std::exit(EXIT_SUCCESS);
       }
     };
+    ctx.initLog();
+    ctx.initDisasm();
     return (ctx);
   }
 
@@ -75,7 +96,7 @@ public:
   }
 };
 
-LUCE_API [[nodiscard]] int
-    main([[maybe_unused]] std::span<const std::string_view>);
+LUCE_API
+[[nodiscard]] int main([[maybe_unused]] std::span<const std::string_view>);
 
 } // namespace accat::luce

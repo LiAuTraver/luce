@@ -1,4 +1,6 @@
+#include <functional>
 #include <memory>
+#include <utility>
 #include "luce/Support/isa/riscv32/instruction/Atomic.hpp"
 #include "luce/config.hpp"
 #include "exec.hpp"
@@ -25,20 +27,17 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
     callback = res.raw_code();
     return callback;
   }
-  [[maybe_unused]]
-  auto &context = ExecutionContext::InitializeContext(program_options);
+  auto contextFut = auxilia::async(ExecutionContext::InitializeContext,
+                                   std::ref(program_options));
 
   auto imagePath = argument::program::image.value.empty()
                        ? defaultImagePath
                        : argument::program::image.value;
 
   auto imageFut = auxilia::async(Image::FromPath<>, imagePath);
+  auto &context = contextFut.get();
 
-  auto monitor = Monitor{};
-
-  monitor.disassembler()
-      ->addDecoder(std::make_unique<isa::instruction::multiply::Decoder>())
-      .addDecoder(std::make_unique<isa::instruction::atomic::Decoder>());
+  auto monitor = Monitor{std::move(context.disassembler)};
 
   auto image = imageFut.get();
   if (!image) {

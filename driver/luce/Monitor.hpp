@@ -67,7 +67,7 @@ class Monitor : public Mediator {
   repl::Debugger debugger_;
 
 public:
-  Monitor();
+  explicit Monitor(std::unique_ptr<isa::IDisassembler>&&);
   virtual ~Monitor() override;
   auto &debugger(this auto &&self) noexcept {
     return self.debugger_;
