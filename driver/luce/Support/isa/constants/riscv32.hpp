@@ -17,7 +17,7 @@ inline static constexpr std::size_t instruction_size_bytes =
 inline static constexpr physical_address_t physical_base_address = 0x80000000;
 inline static constexpr virtual_address_t virtual_base_address = 0x80000000;
 // inline static constexpr physical_address_t physical_memory_size = 0x8000000;
-// // 128MB
+// 128MB
 inline static constexpr physical_address_t physical_memory_size =
     0x800000; // 8MB, for testing
 inline static constexpr physical_address_t physical_memory_begin =

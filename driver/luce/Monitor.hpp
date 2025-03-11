@@ -16,7 +16,6 @@
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/Support/utils/Timer.hpp"
 #include "config.hpp"
-#include "SystemBus.hpp"
 #include "Task.hpp"
 #include "cpu/cpu.hpp"
 
