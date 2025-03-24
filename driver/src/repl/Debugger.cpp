@@ -28,31 +28,33 @@ auto WatchPoint::update(expression::Visitor *visitor)
     -> std::pair<bool, result_type> {
 
   using RetType = std::pair<bool, result_type>;
+  const auto valid = [this](auto &&res) -> RetType {
+    defer {
+      // don't forget to update previous result!!! #@!#@!#
+      previous_result_ = res;
+    };
 
+    if (!previous_result_)
+      // previous result is invalid, update it and return true
+      return {true, res};
+
+    if (*previous_result_ == res or previous_result_->empty())
+      // both valid and equal, or no previous result, return false
+      return {false, res};
+
+    // both valid but not equal, update previous result return true
+    return {true, res};
+  };
+  const auto invalid = [this](auto &&res) -> RetType {
+    previous_result_ = res;
+    return {false, res};
+  };
+  // evaluate the expression
   return *AST_->accept(*visitor)
               // result is valid
-              .transform([this](auto &&res) -> RetType {
-                defer {
-                  // don't forget to update previous result!!! #@!#@!#
-                  previous_result_ = res;
-                };
-
-                if (!previous_result_)
-                  // previous result is invalid, update it and return true
-                  return {true, res};
-
-                if (*previous_result_ == res or previous_result_->empty())
-                  // both valid and equal, or no previous result, return false
-                  return {false, res};
-
-                // both valid but not equal, update previous result return true
-                return {true, res};
-              })
+              .transform(valid)
               // result is invalid, return false
-              .transform_error([this](auto &&res) -> RetType {
-                previous_result_ = res;
-                return {false, res};
-              });
+              .transform_error(invalid);
 }
 auto WatchPoints::to_string(const FormatPolicy policy) const -> string_type {
   auto str = string_type{};

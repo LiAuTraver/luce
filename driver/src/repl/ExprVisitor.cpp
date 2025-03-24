@@ -288,7 +288,7 @@ result_type Evaluator::visit(const Binary &expr) {
                       typeid(rhs).name());
         return {InvalidArgumentError("unknown evaluation type")};
       });
-  return std::visit(pattern, std::move(left).get(), std::move(right).get());
+  return auxilia::visit(pattern, std::move(left), std::move(right));
 }
 result_type Evaluator::visit(const Logical &expr) {
   auto maybe_left = evaluate(*expr.left);
@@ -320,6 +320,6 @@ result_type Evaluator::visit(const Logical &expr) {
                       typeid(rhs).name());
         return {InvalidArgumentError("unknown evaluation type")};
       });
-  return std::visit(pattern, std::move(left).get(), std::move(right).get());
+  return auxilia::visit(pattern, std::move(left), std::move(right));
 }
 } // namespace accat::luce::repl::expression

@@ -243,7 +243,7 @@ struct Scan final : ICommand {
     parser.next_expression().transform([&](auto &&value) {
       value->accept(eval)
           .transform([&](auto &&value) {
-            auto ptr = auxilia::get_if<evaluation::Number>(&value);
+            auto ptr = value.template get_if<evaluation::Number>();
             if (!ptr) {
               // does not hold a number
               auxilia::println(stderr,

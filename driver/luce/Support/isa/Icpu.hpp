@@ -48,6 +48,7 @@ public:
   virtual auto atomic_address() noexcept [[clang::lifetimebound]]
   -> std::optional<vaddr_t> & = 0;
   virtual auxilia::Status execute_shuttle() = 0;
+  virtual auxilia::Status handle_syscall() = 0; 
 
 public:
   constexpr auto is_vacant() const noexcept {

@@ -44,6 +44,10 @@ public:
     privilege_level = PrivilegeLevel::kUser;
     return *this;
   }
+  auto &advance_pc(size_t n = sizeof(isa::instruction_size_t)) {
+    program_counter.num() += n;
+    return *this;
+  }
 
 public:
   isa::Word program_counter;

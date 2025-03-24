@@ -63,6 +63,7 @@ public:
   virtual auto atomic_address() noexcept -> std::optional<vaddr_t> & override {
     return atomic_address_;
   }
+  virtual auto handle_syscall() -> auxilia::Status override;
 
 private:
   auto detach_task() noexcept -> CentralProcessingUnit &;

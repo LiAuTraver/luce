@@ -72,7 +72,7 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   using enum isa::IInstruction::ExecutionStatus;
   switch (exec) {
   case kSuccess:
-    task_->context().program_counter.num() += sizeof(isa::instruction_size_t);
+    task_->context().advance_pc();
     [[fallthrough]];
   case kSuccessAndNotAdvancePC:
     return {};
@@ -86,7 +86,7 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
     // TODO: pc.
     spdlog::info("received an environment break signal; pausing the task");
     // temporary solution
-    task_->context().program_counter.num() += sizeof(isa::instruction_size_t);
+    task_->context().advance_pc();
     break;
   case kEnvCall:
     // TODO(...)
@@ -94,7 +94,8 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
     spdlog::warn("Environment call detected, currently does nothing but resume "
                  "the task. this is a TODO.");
     // temporary solution
-    task_->context().program_counter.num() += sizeof(isa::instruction_size_t);
+    handle_syscall();
+    task_->context().advance_pc();
     return {};
   case kUnknown:
     spdlog::error("Unknown error occurred. Pausing the task.");
@@ -128,5 +129,103 @@ auto CPU::write(const vaddr_t addr, const std::span<const std::byte> bytes)
 auto CPU::monitor() const noexcept -> Monitor * {
   return static_cast<Monitor *>(this->mediator);
 }
+auto CPU::handle_syscall() -> auxilia::Status {
+  auto &gpr = *task_->context().general_purpose_registers();
 
+  // Get syscall number from a7, which is the 18th register
+  const auto syscall_num = gpr[17];
+  std::array<uint32_t, 7> args;
+  for (const auto i : std::views::iota(0, 7)) {
+    args[i] = gpr[i + 10];
+  }
+
+  dbg(info, "Syscall number: {}", syscall_num);
+  dbg(info, "Arguments: {}", fmt::join(args, ", "));
+
+  // Handle different syscall numbers
+  switch (syscall_num) {
+  case 1:               // SYS_write
+    if (args[0] == 1) { // stdout
+      // Write to stdout, args[1] is buffer pointer, args[2] is length
+      monitor()
+          ->memory()
+          .read_n(mmu_.virtual_to_physical(args[1]), args[2])
+          .transform([&](auto &&res) {
+            fmt::println("[stdout]{}", fmt::join(res, " "));
+            gpr.write_at(10) = args[2];
+          })
+          .transform_error([&](auto &&err) {
+            dbg(error, "Failed to read from memory: {}", err.message());
+            gpr.write_at(10) = -1;
+          });
+    }
+    break;
+
+  case 2: // SYS_open
+    // args[0]: pathname pointer, args[1]: flags, args[2]: mode
+    spdlog::warn("SYS_open not fully implemented");
+    gpr.write_at(10) = -1; // Return error for now
+    break;
+
+  case 3: // SYS_close
+    // args[0]: file descriptor
+    spdlog::warn("SYS_close not fully implemented"); 
+    gpr.write_at(10) = 0; // Pretend success
+    break;
+
+  case 4: // SYS_stat
+    // args[0]: pathname pointer, args[1]: stat buffer pointer
+    spdlog::warn("SYS_stat not fully implemented");
+    gpr.write_at(10) = -1;
+    break;
+
+  case 63: // SYS_read
+    // args[0]: fd, args[1]: buffer pointer, args[2]: count
+    if (args[0] == 0) { // stdin
+      spdlog::warn("stdin read not implemented");
+      gpr.write_at(10) = -1;
+    }
+    break;
+
+  case 64: // SYS_write 
+    if (args[0] == 1 || args[0] == 2) { // stdout/stderr
+      monitor()
+          ->memory()
+          .read_n(mmu_.virtual_to_physical(args[1]), args[2])
+          .transform([&](auto &&res) {
+            fmt::println("[{}]{}", args[0] == 1 ? "stdout" : "stderr", 
+                       fmt::join(res, " "));
+            gpr.write_at(10) = args[2];
+          })
+          .transform_error([&](auto &&err) {
+            dbg(error, "Failed to read from memory: {}", err.message());
+            gpr.write_at(10) = -1;
+          });
+    }
+    break;
+
+  case 80: // SYS_fstat
+    // args[0]: fd, args[1]: stat buffer pointer
+    spdlog::warn("SYS_fstat not fully implemented");
+    gpr.write_at(10) = -1;
+    break;
+
+  case 93: // SYS_exit
+    spdlog::info("Program exited with code: {}", args[0]);
+    task_->finish();
+    break;
+
+  case 214: // SYS_brk
+    // args[0]: new program break
+    spdlog::warn("SYS_brk not fully implemented");
+    gpr.write_at(10) = args[0]; // Pretend success by returning requested address
+    break;
+
+  default:
+    spdlog::warn("Unhandled syscall number: {}", syscall_num);
+    gpr.write_at(10) = -1; // return error
+  }
+
+  return {};
+}
 } // namespace accat::luce
