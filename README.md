@@ -10,7 +10,7 @@ A simple emulator for the riscv32 instruction set.
 #### Linux
 ```bash
 pip install conan
-conan install . --output-folder=conan_installed
+conan install . --output-folder=conan_installed --build=missing
 # seems the rc was optional, but anyway
 bazel --bazelrc=conan_installed/conan_bzl.rc build //tools/luce 
 # to get the compile_commands.json for clangd:

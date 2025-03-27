@@ -47,7 +47,7 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   }
 
   if (auto res = monitor.register_task(
-          image->bytes_view(), isa::virtual_base_address, 0x100);
+          image->bytes_view(), isa::virtual_base_address, 0x10000);
       !res) {
     spdlog::error("Failed to load program: {}", res.message());
     callback = EXIT_FAILURE;

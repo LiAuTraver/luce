@@ -6,7 +6,6 @@ cc_binary(
         "/Isource/auxilia/include",
         "/Zc:preprocessor",
         "/Iinclude",
-        "/MDd",
         "/Zc:__cplusplus",
         "/wd4068",
     ],

@@ -19,6 +19,7 @@ cc_test(
         "/wd4068",
     ],
     defines = [
+        "AC_SILENCE_CPP_STANDARD_CHECK", # bazel workaround
         "AC_CPP_DEBUG",
         "SPDLOG_FMT_EXTERNAL",
         "FMT_SHARED",
