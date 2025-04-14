@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string_view>
 #include <utility>
 
 #include "luce/repl/repl_fwd.hpp"
@@ -21,7 +22,7 @@ public:
   string_type to_string(
       const auxilia::FormatPolicy policy = auxilia::FormatPolicy::kBrief) const;
   auto expr() const [[clang::lifetimebound]]
-  -> auxilia::Viewable::string_view_type {
+  -> std::string_view {
     return expr_;
   }
   auto id() const noexcept -> size_t {

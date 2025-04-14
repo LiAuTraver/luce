@@ -117,7 +117,7 @@ auto CPU::fetch(const vaddr_t addr) const
       ->memory()
       .read_n(mmu_.virtual_to_physical(addr),
               isa::instruction_size_bytes)
-      .and_then([&](auto &&res) { // convert back
+      .transform([&](auto &&res) { // convert back
         return mmu_.physical_to_virtual(res);
       });
 }

@@ -92,7 +92,7 @@ bool WatchPoints::update(expression::Visitor *visitor) {
       has_changed = true;
       spdlog::info("WatchPoint {id} changed to: {value}",
                    "id"_a = wp.id(),
-                   "value"_a = res->underlying_string(kBrief));
+                   "value"_a = res->to_string(kBrief));
     } else
       spdlog::trace("WatchPoint {}: no change", wp.id());
   });
@@ -114,7 +114,7 @@ Status Debugger::add_watchpoint(const std::string &expr) {
             .transform([](auto &&res) {
               fmt::println(stdout,
                            "Current evaluation result: {result}",
-                           "result"_a = res.underlying_string(kBrief));
+                           "result"_a = res.to_string(kBrief));
             })
             .transform_error([](auto &&res) {
               spdlog::warn("Watchpoint added, but "

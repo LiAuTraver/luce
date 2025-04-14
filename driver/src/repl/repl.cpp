@@ -1,7 +1,4 @@
-#include <cstddef>
-#include <string_view>
 #include <type_traits>
-#include "accat/auxilia/details/Status.hpp"
 #include "deps.hh"
 
 #include "luce/config.hpp"
@@ -88,7 +85,7 @@ struct ICommand {
   virtual void execute(Monitor *monitor) const = 0;
 
 protected:
-  virtual ~ICommand() = default;
+  ~ICommand() = default;
 };
 
 struct Unknown : /* extends */ auxilia::Monostate, /* implements */ ICommand {
@@ -173,7 +170,7 @@ private:
   };
 
 public:
-  Info() = default;
+  Info() noexcept = default;
   explicit Info(const std::string &subCommand) {
     auto trimmed = trim(subCommand);
     if (trimmed.empty()) {
@@ -208,10 +205,10 @@ struct Print final : ICommand {
         .transform([&](auto &&res1) {
           res1->accept(eval)
               .transform([](auto &&res2) {
-                auxilia::println(stdout,
-                                 "{result}",
-                                 "result"_a = res2.underlying_string(
-                                     auxilia::FormatPolicy::kBrief));
+                auxilia::println(
+                    stdout,
+                    "{result}",
+                    "result"_a = res2.to_string(auxilia::FormatPolicy::kBrief));
               })
               .transform_error([](auto &&res2) {
                 auxilia::println(stderr,

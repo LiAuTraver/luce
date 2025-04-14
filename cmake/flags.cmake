@@ -101,7 +101,7 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
   add_compile_options(
     -g3 -O0 -fno-inline -fstandalone-debug # Debug flags
     -frtti
-
+    -Wno-c++26-extensions
     # -fsanitize=address
     # -fsanitize=fuzzer
     # -fsanitize=undefined
