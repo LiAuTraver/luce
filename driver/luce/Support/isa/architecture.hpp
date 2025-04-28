@@ -28,6 +28,8 @@ AC_BITMASK_OPS(instruction_set)
 static_assert(sizeof(std::byte) == sizeof(isa::minimal_addressable_unit_t),
               "current implementation requires std::byte to be same size as "
               "minimal_addressable_unit_t");
+#if _WIN32
 static_assert(sizeof(std::bitset<32>) == 4 * sizeof(std::byte),
               "std::bitset<8> must be same size as std::byte");
+#endif
 } // namespace accat::luce::isa

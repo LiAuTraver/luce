@@ -4,7 +4,6 @@
 #include "luce/Support/isa/Icpu.hpp"
 
 #include "luce/Support/isa/riscv32/instruction/Multiply.hpp"
-#include <fmt/format.h>
 
 namespace accat::luce::isa::riscv32::instruction::multiply {
 using auxilia::as;
@@ -19,7 +18,7 @@ auto Mul::execute(Icpu *cpu) const -> ExecutionStatus {
   auto num = as<int64_t>(gpr[rs1()]) * as<int64_t>(gpr[rs2()]);
   // [31:0]
   gpr.write_at(rd()) = as<signed_num_type>(extractBits<0, 32>(num));
-  return kSuccess;
+  return kOk;
 }
 auto Mulh::asmStr() const noexcept -> string_type {
   return fmt::format("mulh x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -30,7 +29,7 @@ auto Mulh::execute(Icpu *cpu) const -> ExecutionStatus {
   auto num = as<int64_t>(gpr[rs1()]) * as<int64_t>(gpr[rs2()]);
   // [63:32]
   gpr.write_at(rd()) = as<signed_num_type>(extractBits<32, 64>(num));
-  return kSuccess;
+  return kOk;
 }
 auto Mulsu::asmStr() const noexcept -> string_type {
   return fmt::format("mulsu x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -41,7 +40,7 @@ auto Mulsu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto num = as<int64_t>(gpr[rs1()]) * as<uint64_t>(gpr[rs2()]);
   // [63:32]
   gpr.write_at(rd()) = as<signed_num_type>(extractBits<32, 64>(num));
-  return kSuccess;
+  return kOk;
 }
 auto Mulu::asmStr() const noexcept -> string_type {
   return fmt::format("mulu x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -52,7 +51,7 @@ auto Mulu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto num = as<uint64_t>(gpr[rs1()]) * as<uint64_t>(gpr[rs2()]);
   // [63:32]
   gpr.write_at(rd()) = as<num_type>(extractBits<32, 64>(num));
-  return kSuccess;
+  return kOk;
 }
 auto Div::asmStr() const noexcept -> string_type {
   return fmt::format("div x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -62,7 +61,7 @@ auto Div::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   auto num = as<signed_num_type>(gpr[rs1()]) / as<signed_num_type>(gpr[rs2()]);
   gpr.write_at(rd()) = as<signed_num_type>(num);
-  return kSuccess;
+  return kOk;
 }
 auto Divu::asmStr() const noexcept -> string_type {
   return fmt::format("divu x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -72,7 +71,7 @@ auto Divu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   auto num = as<num_type>(gpr[rs1()]) / as<num_type>(gpr[rs2()]);
   gpr.write_at(rd()) = as<num_type>(num);
-  return kSuccess;
+  return kOk;
 }
 auto Rem::asmStr() const noexcept -> string_type {
   return fmt::format("rem x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -82,7 +81,7 @@ auto Rem::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   auto num = as<signed_num_type>(gpr[rs1()]) % as<signed_num_type>(gpr[rs2()]);
   gpr.write_at(rd()) = as<signed_num_type>(num);
-  return kSuccess;
+  return kOk;
 }
 auto Remu::asmStr() const noexcept -> string_type {
   return fmt::format("remu x{}, x{}, x{}", rd(), rs1(), rs2());
@@ -92,7 +91,7 @@ auto Remu::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
   auto num = as<num_type>(gpr[rs1()]) % as<num_type>(gpr[rs2()]);
   gpr.write_at(rd()) = as<num_type>(num);
-  return kSuccess;
+  return kOk;
 }
 #pragma endregion Multiply
 #pragma region DecodeImpl

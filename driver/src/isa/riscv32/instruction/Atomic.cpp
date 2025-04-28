@@ -19,7 +19,7 @@ auto Lr::execute(Icpu *cpu) const -> ExecutionStatus {
   gpr.write_at(rd()) =
       *reinterpret_cast<const num_type *>(std::move(data)->data());
   cpu->atomic_address() = rs1();
-  return kSuccess;
+  return kOk;
 }
 auto Lr::asmStr() const noexcept -> string_type {
   return fmt::format("lr.w x{}, (x{})", rd(), rs1());
@@ -29,7 +29,7 @@ auto Sc::execute(Icpu *cpu) const -> ExecutionStatus {
   if (cpu->atomic_address() != rs1()) {
     // atomic address not match
     gpr.write_at(rd()) = 1;
-    return kSuccess;
+    return kOk;
   }
 
   [[maybe_unused]] auto res = cpu->write(gpr[rs1()],
@@ -39,7 +39,7 @@ auto Sc::execute(Icpu *cpu) const -> ExecutionStatus {
                   "write failed. you should check the address before it "
                   "stored into atomic_address.");
   gpr.write_at(rd()) = 0;
-  return kSuccess;
+  return kOk;
 }
 auto Sc::asmStr() const noexcept -> string_type {
   return fmt::format("sc.w x{}, x{}, (x{})", rd(), rs2(), rs1());

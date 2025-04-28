@@ -115,7 +115,7 @@ private:
 #pragma pack(push, 1)
 #define R register_t
   union ALIGNAS {
-    // error types cannot be declared in an anonymous union on linux
+    // error: types cannot be declared in an anonymous union on linux
     // using R = register_t;
     ALIGNAS
     registers_t raw = {};
@@ -133,6 +133,7 @@ private:
   };
 #undef R
 #pragma pack(pop)
+  // used to return as reference when the register is not writable(zero register)
 static register_t garbage;
 public:
   // auto bytes_view() const noexcept [[clang::lifetimebound]] {

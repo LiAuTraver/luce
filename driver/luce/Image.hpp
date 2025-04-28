@@ -30,16 +30,18 @@ public:
   }
 
 public:
-  auto to_string(const auxilia::FormatPolicy &format_policy =
-                     auxilia::FormatPolicy::kDefault) const -> string_type {
+  [[nodiscard]] auto to_string(const auxilia::FormatPolicy &format_policy =
+                                   auxilia::FormatPolicy::kDefault) const
+      -> string_type {
     return fmt::format(
         "[Image: size = {size}, endianess = {endianess}, bytes = {bytes}]",
         "size"_a = binary_data_.size(),
         "endianess"_a = is_little_endian_ ? "little" : "big",
         "bytes"_a = raw_string(format_policy));
   }
-  auto raw_string(const auxilia::FormatPolicy format_policy =
-                      auxilia::FormatPolicy::kDetailed) const -> string_type {
+  [[nodiscard]] auto raw_string(const auxilia::FormatPolicy format_policy =
+                                    auxilia::FormatPolicy::kDetailed) const
+      -> string_type {
     auto isDetailed = format_policy == auxilia::FormatPolicy::kDetailed;
     auto isTrivialImage = binary_data_.size() < 20;
 
@@ -50,10 +52,10 @@ public:
                                          : std::span(binary_data_).first(20),
                                      " "));
   }
-  bool is_little_endian() const noexcept {
+  [[nodiscard]] bool is_little_endian() const noexcept {
     return is_little_endian_;
   }
-  auto bytes_view() const noexcept -> std::span<const std::byte> {
+  [[nodiscard]] auto bytes_view() const noexcept -> std::span<const std::byte> {
     return binary_data_;
   }
 

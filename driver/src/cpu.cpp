@@ -12,7 +12,8 @@ using auxilia::StatusOr;
 using CPU = CentralProcessingUnit;
 using enum CPU::State;
 
-CPU::CentralProcessingUnit(Mediator *parent) : Icpu(parent), mmu_(this) {}
+CPU::CentralProcessingUnit(Mediator *parent)
+    : Icpu(parent), mmu_(this), task_{nullptr} {}
 
 CPU::~CentralProcessingUnit() = default;
 auto CPU::detach_task() noexcept -> CPU & {
@@ -71,10 +72,10 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   auto exec = inst->execute(this);
   using enum isa::IInstruction::ExecutionStatus;
   switch (exec) {
-  case kSuccess:
+  case kOk:
     task_->context().advance_pc();
-    [[fallthrough]];
-  case kSuccessAndNotAdvancePC:
+    return {};
+  case kOkButDontBotherPC:
     return {};
   case kMemoryViolation:
     spdlog::error("Memory violation detected. Pausing the task.");
@@ -83,18 +84,18 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
     spdlog::error("Invalid instruction detected. Pausing the task.");
     break;
   case kEnvBreak:
-    // TODO: pc.
     spdlog::info("received an environment break signal; pausing the task");
+    // TODO: pc.
     // temporary solution
     task_->context().advance_pc();
     break;
   case kEnvCall:
-    // TODO(...)
     // advancing the PC after the call, todo.
     spdlog::warn("Environment call detected, currently does nothing but resume "
                  "the task. this is a TODO.");
-    // temporary solution
     handle_syscall();
+    // TODO(...)
+    // temporary solution
     task_->context().advance_pc();
     return {};
   case kUnknown:
@@ -130,19 +131,18 @@ auto CPU::monitor() const noexcept -> Monitor * {
   return static_cast<Monitor *>(this->mediator);
 }
 auto CPU::handle_syscall() -> auxilia::Status {
-  auto &gpr = *task_->context().general_purpose_registers();
+  auto &gpr = this->gpr();
 
-  // Get syscall number from a7, which is the 18th register
+  auto pesudo_mepc = pc();
+
+  // get syscall number from a7, which is the 18th register
   const auto syscall_num = gpr[17];
-  std::array<uint32_t, 7> args;
-  for (const auto i : std::views::iota(0, 7)) {
-    args[i] = gpr[i + 10];
-  }
+
+  const auto args = std::span<const uint32_t>{&gpr[10], 7};
 
   dbg(info, "Syscall number: {}", syscall_num);
   dbg(info, "Arguments: {}", fmt::join(args, ", "));
 
-  // Handle different syscall numbers
   switch (syscall_num) {
   case 1:               // SYS_write
     if (args[0] == 1) { // stdout
@@ -169,7 +169,7 @@ auto CPU::handle_syscall() -> auxilia::Status {
 
   case 3: // SYS_close
     // args[0]: file descriptor
-    spdlog::warn("SYS_close not fully implemented"); 
+    spdlog::warn("SYS_close not fully implemented");
     gpr.write_at(10) = 0; // Pretend success
     break;
 
@@ -187,14 +187,15 @@ auto CPU::handle_syscall() -> auxilia::Status {
     }
     break;
 
-  case 64: // SYS_write 
+  case 64:                              // SYS_write
     if (args[0] == 1 || args[0] == 2) { // stdout/stderr
       monitor()
           ->memory()
           .read_n(mmu_.virtual_to_physical(args[1]), args[2])
           .transform([&](auto &&res) {
-            fmt::println("[{}]{}", args[0] == 1 ? "stdout" : "stderr", 
-                       fmt::join(res, " "));
+            fmt::println("[{}]{}",
+                         args[0] == 1 ? "stdout" : "stderr",
+                         fmt::join(res, " "));
             gpr.write_at(10) = args[2];
           })
           .transform_error([&](auto &&err) {
@@ -218,7 +219,8 @@ auto CPU::handle_syscall() -> auxilia::Status {
   case 214: // SYS_brk
     // args[0]: new program break
     spdlog::warn("SYS_brk not fully implemented");
-    gpr.write_at(10) = args[0]; // Pretend success by returning requested address
+    gpr.write_at(10) =
+        args[0]; // pretend success by returning requested address
     break;
 
   default:
@@ -226,6 +228,8 @@ auto CPU::handle_syscall() -> auxilia::Status {
     gpr.write_at(10) = -1; // return error
   }
 
+  // set the program counter to the next instruction
+  pc().reset(pesudo_mepc.num() + 4);
   return {};
 }
 } // namespace accat::luce

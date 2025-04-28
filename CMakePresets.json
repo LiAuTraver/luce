@@ -2,7 +2,7 @@
   "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 15,
+    "minor": 21,
     "patch": 0
   },
   "configurePresets": [
@@ -95,7 +95,7 @@
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_C_COMPILER": "cl",
-        "CMAKE_CXX_FLAGS": "/permissive- /volatile:iso /Zc:inline /Zc:preprocessor /Zc:enumTypes /Zc:lambda /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew /EHsc",
+        "CMAKE_CXX_FLAGS": "/permissive- /volatile:iso /Zc:inline /Zc:preprocessor /Zc:enumTypes /Zc:lambda /Zc:__cplusplus /Zc:externConstexpr /Zc:throwingNew /EHsc /std:c++latest",
         "CMAKE_EXE_LINKER_FLAGS": "/MACHINE:X64"
       },
       "environment": {
@@ -291,7 +291,7 @@
     {
       "name": "CUDA",
       "hidden": true,
-      "architecture": "x64",
+      "description": "This configuration assumes cuDNN and cuSPARSELt files are copied to CUDA installation directory.",
       "inherits": [
         "MSVC"
       ],
@@ -303,9 +303,9 @@
         "CMAKE_C_STANDARD": "17",
         "CMAKE_CXX_COMPILER": "cl",
         "CMAKE_CXX_FLAGS": "/std:c++20  /Zc:preprocessor",
-        "CUDA_TOOLKIT_ROOT_DIR": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6",
-        "CUSPARSELT_ROOT": "C:/Program Files/NVIDIA cuSPARSELt/v0.6",
-        "CMAKE_PREFIX_PATH": "C:/Users/LiAu/miniconda3/Lib/site-packages/torch/share/cmake",
+        "CUDA_TOOLKIT_ROOT_DIR": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.8",
+        "CUSPARSELT_ROOT": "C:/Program Files/NVIDIA cuSPARSELt/v0.7",
+        "CMAKE_PREFIX_PATH": "C:/Users/LiAu/AppData/Roaming/Python/Python312/site-packages/torch/share/cmake",
         "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
         "USE_CUDNN": "ON",
         "USE_CUSPARSELT": "ON",
@@ -340,6 +340,7 @@
     {
       "name": "CUDA-Visual-Studio-Debug",
       "hidden": false,
+      "architecture": "x64",
       "inherits": [
         "CUDA-Debug"
       ],
@@ -351,6 +352,7 @@
     {
       "name": "CUDA-Visual-Studio-Release",
       "hidden": false,
+      "architecture": "x64",
       "inherits": [
         "CUDA-Release"
       ],

@@ -41,16 +41,17 @@ public:
 public:
   enum class ExecutionStatus : std::uint8_t {
     // normal instruction execution, advancing PC by default
-    kSuccess = 0,
+    kOk = 0,
     // not advancing PC, e.g., branch instructions
-    kSuccessAndNotAdvancePC,
+    kOkButDontBotherPC,
 
     // TODO: advance pc?
-
     kMemoryViolation,
     kInvalidInstruction,
+    // save PC into mepc(not implemented now)
     kEnvCall,
     kEnvBreak,
+    // bang!
     kUnknown
   };
 

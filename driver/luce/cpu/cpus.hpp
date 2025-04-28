@@ -1,6 +1,7 @@
 #pragma once
-#include <cstddef>
+
 #include "cpu.hpp"
+
 namespace accat::luce {
 /// @implements Component
 class CPUs : public Component {

@@ -1,6 +1,6 @@
 # Instruction Categories for RISC-V RV32I
 
-> *note*: the `powershell` in the file extension is just for syntax highlighting purposes.
+> _note_: the `powershell` in the file extension is just for syntax highlighting purposes.
 
 ## Overview
 
@@ -12,7 +12,7 @@ instruction  -> R_type
               | S_type
               | B_type
               | U_type
-              | J_type 
+              | J_type
             ;
 ```
 
@@ -55,6 +55,7 @@ Store operations.
 ```powershell
 S_type -> opcode imm[11:5] funct3 rs1 rs2 imm[4:0]
 ```
+
 > note: the `imm` was split into two parts.
 
 Examples: `sb`, `sh`, `sw`.
@@ -82,7 +83,6 @@ Upper immediate operations, loads or computes an upper immediate value.
 U_type -> opcode rd imm[31:12]
 ```
 
-
 Examples: `lui`, `auipc`.
 
 ### J-type
@@ -96,6 +96,6 @@ J_type -> opcode rd imm[20] imm[10:1] imm[11] imm[19:12];
 ## Notes
 
 1. The `imm` field is sign-extended, meaning that the most significant bit is copied to the left to fill the remaining bits.
-2. the actual bits stored on the machine are(must, according to the manual) in little-endian order, so the least significant byte is stored first.(e.g., as for `R_type`, the `funct7` is stored in the most significant byte, and `opcode` in the least significant byte.) ![Examples][instructionCategoryImage] 
+2. the actual bits stored on the machine are(must, according to the manual) in little-endian order, so the least significant byte is stored first.(e.g., as for `R_type`, the `funct7` is stored in the most significant byte, and `opcode` in the least significant byte.) ![Examples][instructionCategoryImage]
 
 [instructionCategoryImage]: examples.png "from RISCV Manual"
