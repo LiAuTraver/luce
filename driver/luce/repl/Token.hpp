@@ -194,18 +194,18 @@ protected:
       : type_(type), number_is_integer_(true), num_ll_(number), line_(line) {}
 
 public:
-  static AC_CONSTEXPR20 auto
+  static auto
   Number(const std::variant<long long, long double> value,
          const uint_least32_t line) noexcept {
     return std::visit(
         [line](auto &&v) { return Token{Type::kNumber, v, line}; }, value);
   }
-  static AC_CONSTEXPR20 auto Lexeme(const Type type,
+  static auto Lexeme(const Type type,
                                     const std::string_view lexeme,
                                     const uint_least32_t line) noexcept {
     return Token{type, lexeme, line};
   }
-  static AC_CONSTEXPR20 auto Error(std::string &&message,
+  static auto Error(std::string &&message,
                                    const uint_least32_t line) noexcept {
     return Token{Type::kLexError, std::move(message), line};
   }

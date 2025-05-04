@@ -1,7 +1,7 @@
 #pragma once
+#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <array>
 namespace accat::luce::isa::riscv32 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-const-variable"
@@ -29,10 +29,17 @@ inline static constexpr std::size_t general_purpose_register_count = 32;
 inline static constexpr std::size_t instruction_alignment = 4;
 inline static constexpr std::size_t page_size = 0x1000; // 4KB
 inline static constexpr bool has_floating_point = true;
+
+/// @namespace signal
+/// @brief just some magic numbers for debugging
 namespace signal {
+// an invalid instruction
 inline static constexpr auto deadbeef = std::array{
     std::byte{0xef}, std::byte{0xbe}, std::byte{0xad}, std::byte{0xde}};
-}
+// infinite loop(jal x0, x0, 0)
+inline static constexpr auto hang = std::array{
+    std::byte{0x6f}, std::byte{0x00}, std::byte{0x00}, std::byte{0x00}};
+} // namespace signal
 #pragma clang diagnostic pop
 } // namespace accat::luce::isa::riscv32
 

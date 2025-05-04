@@ -121,5 +121,36 @@ public:
       return chunk | (concatBits<T, Rest...>(value) << bitCount);
     }
   }
+
+  // helper to perform sign extension
+  // note: `NewWidthTy` shall be the same type as pc when used.
+  template <size_t OrigWidth, typename OrigTy, typename NewWidthTy = num_type>
+    requires(sizeof(OrigTy) * 8 >= OrigWidth &&
+             sizeof(NewWidthTy) * 8 >= OrigWidth &&
+             std::is_integral_v<OrigTy> && std::is_integral_v<NewWidthTy>)
+  inline static constexpr auto signExtend(const OrigTy value) noexcept {
+    const auto signBit = (value >> (OrigWidth - 1)) & 1;
+    if (signBit) {
+      // if the sign bit is set, extend the sign bit to the left
+      return value | ~((static_cast<OrigTy>(1) << OrigWidth) - 1);
+    } else {
+      // if the sign bit is not set, just return the value
+      return value;
+    }
+  }
+
+  // helper to decode 2's complement, return original value if sign bit is 1,
+  // otherwise return the negated value
+  template <typename T>
+    requires(std::is_integral_v<T>)
+  inline static constexpr std::make_signed_t<T>
+  decode2sComplement(const T value) noexcept {
+    const auto signBit = (value >> (sizeof(T) * 8 - 1)) & 1;
+    if (signBit) {
+      return value;
+    } else {
+      return ~value + 1;
+    }
+  }
 };
 } // namespace accat::luce::isa

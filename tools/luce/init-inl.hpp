@@ -19,7 +19,7 @@ private:
 #endif
 public:
   using polymorphic_allocator_t = accat::auxilia::MemoryPool;
-  inline AC_CONSTEXPR20 explicit init(const int *const argc,
+  inline explicit init(const int *const argc,
                                       const char *const *const *const argv) {
     if constexpr (is_debug) {
       if (!is_command_present(argc, argv, "-l", "--log")) {

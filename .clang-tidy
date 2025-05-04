@@ -1,3 +1,0 @@
----
-Checks: '*,-*-use-nodiscard, -*-explicit-constructor'
-...

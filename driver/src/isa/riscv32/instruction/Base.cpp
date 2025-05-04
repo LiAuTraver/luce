@@ -399,7 +399,7 @@ auto Jalr::asmStr() const noexcept -> string_type {
 #pragma region UpperImm
 auto Lui::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr.write_at(rd()) = imm() << 12;
+  gpr.write_at(rd()) = imm();
   return kOk;
 }
 auto Lui::asmStr() const noexcept -> string_type {
@@ -407,7 +407,7 @@ auto Lui::asmStr() const noexcept -> string_type {
 }
 auto Auipc::execute(Icpu *cpu) const -> ExecutionStatus {
   auto &gpr = cpu->gpr();
-  gpr.write_at(rd()) = cpu->pc().num() + (imm() << 12);
+  gpr.write_at(rd()) = cpu->pc().num() + imm();
   return kOk;
 }
 auto Auipc::asmStr() const noexcept -> string_type {

@@ -77,9 +77,12 @@ public:
     };
     ctx.initLog();
     ctx.initDisasm();
+    spdlog::info("Working directory: {}", std::filesystem::current_path());
     return (ctx);
   }
 
+  ExecutionContext(ExecutionContext &&) = delete;
+  auto operator=(ExecutionContext &&) -> ExecutionContext & = delete;
   ExecutionContext(const ExecutionContext &) = delete;
   auto operator=(const ExecutionContext &) = delete;
 

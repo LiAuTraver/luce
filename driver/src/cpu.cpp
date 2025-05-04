@@ -1,6 +1,7 @@
 ﻿#include "deps.hh"
 
 #include "luce/cpu/cpu.hpp"
+#include <algorithm>
 #include "luce/Support/isa/IInstruction.hpp"
 #include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Monitor.hpp"
@@ -13,7 +14,7 @@ using CPU = CentralProcessingUnit;
 using enum CPU::State;
 
 CPU::CentralProcessingUnit(Mediator *parent)
-    : Icpu(parent), mmu_(this), task_{nullptr} {}
+    : Icpu(parent), task_{nullptr}, mmu_(this) {}
 
 CPU::~CentralProcessingUnit() = default;
 auto CPU::detach_task() noexcept -> CPU & {
@@ -47,6 +48,7 @@ Status CPU::shuttle() {
   }
   auto bytes = std::move(maybe_bytes).value();
   auto &orig_bytes = ctx.instruction_register.bytes();
+#pragma unroll
   for (const auto i : std::views::iota(0ull, sizeof(isa::instruction_size_t))) {
     orig_bytes[i] = bytes[i];
   }
@@ -105,10 +107,13 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   return trap();
 }
 auto CentralProcessingUnit::trap() -> Status {
-  if (std::ranges::equal(task_->context().instruction_register.bytes(),
-                         isa::signal::deadbeef))
+  const auto bytes = task_->context().instruction_register.bytes();
+  if (std::ranges::equal(bytes, isa::signal::deadbeef))
     spdlog::info("Hit good ol' deadbeef, pausing the task.");
-
+  else if (std::ranges::equal(bytes, isa::signal::hang))
+    spdlog::info("Hit infinite loop, pausing the task.");
+  else
+    spdlog::info("Hit an unknown instruction, pausing the task.");
   task_->pause();
   return {};
 }
