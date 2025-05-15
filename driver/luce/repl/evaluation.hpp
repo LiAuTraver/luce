@@ -81,11 +81,14 @@ public:
   constexpr ~Number() = default;
   auto to_string(const auxilia::FormatPolicy & =
                      auxilia::FormatPolicy::kDefault) const -> string_type {
-    return std::visit(
-        [](const auto &value) -> string_type {
-          return fmt::format("{}", value);
-        },
-        value);
+    return std::visit(match(
+                          [](const I &value) -> string_type {
+                            return fmt::format("{:#x}", value);
+                          },
+                          [](const auto &value) -> string_type {
+                            return fmt::format("{}", value);
+                          }),
+                      value);
   }
 
   friend auto operator<=>(const Number &lhs, const Number &rhs) {

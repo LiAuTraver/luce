@@ -57,31 +57,31 @@ auto WatchPoint::update(expression::Visitor *visitor)
               .transform_error(invalid);
 }
 auto WatchPoints::to_string(const FormatPolicy policy) const -> string_type {
-  auto str = string_type{};
+  std::ostringstream oss;
   if (policy == kDetailed) {
-    str += "WatchPoints: [";
-    str += fmt::format("{}", fmt::join(watchpoints_, "\n"));
-    str += fmt::format("]\nTotal watchpoints: {}", watchpoints_.size());
+    oss << "WatchPoints: [";
+    oss << fmt::format("{}", fmt::join(watchpoints_, "\n"));
+    oss << fmt::format("]\nTotal watchpoints: {}", watchpoints_.size());
   } else if (policy == kDefault) {
-    str += fmt::format("WatchPoints: [");
-    std::ranges::for_each(watchpoints_, [&str](const auto &wp) {
-      str += fmt::format("{}, ", wp.to_string(kDefault));
+    oss << "WatchPoints: [";
+    std::ranges::for_each(watchpoints_, [&oss](const auto &wp) {
+      oss << fmt::format("{}, ", wp.to_string(kDefault));
     });
-    str += "]";
+    oss << "]";
   } else {
     if (watchpoints_.empty()) {
-      str += "No watchpoints";
+      oss << "No watchpoints";
     } else {
-      str += fmt::format("WatchPoints: {}",
+      oss << fmt::format("WatchPoints: {}",
                          watchpoints_.front().to_string(kBrief));
       std::ranges::for_each(std::ranges::next(std::ranges::begin(watchpoints_)),
                             std::ranges::end(watchpoints_),
-                            [&str](const auto &wp) {
-                              str += fmt::format(", {}", wp.to_string(kBrief));
+                            [&oss](const auto &wp) {
+                              oss << fmt::format(", {}", wp.to_string(kBrief));
                             });
     }
   }
-  return str;
+  return oss.str();
 }
 bool WatchPoints::update(expression::Visitor *visitor) {
   bool has_changed = false;

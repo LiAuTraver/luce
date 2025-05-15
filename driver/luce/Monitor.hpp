@@ -47,7 +47,7 @@ Available commands:
     - info w: show watchpoints
 )"_raw;
 static const inline auto Welcome =
-    format(fg(dark_cyan), "Welcome to luce emulator!\n").append(R"(
+    format(fg(cyan), "Welcome to luce emulator!\n").append(R"(
     Type 'help' for help
     Type 'exit' to  exit.
 )"_raw);

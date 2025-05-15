@@ -88,9 +88,13 @@ result_type Evaluator::visit(const Variable &expr) {
       return {auxilia::UnavailableError("Running evaluator without mediator, "
                                         "accessing registers is unavailable.")};
 
-    if (auto maybe_bytes = static_cast<Monitor *>(this->mediator)
-                               ->registers()
-                               .read(ident.substr(1)))
+    auto *monitor = static_cast<Monitor *>(this->mediator);
+
+    if (ident.substr(1) == "pc")
+      // currently just cpus[0]
+      return {{evaluation::Number::make_integer(monitor->cpus().pc(0).num())}};
+
+    if (auto maybe_bytes = monitor->registers().read(ident.substr(1)))
       return {{evaluation::Number::make_integer(maybe_bytes->num())}};
 
     return {InvalidArgumentError("unknown register: {}", ident.substr(1))};

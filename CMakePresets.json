@@ -28,9 +28,7 @@
     {
       "name": "GNU",
       "hidden": true,
-      "inherits": [
-        "common"
-      ],
+      "inherits": ["common"],
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_C_COMPILER": "gcc"
@@ -43,9 +41,7 @@
     {
       "name": "Clang",
       "hidden": true,
-      "inherits": [
-        "common"
-      ],
+      "inherits": ["common"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -63,10 +59,8 @@
     {
       "name": "Clang-Linux",
       "hidden": true,
-      "binaryDir": "${sourceDir}/build/${hostSystemName}-${presetName}",
-      "inherits": [
-        "common"
-      ],
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": ["common"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -84,9 +78,7 @@
     {
       "name": "MSVC",
       "hidden": true,
-      "inherits": [
-        "common"
-      ],
+      "inherits": ["common"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -106,9 +98,7 @@
     {
       "name": "ClangCL",
       "hidden": true,
-      "inherits": [
-        "common"
-      ],
+      "inherits": ["common"],
       "description": "clang compiler, but with MSVC-compatible flags",
       "condition": {
         "type": "equals",
@@ -128,9 +118,7 @@
     {
       "name": "ClangCL-Debug",
       "hidden": false,
-      "inherits": [
-        "ClangCL"
-      ],
+      "inherits": ["ClangCL"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -138,9 +126,7 @@
     {
       "name": "ClangCL-Release",
       "hidden": false,
-      "inherits": [
-        "ClangCL"
-      ],
+      "inherits": ["ClangCL"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -148,9 +134,7 @@
     {
       "name": "MSVC-Debug",
       "hidden": false,
-      "inherits": [
-        "MSVC"
-      ],
+      "inherits": ["MSVC"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -158,9 +142,7 @@
     {
       "name": "MSVC-Release",
       "hidden": false,
-      "inherits": [
-        "MSVC"
-      ],
+      "inherits": ["MSVC"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -168,9 +150,7 @@
     {
       "name": "Clang-Debug",
       "hidden": false,
-      "inherits": [
-        "Clang"
-      ],
+      "inherits": ["Clang"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -178,9 +158,7 @@
     {
       "name": "Clang-Release",
       "hidden": false,
-      "inherits": [
-        "Clang"
-      ],
+      "inherits": ["Clang"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -188,9 +166,7 @@
     {
       "name": "Clang-Linux-Debug",
       "hidden": false,
-      "inherits": [
-        "Clang-Linux"
-      ],
+      "inherits": ["Clang-Linux"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -198,9 +174,7 @@
     {
       "name": "Clang-Linux-Release",
       "hidden": false,
-      "inherits": [
-        "Clang-Linux"
-      ],
+      "inherits": ["Clang-Linux"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -208,9 +182,7 @@
     {
       "name": "MSVC-Visual-Studio-Debug",
       "hidden": false,
-      "inherits": [
-        "MSVC"
-      ],
+      "inherits": ["MSVC"],
       "architecture": "x64",
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
@@ -221,9 +193,7 @@
     {
       "name": "MSVC-Visual-Studio-Release",
       "hidden": false,
-      "inherits": [
-        "MSVC"
-      ],
+      "inherits": ["MSVC"],
       "architecture": "x64",
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
@@ -246,10 +216,7 @@
       "name": "Qt6-GNU-Debug",
       "description": "Currently only configuerd for Linux",
       "hidden": false,
-      "inherits": [
-        "Qt6",
-        "GNU"
-      ],
+      "inherits": ["Qt6", "GNU"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -258,10 +225,7 @@
       "name": "Qt6-GNU-Release",
       "description": "Currently only configuerd for Linux",
       "hidden": false,
-      "inherits": [
-        "Qt6",
-        "GNU"
-      ],
+      "inherits": ["Qt6", "GNU"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -269,10 +233,7 @@
     {
       "name": "Qt6-MSVC-Debug",
       "hidden": false,
-      "inherits": [
-        "Qt6",
-        "MSVC"
-      ],
+      "inherits": ["Qt6", "MSVC"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -280,10 +241,7 @@
     {
       "name": "Qt6-MSVC-Release",
       "hidden": false,
-      "inherits": [
-        "Qt6",
-        "MSVC"
-      ],
+      "inherits": ["Qt6", "MSVC"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -292,9 +250,7 @@
       "name": "CUDA",
       "hidden": true,
       "description": "This configuration assumes cuDNN and cuSPARSELt files are copied to CUDA installation directory.",
-      "inherits": [
-        "MSVC"
-      ],
+      "inherits": ["MSVC"],
       "cacheVariables": {
         "CMAKE_CUDA_COMPILER": "nvcc",
         "CMAKE_CUDA_STANDARD": "20",
@@ -320,9 +276,7 @@
     {
       "name": "CUDA-Debug",
       "hidden": false,
-      "inherits": [
-        "CUDA"
-      ],
+      "inherits": ["CUDA"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -330,9 +284,7 @@
     {
       "name": "CUDA-Release",
       "hidden": false,
-      "inherits": [
-        "CUDA"
-      ],
+      "inherits": ["CUDA"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
@@ -341,9 +293,7 @@
       "name": "CUDA-Visual-Studio-Debug",
       "hidden": false,
       "architecture": "x64",
-      "inherits": [
-        "CUDA-Debug"
-      ],
+      "inherits": ["CUDA-Debug"],
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
         "CMAKE_GENERATOR": "Visual Studio 17 2022"
@@ -353,9 +303,7 @@
       "name": "CUDA-Visual-Studio-Release",
       "hidden": false,
       "architecture": "x64",
-      "inherits": [
-        "CUDA-Release"
-      ],
+      "inherits": ["CUDA-Release"],
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
         "CMAKE_GENERATOR": "Visual Studio 17 2022"

@@ -1,4 +1,4 @@
-# AI analysis of [iota](./iota.S)
+# GPT-4.1 analysis of [iota](./iota.bin)
 
 Let's decode the given RISC-V 32-bit instructions from your hex dump:
 

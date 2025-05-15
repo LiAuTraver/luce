@@ -1,4 +1,3 @@
-#include <type_traits>
 #include "deps.hh"
 
 #include "luce/config.hpp"
@@ -24,21 +23,25 @@ namespace {
 template <typename T>
   requires std::is_arithmetic_v<T>
 auto to_number(const std::string_view sv) -> StatusOr<T> {
+
+  constexpr auto makeErr = [](auto &&ec) {
+    return InvalidArgumentError("Error converting string to number: {}",
+                                std::make_error_code(ec).message());
+  };
+
   if constexpr (std::is_floating_point_v<T>) {
     T F;
-    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), F);
-    if (ec != std::errc()) {
-      return InvalidArgumentError("Error converting string to number: {}",
-                                  std::make_error_code(ec).message());
-    }
+    const auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), F);
+    if (ec != std::errc())
+      return makeErr(ec);
+
     return F;
   } else {
     T I;
-    auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), I);
-    if (ec != std::errc()) {
-      return InvalidArgumentError("Error converting string to number: {}",
-                                  std::make_error_code(ec).message());
-    }
+    const auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), I);
+    if (ec != std::errc())
+      return makeErr(ec);
+
     return I;
   }
 }
@@ -50,6 +53,12 @@ std::string read(Monitor *) {
       fmt::print(stdout, fg(cyan), "(luce) ");
     else
       fmt::print(stdout, fg(cyan), ">>> ");
+
+// just a workaround for wsl,
+// for some reason it does not flush the output stream
+#ifdef __linux__
+    fflush(stdout);
+#endif
 
     if (!std::getline(std::cin, raw_input)) {
       if (std::cin.eof()) {
@@ -63,7 +72,7 @@ std::string read(Monitor *) {
         auxilia::println(stderr, fg(crimson), "Input error, please try again");
         continue;
       }
-      dbg_break
+      DebugUnreachable("Unexpected error reading input");
       continue;
     }
     auto trimmed_input = trim(raw_input);
@@ -80,6 +89,9 @@ std::string read(Monitor *) {
     return input;
   }
 }
+template <typename... T> inline auto makeIAE(auxilia::format_string<T...> fmt) {
+  return InvalidArgumentError(fg(crimson), fmt);
+};
 } // namespace
 struct ICommand {
   virtual void execute(Monitor *monitor) const = 0;
@@ -305,6 +317,7 @@ StatusOr<command_t> inspect(std::string_view input) {
   const auto it = std::ranges::find_if(input, auxilia::isspacelike);
   std::string_view mainCommand;
   const auto itAtEnd = it == input.end();
+
   if (itAtEnd)
     // input itself is the command with no arguments
     mainCommand = input;
@@ -319,29 +332,25 @@ StatusOr<command_t> inspect(std::string_view input) {
     if (itAtEnd) {
       return {Exit{}};
     }
-    return {InvalidArgumentError(fg(crimson),
-                                 "exit: command does not take arguments")};
+    return {makeIAE("exit: command does not take arguments")};
   }
   if (C("help")) {
     if (itAtEnd) {
       return {Help{}};
     }
-    return {InvalidArgumentError(fg(crimson),
-                                 "help: command does not take arguments")};
+    return {makeIAE("help: command does not take arguments")};
   }
   if (C("r")) {
     if (itAtEnd) {
       return {Restart{}};
     }
-    return {InvalidArgumentError(fg(crimson),
-                                 "r: command does not take arguments")};
+    return {makeIAE("r: command does not take arguments")};
   }
   if (C("c")) {
     if (itAtEnd) {
       return {Continue{}};
     }
-    return {InvalidArgumentError(fg(crimson),
-                                 "c: command does not take arguments")};
+    return {makeIAE("c: command does not take arguments")};
   }
   if (C("si")) {
     if (auto args = trim(input.substr(it - input.begin()));
@@ -371,8 +380,7 @@ StatusOr<command_t> inspect(std::string_view input) {
         !maybe_exprStr.empty()) {
       return {AddWatchPoint{{maybe_exprStr.begin(), maybe_exprStr.end()}}};
     }
-    return {InvalidArgumentError(fg(crimson),
-                                 "w: requires 'expression' as argument")};
+    return {makeIAE("w: requires 'expression' as argument")};
   }
 
   if (C("d")) {
@@ -380,8 +388,7 @@ StatusOr<command_t> inspect(std::string_view input) {
             to_number<size_t>(input.substr(it - input.begin()))) {
       return {DeleteWatchPoint{*maybe_watchpoint}};
     }
-    return {
-        InvalidArgumentError(fg(crimson), "d: requires 'number' as argument")};
+    return {makeIAE("d: requires 'number' as argument")};
   }
   if (C("x")) {
     // x N EXPR
@@ -394,14 +401,12 @@ StatusOr<command_t> inspect(std::string_view input) {
       }
       auto expr = trim(args.substr(s - args.begin()));
       if (expr.empty()) {
-        return {InvalidArgumentError(fg(crimson),
-                                     "x: requires 'expression' as argument")};
+        return {makeIAE("x: requires 'expression' as argument")};
       }
       return {Scan{*maybe_num, {expr.begin(), expr.end()}}};
     }
-    return {InvalidArgumentError(fg(crimson),
-                                 "x: requires 'number' and 'expression' as "
-                                 "arguments")};
+    return {makeIAE("x: requires 'number' and 'expression' as "
+                    "arguments")};
   }
 
   return {InvalidArgumentError(fg(crimson),

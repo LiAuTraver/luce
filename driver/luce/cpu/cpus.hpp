@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include "cpu.hpp"
 
 namespace accat::luce {
@@ -51,6 +52,9 @@ public:
       }
     });
     return *this;
+  }
+  auto pc(size_t index = 0) noexcept -> isa::Word & {
+    return cpus[index]->pc();
   }
 };
 } // namespace accat::luce

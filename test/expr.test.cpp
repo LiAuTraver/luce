@@ -58,7 +58,7 @@ TEST(exprEvaluation, equality) {
 
 TEST(exprEvaluation, grouping) {
   auto str = "(1 + 2) * 3";
-  EXPECT_EQ(evaluate(str), "9");
+  EXPECT_EQ(evaluate(str), "0x9");
 }
 
 TEST(exprEvaluation, logical) {
@@ -68,22 +68,22 @@ TEST(exprEvaluation, logical) {
 
 TEST(exprEvaluation, unary) {
   auto str = "-1";
-  EXPECT_EQ(evaluate(str), "-1");
+  EXPECT_EQ(evaluate(str), "-0x1");
 }
 
 TEST(exprEvaluation, binary) {
   auto str = "0b1001";
-  EXPECT_EQ(evaluate(str), "9");
+  EXPECT_EQ(evaluate(str), "0x9");
 }
 
 TEST(exprEvaluation, hex) {
   auto str = "0x10";
-  EXPECT_EQ(evaluate(str), "16");
+  EXPECT_EQ(evaluate(str), "0x10");
 }
 
 TEST(exprEvaluation, octal) {
   auto str = "0o10";
-  EXPECT_EQ(evaluate(str), "8");
+  EXPECT_EQ(evaluate(str), "0x8");
 }
 
 TEST(exprEvaluation, zero) {
