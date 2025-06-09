@@ -24,7 +24,7 @@ namespace accat::luce {
 class ArgumentLoader;
 }
 namespace accat::luce {
-class ExecutionContext : public auxilia::Printable {
+class ExecutionContext {
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)
 
@@ -90,13 +90,6 @@ protected:
   inline explicit constexpr ExecutionContext() = default;
 
   inline ~ExecutionContext() = default;
-
-public:
-  [[nodiscard]] auto to_string(
-      const auxilia::FormatPolicy & = auxilia::FormatPolicy::kDefault) const
-      -> std::string {
-    return "ExecutionContext";
-  }
 };
 
 LUCE_API
