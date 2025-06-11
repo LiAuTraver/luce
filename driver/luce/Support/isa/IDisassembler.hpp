@@ -15,11 +15,10 @@ protected:
 public:
   auto disassemble(uint32_t num) -> std::unique_ptr<IInstruction> {
     contract_assert(initialized_, "Disassembler not initialized");
-    for (auto &decoder : decoders) {
-      if (auto instr = decoder->decode(num); instr) {
+    for (auto &decoder : decoders)
+      if (auto instr = decoder->decode(num))
         return instr;
-      }
-    }
+
     return nullptr;
   };
   auto addDecoder(std::unique_ptr<IDecoder> decoder) -> IDisassembler & {
