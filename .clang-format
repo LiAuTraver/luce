@@ -61,6 +61,8 @@ StatementMacros:
   - dbg_break
   - TODO
   - DebugUnreachable
+  - mixin
+  - mixin_end
 InsertNewlineAtEOF: true
 InsertTrailingCommas: Wrapped
 IndentPPDirectives: AfterHash
