@@ -5,8 +5,8 @@
 #  error "Bad user. Bad code."
 #endif
 
-#ifdef AC_UNDEF_YOUR_FXXKING_MACRO
-#  undef AC_UNDEF_YOUR_FXXKING_MACRO
+#ifdef AC_UNDEF_YOUR_MACRO
+#  undef AC_UNDEF_YOUR_MACRO
 
 #  pragma push_macro("AR")
 #  pragma push_macro("R")
@@ -49,8 +49,8 @@
       virtual auto decode(uint32_t) -> std::unique_ptr<IInstruction> override; \
       virtual ~Decoder() override = default;                                   \
     }
-#elif defined(AC_RESTORE_YOUR_FXXKING_MACRO)
-#  undef AC_RESTORE_YOUR_FXXKING_MACRO
+#elif defined(AC_RESTORE_YOUR_MACRO)
+#  undef AC_RESTORE_YOUR_MACRO
 #  undef INST
 #  undef CONCAT_HELPER
 #  undef INST_IMPL
@@ -69,6 +69,5 @@
 #elif defined(__INTELLISENSE__) || defined(__RESHARPER__)
 // pass
 #else
-#  error                                                                       \
-      "AC_UNDEF_YOUR_FXXKING_MACRO or AC_REST_YOUR_FXXKING_MACRO is not defined"
+#  error "AC_UNDEF_YOUR_MACRO or AC_RESTORE_YOUR_MACRO is not defined"
 #endif

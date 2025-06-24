@@ -5,7 +5,7 @@
 
 namespace accat::luce::isa::riscv32::instruction::multiply {
 // don't ask
-#define AC_UNDEF_YOUR_FXXKING_MACRO
+#define AC_UNDEF_YOUR_MACRO
 #include "details/debunk_your_macro-inl.hpp"
 
 INST(Mul, R);
@@ -19,7 +19,7 @@ INST(Remu, R);
 
 INST_DECODER();
 
-#define AC_RESTORE_YOUR_FXXKING_MACRO
+#define AC_RESTORE_YOUR_MACRO
 #include "details/debunk_your_macro-inl.hpp"
 
 } // namespace accat::luce::isa::riscv32::instruction::multiply
