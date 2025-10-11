@@ -12,7 +12,7 @@ endif()
 
 add_library(external_deps INTERFACE)
 target_link_libraries(external_deps INTERFACE
-  fmt::fmt
+  fmt::fmt-header-only # workaround for fmt shared/static linkage issues
   spdlog::spdlog
   argparse::argparse
   auxilia::auxilia

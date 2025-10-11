@@ -16,6 +16,7 @@ target_link_libraries(luce PUBLIC
 
   # do not directly use `driver` otherwise it'll result multiple defined symbols when linking
   $<TARGET_OBJECTS:driver>
+
   # donno why but needed even though driver already includes them
   external_deps
 )

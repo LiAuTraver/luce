@@ -2,6 +2,9 @@ include_guard()
 add_compile_definitions(
   _DEBUG DEBUG __DEBUG__ # common debug flags
   AC_CPP_DEBUG
+
+  # FMT_SHARED
+  FMT_HEADER_ONLY # workaround for fmt shared/static linkage issues
   SPDLOG_FMT_EXTERNAL
   _CRT_SECURE_NO_WARNINGS
 
@@ -102,6 +105,7 @@ if(CXX_FLAGS_STYLES_GNU OR CXX_FLAGS_STYLES_CLANG)
     -g3 -O0 -fno-inline -fstandalone-debug # Debug flags
     -frtti
     -Wno-c++26-extensions
+
     # -fsanitize=address
     # -fsanitize=fuzzer
     # -fsanitize=undefined

@@ -1,9 +1,9 @@
 #if __has_include(<mdspan>)
-#include <bitset>
-#include <cstddef>
-#include <mdspan>
-#include <span>
-#include <iostream>
+#  include <bitset>
+#  include <cstddef>
+#  include <mdspan>
+#  include <span>
+#  include <iostream>
 [[maybe_unused]] static constexpr uint32_t img[] = {
     0x00000297, // auipc t0,0 000000000000 00000000001010010111
     0x00028823, // sb  zero,16(t0)
@@ -42,5 +42,5 @@ int main() {
   auto first = code.subspan(0, 4);
 }
 #else
-int main(){}
+int main() {}
 #endif

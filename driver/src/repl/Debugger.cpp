@@ -121,7 +121,7 @@ Status Debugger::add_watchpoint(const std::string &expr) {
                            "evaluation failed: {msg}",
                            "msg"_a = res.message());
             });
-        this->watchpoints_.add(expr, std::move(AST));
+        watchpoints_.add(expr, std::move(AST));
       })
       // parse error
       .transform_error([](auto &&res) {
@@ -137,7 +137,7 @@ Status Debugger::delete_watchpoint(const size_t id) {
 }
 void Debugger::update_watchpoints(const bool notify) {
   if (watchpoints_.update(visitor_) && notify) {
-    this->send(Event::kPauseTask);
+    send(Event::kPauseTask);
   }
 }
 } // namespace accat::luce::repl

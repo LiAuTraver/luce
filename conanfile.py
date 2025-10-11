@@ -20,7 +20,7 @@ class LuceProject(conan.ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "BazelDeps", "BazelToolchain"
     requires = (
-        "fmt/11.0.2",
-        "spdlog/1.15.0",
+        "fmt/11.2.0",
+        "spdlog/1.15.3",
         "argparse/3.2",
     )

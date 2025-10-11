@@ -8,7 +8,8 @@ constexpr auto is_valid_base(const char c) noexcept -> bool {
   return c == 'x' || c == 'X' || c == 'b' || c == 'B' || c == 'o' || c == 'O' ||
          c == 'd' || c == 'D';
 }
-constexpr auto is_valid_digit_of_base(const char c, const int base) noexcept -> bool {
+constexpr auto is_valid_digit_of_base(const char c, const int base) noexcept
+    -> bool {
   switch (base) {
   case 2:
     return c == '0' || c == '1';
@@ -159,7 +160,7 @@ Lexer::token_t Lexer::add_string() {
   // hard to do...
 
   if (auto status = lex_string(); !status.ok()) {
-    // not null-terminated, passing `data()` only will include the rest of the
+    // not null-terminated, passing `.data()` only will include the rest of the
     // whole contents.
     return add_error_token({status.message().data(), status.message().size()});
   }
@@ -251,7 +252,7 @@ bool Lexer::advance_if_is(const char_t expected) {
 bool Lexer::is_at_end(const size_t offset) const {
   return cursor + offset >= contents.size();
 }
-Lexer::token_t Lexer::add_token(Token::Type type) {
+auto Lexer::add_token(Token::Type type) -> token_t {
   if (type == kEndOfFile) { // FIXME: lexeme bug at EOF(not critical)
     return token_t::eof(current_line);
   }
@@ -259,16 +260,16 @@ Lexer::token_t Lexer::add_token(Token::Type type) {
   dbg(trace, "lexeme: {}", lexeme)
   return token_t::Lexeme(type, lexeme, current_line);
 }
-Lexer::token_t Lexer::add_token(number_value_t number) const {
+auto Lexer::add_token(number_value_t number) const -> token_t {
   dbg(trace, "lexeme: {}", number)
   return token_t::Number(number, current_line);
 }
-Lexer::token_t Lexer::add_error_token(string_type &&msg) {
+auto Lexer::add_error_token(string_type &&msg) -> token_t {
   error_count++;
   // return {kLexError, msg, current_line};
   return token_t::Error(std::move(msg), current_line);
 }
-Lexer::status_t Lexer::lex_string() {
+auto Lexer::lex_string() -> status_t {
   while (peek() != '"' && !is_at_end()) {
     if (peek() == '\n')
       current_line++; // multiline string, of course we dont want act like C/C++

@@ -45,22 +45,21 @@ public:
   }
   auto read(const std::string_view str) const noexcept
       -> std::optional<register_t> {
-    if (auto reg = get_register_by_string(str)) 
+    if (auto reg = get_register_by_string(str))
       return *reg;
-    
+
     return std::nullopt;
   }
   /// @brief return the register's underlying number by register name, only
   /// readable.
-  const auto &operator[](this auto &&self, const std::string_view str) noexcept
-      [[clang::lifetimebound]] {
+  const auto &operator[](this auto &&self,
+                         const std::string_view str) noexcept {
     auto res = self.get_register_by_string(str);
     contract_assert(res, "register not found");
     return *res;
   }
   /// @brief return the register's underlying number by index, only readable.
-  const auto &operator[](this auto &&self, const size_t idx) noexcept
-      [[clang::lifetimebound]] {
+  const auto &operator[](this auto &&self, const size_t idx) noexcept {
     return self.raw[idx].num();
   }
   /// @brief return the register by index.
@@ -98,7 +97,7 @@ public:
 private:
   auto get_register_by_string(this auto &&self,
                               const std::string_view str) noexcept
-      [[clang::lifetimebound]] -> register_t * {
+      -> register_t * {
     return const_cast<register_t *>(
         const_cast<const decltype(self) &>(self)._get_impl(str));
   }
@@ -133,8 +132,10 @@ private:
   };
 #undef R
 #pragma pack(pop)
-  // used to return as reference when the register is not writable(zero register)
-static register_t garbage;
+  // used to return as reference when the register is not writable(zero
+  // register)
+  static register_t garbage;
+
 public:
   // auto bytes_view() const noexcept [[clang::lifetimebound]] {
   //   return std::mdspan<const std::byte, std::dextents<std::size_t, 2>>{

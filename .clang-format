@@ -62,6 +62,7 @@ StatementMacros:
   - TODO
   - DebugUnreachable
   - mixin
+  - mixin_decl
   - mixin_end
 InsertNewlineAtEOF: true
 InsertTrailingCommas: Wrapped

@@ -31,7 +31,7 @@ then same as Linux.
 vcpkg is used to manage the dependencies.
 
 ```bash
-vcpkg install fmt spdlog argparse scnlib
+vcpkg install fmt spdlog argparse
 cmake --preset "MSVC-Debug" # or Clang-Debug, GNU-Debug
 cmake --build build/MSVC-Debug --parallel 32 --target luce
 ```

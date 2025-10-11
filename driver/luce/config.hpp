@@ -15,7 +15,7 @@
 #endif
 
 /// @brief minimize includes, meanwhile provide a way to use fmt::literals
-namespace fmt::inline v11::inline literals {}
+namespace fmt::inline v12::inline literals {}
 namespace std::inline literals {}
 namespace accat::luce {
 using namespace fmt::literals;

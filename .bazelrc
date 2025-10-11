@@ -21,6 +21,5 @@ build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 build --incompatible_enable_cc_toolchain_resolution
 
 build --platforms=//platform:windows_x64
-build --toolchain_resolution_debug
 build --extra_toolchains=//toolchain:Windows_MSVC
 build --verbose_failures

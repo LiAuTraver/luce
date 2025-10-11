@@ -59,8 +59,7 @@ private:
   isa::GeneralPurposeRegisters gpr_;
 
 public:
-  auto general_purpose_registers(this auto &&self) noexcept
-      [[clang::lifetimebound]] -> decltype(auto) {
+  auto general_purpose_registers(this auto &&self) noexcept -> decltype(auto) {
     return &self.gpr_;
   }
   PrivilegeLevel privilege_level = PrivilegeLevel::kUser;
