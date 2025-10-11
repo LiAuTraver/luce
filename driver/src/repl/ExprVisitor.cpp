@@ -205,8 +205,16 @@ result_type Evaluator::visit(const Binary &expr) {
     return maybe_left;
   }
   auto maybe_right = evaluate(*expr.right);
-  if (!maybe_right.ok() || maybe_right->empty()) {
+  // if (!maybe_right.ok() || maybe_right->empty()) {
+  //   return maybe_right;
+  // }
+  if (!maybe_right.ok()) {
     return maybe_right;
+  }
+  if (maybe_right->empty()) {
+    return {InvalidArgumentError("incomplete expression, missing right-hand "
+                                 "side after '{}'",
+                                 expr.op.lexeme())};
   }
   auto left = *std::move(maybe_left);
   auto right = *std::move(maybe_right);
@@ -286,6 +294,16 @@ result_type Evaluator::visit(const Binary &expr) {
         }
         return {InvalidArgumentError("unknown binary operator for nil")};
       },
+      [&](const evaluation::String &lhs,
+          const evaluation::Number &rhs) -> result_type {
+        return {InvalidArgumentError(
+            "cannot perform binary operation between string and number")};
+      },
+      [&](const evaluation::Number &lhs,
+          const evaluation::String &rhs) -> result_type {
+        return {InvalidArgumentError(
+            "cannot perform binary operation between number and string")};
+      },
       [&](const auto &lhs, const auto &rhs) -> result_type {
         spdlog::error("Unknown binary evaluation type: {} with {}",
                       typeid(lhs).name(),
@@ -300,8 +318,16 @@ result_type Evaluator::visit(const Logical &expr) {
     return maybe_left;
   }
   auto maybe_right = evaluate(*expr.right);
-  if (!maybe_right.ok() || maybe_right->empty()) {
+  // if (!maybe_right.ok() || maybe_right->empty()) {
+  //   return maybe_right;
+  // }
+  if (!maybe_right.ok()) {
     return maybe_right;
+  }
+  if (maybe_right->empty()) {
+    return {InvalidArgumentError("incomplete expression, missing right-hand "
+                                 "side after '{}'",
+                                 expr.op.lexeme())};
   }
   auto left = *std::move(maybe_left);
   auto right = *std::move(maybe_right);
@@ -317,6 +343,16 @@ result_type Evaluator::visit(const Logical &expr) {
           break;
         }
         return {InvalidArgumentError("unknown logical operator")};
+      },
+      [&](const evaluation::String &lhs,
+          const evaluation::Number &rhs) -> result_type {
+        return {InvalidArgumentError(
+            "cannot perform logical operation between string and number")};
+      },
+      [&](const evaluation::Number &lhs,
+          const evaluation::String &rhs) -> result_type {
+        return {InvalidArgumentError(
+            "cannot perform logical operation between number and string")};
       },
       [&](const auto &lhs, const auto &rhs) -> result_type {
         spdlog::error("Unknown logical evaluation type: {} with {}",
