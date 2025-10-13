@@ -6,8 +6,8 @@
 #include "luce/Support/isa/riscv32/Disassembler.hpp"
 #include "luce/repl/evaluation.hpp"
 #include "luce/Task.hpp"
+#include "luce/args.hpp"
 #include "luce/Support/utils/Pattern.hpp"
-#include "luce/argument/Argument.hpp"
 
 namespace accat::luce::repl {
 extern auto repl(Monitor *)
@@ -81,7 +81,7 @@ auto Monitor::resume() -> Status {
       spdlog::critical("To prevent infinite loop, program paused.");
       this->notify(nullptr, Event::kPauseTask);
 
-      if (!argument::program::batch.value)
+      if (!isBatchMode())
         // not batch mode, back to REPL
         return {};
       else {
@@ -134,8 +134,8 @@ Status Monitor::_do_execute_n_unchecked(const size_t steps) {
     if (auto res = cpus_.execute_shuttle(); !res)
       return res;
     this->debugger_.update_watchpoints(
-        argument::program::batch.value ? false // don't notify(keep running)
-                                       : true  // notify and pause if wp changed
+        !(isBatchMode()) // notify and pause if wp changed
+        // don't notify(keep running) if batch mode
     );
   }
   return {};

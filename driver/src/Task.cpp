@@ -4,8 +4,7 @@
 
 namespace accat::luce {
 Task::Task(Mediator *parent)
-    : Component(parent), state_(State::kNew),
-      context_{}, address_space_(), creation_time_(clock_type::now()),
+    : Component(parent), state_(State::kNew), address_space_(), creation_time_(clock_type::now()),
       limits_(), state(this), address_space(this) {
 }
 Task &Task::set_address_space(const AddressSpace &newAddressSpace) noexcept {

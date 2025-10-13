@@ -6,7 +6,7 @@
 /// @note currently this has no usage since we only have one cpu.
 namespace accat::luce::isa::riscv32::instruction::atomic {
 #define AC_UNDEF_YOUR_MACRO
-#include "details/debunk_your_macro-inl.hpp"
+#include "details/debunk_macro-inl.hpp"
 
 INST(Lr, AR);
 INST(Sc, AR);
@@ -21,6 +21,6 @@ INST(Min, AR);
 INST_DECODER();
 
 #define AC_RESTORE_YOUR_MACRO
-#include "details/debunk_your_macro-inl.hpp"
+#include "details/debunk_macro-inl.hpp"
 
 } // namespace accat::luce::isa::riscv32::instruction::atomic

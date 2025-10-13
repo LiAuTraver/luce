@@ -15,7 +15,7 @@ class Image : public auxilia::Printable {
 public:
   Image() = default;
   Image(std::vector<std::byte> binary_data,
-        std::endian endianess = std::endian::native)
+        const std::endian endianess = std::endian::native)
       : is_little_endian_(endianess == std::endian::little ? true : false),
         binary_data_(std::move(binary_data)) {}
   auto operator=(Image &&other) noexcept -> Image & = default;

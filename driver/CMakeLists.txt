@@ -15,7 +15,6 @@ target_compile_features(driver PUBLIC cxx_std_23)
 target_sources(driver PUBLIC
   luce_main.cpp
   exec.hpp
-  DllMain.cpp
   ${LUCE_DRIVER_SOURCES}
   ${LUCE_HEADER_SOURCES}
 )

@@ -1,5 +1,6 @@
 // This file is intentionally left without a include guard.
 
+// ReSharper disable once CppMissingIncludeGuard
 #if defined(Add) || defined(Xor) || defined(Or) || defined(And) ||             \
     defined(min) || defined(max)
 #  error "Bad user. Bad code."

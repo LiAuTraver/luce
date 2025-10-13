@@ -1,41 +1,35 @@
-#include <filesystem>
-#include <functional>
-#include <memory>
-#include <utility>
-#include "luce/Support/isa/riscv32/instruction/Atomic.hpp"
 #include "luce/config.hpp"
 #include "exec.hpp"
 #include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Support/isa/riscv32/instruction/Multiply.hpp"
-#include "luce/argument/Argument.hpp"
-#include "luce/argument/ArgumentLoader.hpp"
+#include "luce/Support/isa/riscv32/instruction/Atomic.hpp"
+#include "luce/args.hpp"
 #include "luce/Image.hpp"
 #include "luce/Monitor.hpp"
 
 LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   auto callback = 0;
-  constexpr auto defaultImagePath = R"(Z:/luce/data/image.bin)";
 
-  auto program_arguments = argument::program::args();
-  auto program_options = ArgumentLoader("luce", "1.0");
-  program_options.load_arguments(program_arguments);
+  auto parser = auxilia::program_options::Global("luce", "1.1");
 
-  if (auto res = program_options.parse_arguments(args); !res) {
+  if (auto res = load_arguments() && parse_arguments(args); !res) {
     auxilia::println(stderr,
                      fg(fmt::color::fire_brick),
                      "Error: {err_msg}",
                      "err_msg"_a = res.message());
-    callback = res.raw_code();
+    callback = EXIT_FAILURE;
     return callback;
   }
-  auto contextFut = auxilia::async(ExecutionContext::InitializeContext,
-                                   std::ref(program_options));
 
-  auto imagePath = argument::program::image.value.empty()
-                       ? defaultImagePath
-                       : argument::program::image.value;
+  auto contextFut = auxilia::async(ExecutionContext::InitializeContext);
 
-  auto imageFut = auxilia::async(Image::FromPath<>, imagePath);
+  auto maybe_imagePath = parser->get_option("image")->value();
+  if (!maybe_imagePath) {
+    spdlog::error("Please provide an image path.");
+    return EXIT_FAILURE;
+  }
+
+  auto imageFut = auxilia::async(Image::FromPath<>, *maybe_imagePath);
   auto &context = contextFut.get();
 
   auto monitor = Monitor{std::move(context.disassembler)};
@@ -54,8 +48,10 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
     callback = EXIT_FAILURE;
     return callback;
   }
-  spdlog::info("Image loaded from {}", std::filesystem::absolute(imagePath));
-  if (argument::program::batch.value == true)
+  spdlog::info("Image loaded from {}",
+               std::filesystem::absolute(*maybe_imagePath));
+
+  if (isBatchMode())
     callback = monitor.run().raw_code();
   else
     callback = monitor.REPL().raw_code();

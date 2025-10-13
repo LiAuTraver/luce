@@ -6,7 +6,7 @@
 namespace accat::luce::isa::riscv32::instruction::base {
 // don't ask
 #define AC_UNDEF_YOUR_MACRO
-#include "details/debunk_your_macro-inl.hpp"
+#include "details/debunk_macro-inl.hpp"
 
 INST(Add, R);
 INST(Sub, R);
@@ -52,5 +52,5 @@ INST_DECODER();
 
 // restore your meow meow meow
 #define AC_RESTORE_YOUR_MACRO
-#include "details/debunk_your_macro-inl.hpp"
+#include "details/debunk_macro-inl.hpp"
 } // namespace accat::luce::isa::riscv32::instruction::base

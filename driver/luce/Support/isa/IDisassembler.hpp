@@ -20,7 +20,7 @@ public:
         return instr;
 
     return nullptr;
-  };
+  }
   auto addDecoder(std::unique_ptr<IDecoder> decoder) -> IDisassembler & {
     dbg(info, "Adding decoder: {}", typeid(*decoder).name());
     decoders.emplace_back(std::move(decoder));

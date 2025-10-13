@@ -45,4 +45,13 @@ inline constexpr auto hang = std::array{
 
 namespace accat::luce::isa {
 using namespace riscv32;
-}
+// namespace riscv64 {
+// using virtual_address_t = std::uint64_t;
+// using minimal_addressable_unit_t = std::uint8_t;
+// using instruction_size_t = std::uint32_t;
+// inline static constexpr virtual_address_t physical_base_address = 0x80000000;
+// inline static constexpr std::size_t general_purpose_register_count = 32;
+// inline static constexpr std::size_t instruction_alignment = 4;
+// inline static constexpr bool has_floating_point = true;
+// } // namespace riscv64
+} // namespace accat::luce::isa

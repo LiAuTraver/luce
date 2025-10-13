@@ -19,10 +19,9 @@ auto WatchPoint::to_string(const FormatPolicy policy) const -> string_type {
                        id_,
                        expr_,
                        AST_->to_string(policy));
-  else if (policy == kDefault)
+  if (policy == kDefault)
     return fmt::format("WatchPoint {}: {}", id_, expr_);
-  else
-    return expr_;
+  return expr_;
 }
 auto WatchPoint::update(expression::Visitor *visitor)
     -> std::pair<bool, result_type> {
@@ -86,8 +85,7 @@ auto WatchPoints::to_string(const FormatPolicy policy) const -> string_type {
 bool WatchPoints::update(expression::Visitor *visitor) {
   bool has_changed = false;
   std::ranges::for_each(watchpoints_, [&](auto &&wp) {
-    auto [changed, res] = wp.update(visitor);
-    if (changed) {
+    if (auto [changed, res] = wp.update(visitor); changed) {
       // if has changed, the res is guranateed to be valid
       has_changed = true;
       spdlog::info("WatchPoint {id} changed to: {value}",
@@ -99,7 +97,7 @@ bool WatchPoints::update(expression::Visitor *visitor) {
   return has_changed;
 }
 Debugger::Debugger(Mediator *parent)
-    : Component(parent), watchpoints_{},
+    : Component(parent),
       visitor_{new expression::Evaluator{parent}} {}
 Debugger::Debugger(Debugger &&that) noexcept = default;
 Debugger &Debugger::operator=(Debugger &&that) noexcept = default;

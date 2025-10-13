@@ -1,8 +1,4 @@
 #pragma once
-#include <algorithm>
-#include <cstdlib>
-#include <filesystem>
-#include <iostream>
 #include <luce/config.hpp>
 #include <spdlog/common.h>
 #include <spdlog/logger.h>
@@ -10,33 +6,25 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <accat/auxilia/auxilia.hpp>
-#include <memory>
-#include <string>
 
 #include "luce/Support/isa/IDisassembler.hpp"
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/Support/isa/riscv32/Disassembler.hpp"
 #include "luce/Support/isa/riscv32/instruction/Multiply.hpp"
 #include "luce/Support/isa/riscv32/instruction/Atomic.hpp"
-#include "luce/argument/Argument.hpp"
+#include "luce/args.hpp"
 
-namespace accat::luce {
-class ArgumentLoader;
-}
 namespace accat::luce {
 class ExecutionContext {
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)
 
-    auto logFile = argument::program::log.value;
-    if (logFile.empty()) {
-      dbg(info, "no log file, only write to stdout")
-      return;
-    }
+    auto logFile = cli().get_option("log_file")->value().value_or("luce.log");
+
     spdlog::info("log file: {}", std::filesystem::absolute(logFile));
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-        std::move(logFile), false); // 'false' to append the log file
+        std::string(logFile), false); // 'false' to append the log file
     file_sink->set_level(spdlog::level::trace);
     console_sink->set_level(spdlog::level::debug);
     console_sink->set_pattern("[%^%l%$] %v");
@@ -62,19 +50,12 @@ public:
   std::unique_ptr<isa::IDisassembler> disassembler;
 
 public:
-  static auto &InitializeContext(const ArgumentLoader &) {
+  static auto &InitializeContext() {
     static bool has_initialized = false;
     static ExecutionContext ctx;
     if (has_initialized)
       return (ctx);
 
-    defer {
-      // just for testing purposes for argument parsing
-      if (argument::program::testing.value) {
-        spdlog::info("Testing mode enabled, exiting immediately");
-        std::exit(EXIT_SUCCESS);
-      }
-    };
     ctx.initLog();
     ctx.initDisasm();
     spdlog::info("Working directory: {}", std::filesystem::current_path());

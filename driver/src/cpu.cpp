@@ -107,8 +107,8 @@ auxilia::Status CentralProcessingUnit::execute(isa::IInstruction *inst) {
   return trap();
 }
 auto CentralProcessingUnit::trap() -> Status {
-  const auto bytes = task_->context().instruction_register.bytes();
-  if (std::ranges::equal(bytes, isa::signal::deadbeef))
+  if (const auto bytes = task_->context().instruction_register.bytes();
+      std::ranges::equal(bytes, isa::signal::deadbeef))
     spdlog::info("Hit good ol' deadbeef, pausing the task.");
   else if (std::ranges::equal(bytes, isa::signal::hang))
     spdlog::info("Hit infinite loop, pausing the task.");
