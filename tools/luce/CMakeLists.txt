@@ -8,7 +8,6 @@ include(llvm)
 
 add_executable(luce)
 target_sources(luce PUBLIC
-  alter_args-inl.h
   init-inl.hpp
   luce_emulator.cpp
 )

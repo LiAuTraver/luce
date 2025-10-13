@@ -82,10 +82,10 @@ std::string read(Monitor *) {
       continue;
     else if (trimmed_input.ends_with('\\')) {
       trimmed_input.remove_suffix(1);
-      input += std::move(trimmed_input);
+      input += trimmed_input;
       continue;
     }
-    input += std::move(trimmed_input);
+    input += trimmed_input;
     return input;
   }
 }
@@ -184,8 +184,7 @@ private:
 public:
   Info() noexcept = default;
   explicit Info(const std::string &subCommand) {
-    auto trimmed = trim(subCommand);
-    if (trimmed.empty()) {
+    if (auto trimmed = trim(subCommand); trimmed.empty()) {
       infoType.emplace(Unknown{subCommand});
       return;
     } else if (trimmed == "r" or trimmed == "registers") {

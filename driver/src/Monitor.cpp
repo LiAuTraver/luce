@@ -32,7 +32,7 @@ namespace {
   return auxilia::InternalError("REPL exited unexpectedly");
 }
 } // namespace
-Monitor::Monitor(std::unique_ptr<isa::IDisassembler>&& disassembler)
+Monitor::Monitor(std::unique_ptr<isa::IDisassembler> &&disassembler)
     : memory_(this), cpus_(this), debugger_(this) {
   contract_assert(disassembler, "Disassembler cannot be null");
   disassembler_ = std::move(disassembler);
@@ -115,7 +115,7 @@ Status Monitor::REPL() {
 
     // error, return as is
     spdlog::error("Error: {}", res.message());
-    dbg(error, AC_UTILS_STACKTRACE);
+    dbg(error, AC_STACKTRACE);
     return res;
   }
   [[unlikely]] return Die();
