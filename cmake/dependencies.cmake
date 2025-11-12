@@ -2,7 +2,6 @@ include_guard()
 
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(argparse CONFIG REQUIRED)
 find_package(auxilia QUIET)
 
 if(NOT auxilia_FOUND)
@@ -14,7 +13,6 @@ add_library(external_deps INTERFACE)
 target_link_libraries(external_deps INTERFACE
   fmt::fmt-header-only # workaround for fmt shared/static linkage issues
   spdlog::spdlog
-  argparse::argparse
   auxilia::auxilia
 )
 target_compile_features(external_deps INTERFACE cxx_std_23)

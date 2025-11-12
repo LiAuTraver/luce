@@ -15,19 +15,20 @@ namespace accat::luce {
     args.emplace_back(*(argv + i));
   }
 
-#ifdef AC_CPP_DEBUG
-  bool has_log = false;
-  for (const auto arg : args) {
-    if (arg == "-l" || arg.starts_with("--log")) {
-      has_log = true;
-      break;
-    }
-  }
+  // #ifdef AC_CPP_DEBUG
+  //   bool has_log = false;
+  //   for (const auto arg : args) {
+  //     if (arg == "-l" || arg.starts_with("--log")) {
+  //       has_log = true;
+  //       break;
+  //     }
+  //   }
 
-  if (!has_log) {
-    args.emplace_back("--log=luce.log");
-  }
-#endif
+  //   if (!has_log) {
+  //     args.emplace_back("--log");
+  //     args.emplace_back("luce.log");
+  //   }
+  // #endif
 
   return args;
 }

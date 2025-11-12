@@ -23,7 +23,7 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
 
   auto contextFut = auxilia::async(ExecutionContext::InitializeContext);
 
-  auto maybe_imagePath = parser->get_option("image")->value();
+  auto maybe_imagePath = parser->get_option("--image")->value();
   if (!maybe_imagePath) {
     spdlog::error("Please provide an image path.");
     return EXIT_FAILURE;

@@ -28,7 +28,7 @@ Hover:
 CompileFlags:
   Add:
     - -xc++
-    - -std=c++latest
+    - -std=c++23
     # https://github.com/clangd/clangd/issues/1850, a bug for clangd
     # - -clang:-std=c++23
     # ^^^ workaround when compiler is MSVC and incompatible flags in it.

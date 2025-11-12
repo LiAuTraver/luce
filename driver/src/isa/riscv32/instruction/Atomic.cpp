@@ -17,7 +17,7 @@ auto Lr::execute(Icpu *cpu) const -> ExecutionStatus {
   if (!data)
     return kMemoryViolation;
   gpr.write_at(rd()) =
-      *reinterpret_cast<const num_type *>(std::move(data)->data());
+      *reinterpret_cast<const num_type *>(std::move(data->data()));
   cpu->atomic_address() = rs1();
   return kOk;
 }

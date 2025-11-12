@@ -1,12 +1,5 @@
 #pragma once
-#include <fmt/format.h>
-#include <fmt/ranges.h>
 #include <accat/auxilia/auxilia.hpp>
-#include <bit>
-#include <cstddef>
-#include <span>
-#include <string>
-#include <string_view>
 
 #include "luce/config.hpp"
 
@@ -23,10 +16,8 @@ public:
   ~Image() = default;
   template <std::endian Endianess = std::endian::native>
   static auxilia::StatusOr<Image> FromPath(const std::string_view path) {
-    if (auto maybe_data = auxilia::read_raw_bytes<Endianess>(path))
-      return Image{std::move(maybe_data.value()), Endianess};
-    else
-      return maybe_data.as_status();
+    return auxilia::read_raw_bytes<Endianess>(path).transform(
+        [](auto &&val) { return Image{std::move(val), Endianess}; });
   }
 
 public:

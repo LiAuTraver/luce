@@ -21,14 +21,6 @@ enum class Event : uint8_t {
   kRestartOrResumeTask = 4,
   kPauseTask = 6,
 };
-namespace tr {
-struct Command {
-  virtual auto execute(Mediator *, std::function<void(void)> = nullptr)
-      -> auxilia::Status = 0;
-
-  virtual ~Command() = default;
-};
-} // namespace tr
 struct Mediator {
 public:
   constexpr Mediator() = default;

@@ -11,7 +11,7 @@ inline auto &cli() {
 }
 inline bool isBatchMode() {
   return auxilia::program_options::get("luce")
-             .get_option("batch")
+             .get_option("--batch")
              ->value()
              .value_or("false") == "true";
 }

@@ -9,6 +9,8 @@
 #include "luce/repl/Parser.hpp"
 #include "luce/Support/utils/Pattern.hpp"
 
+#include <accat/auxilia/defines.hpp>
+
 namespace accat::luce {
 using fmt::fg;
 using enum fmt::color;
@@ -75,7 +77,7 @@ std::string read(Monitor *) {
         auxilia::println(stderr, fg(crimson), "Input error, please try again");
         continue;
       }
-      DebugUnreachable("Unexpected error reading input");
+      AC_UNREACHABLE("Unexpected error reading input");
       continue;
     }
     auto trimmed_input = trim(raw_input);

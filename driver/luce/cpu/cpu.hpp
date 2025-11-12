@@ -1,25 +1,13 @@
 ﻿#pragma once
 
-#include <fmt/color.h>
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
 #include "luce/Support/utils/Pattern.hpp"
 #include "luce/Support/utils/Timer.hpp"
-#include "accat/auxilia/details/Status.hpp"
 #include "luce/config.hpp"
 #include "luce/Task.hpp"
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/Support/isa/Icpu.hpp"
 #include "luce/cpu/mmu.hpp"
 #include <accat/auxilia/auxilia.hpp>
-#include <accat/auxilia/details/macros.hpp>
-#include <algorithm>
-#include <array>
-#include <cstddef>
-#include <cstdint>
-#include <limits>
-#include <memory>
-#include <optional>
 namespace accat::luce {
 namespace isa {
 class IDisassembler;

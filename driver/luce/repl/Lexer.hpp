@@ -19,10 +19,10 @@
 namespace accat::luce::repl {
 class Lexer {
 public:
-  using size_type = typename auxilia::string::size_type;
-  using string_type = auxilia::string;
-  using string_view_type = auxilia::string_view;
-  using path_type = auxilia::path;
+  using size_type = typename std::string::size_type;
+  using string_type = std::string;
+  using string_view_type = std::string_view;
+  using path_type = std::filesystem::path;
   using status_t = auxilia::Status;
   using token_t = Token;
   using token_type_t = Token::Type;

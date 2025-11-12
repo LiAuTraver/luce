@@ -142,7 +142,7 @@ result_type Evaluator::visit(const Unary &expr) {
         default:
           break;
         }
-        DebugUnreachable()
+        AC_UNREACHABLE()
         return {InvalidArgumentError("unknown unary operator")};
       },
       [&](const evaluation::String &str) -> result_type {
@@ -158,7 +158,7 @@ result_type Evaluator::visit(const Unary &expr) {
         default:
           break;
         }
-        DebugUnreachable()
+        AC_UNREACHABLE()
         return {InvalidArgumentError("unknown unary operator")};
       },
       [&](const evaluation::Nil &) -> result_type {

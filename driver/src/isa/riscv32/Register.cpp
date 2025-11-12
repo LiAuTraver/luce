@@ -6,7 +6,7 @@
 namespace accat::luce::isa::riscv32 {
 GeneralPurposeRegisters::register_t GeneralPurposeRegisters::garbage = {};
 
-using auxilia::operator""_raw;
+using auxilia::literals::operator""_raw;
 using GPR = GeneralPurposeRegisters;
 
 inline static constexpr auto fmtDefault = R"(

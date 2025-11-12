@@ -22,5 +22,4 @@ class LuceProject(conan.ConanFile):
     requires = (
         "fmt/11.2.0",
         "spdlog/1.15.3",
-        "argparse/3.2",
     )

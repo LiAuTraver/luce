@@ -31,7 +31,6 @@ cc_library(
     deps = [
         "//include:external_deps",
         "//source/auxilia",
-        "@argparse",
         "@fmt",
         "@spdlog",
     ],

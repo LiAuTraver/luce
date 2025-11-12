@@ -28,7 +28,7 @@ namespace accat::luce {
 namespace message::repl {
 using namespace std::literals;
 using namespace fmt::literals;
-using auxilia::operator""_raw;
+using auxilia::literals::operator""_raw;
 using enum fmt::color;
 using fmt::bg;
 using fmt::fg;

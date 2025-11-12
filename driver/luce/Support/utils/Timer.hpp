@@ -3,6 +3,7 @@
 #include <chrono>
 #include <deque>
 #include <accat/auxilia/auxilia.hpp>
+#include <accat/auxilia/defines.hpp>
 
 #include "luce/config.hpp"
 

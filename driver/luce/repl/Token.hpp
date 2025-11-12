@@ -12,7 +12,7 @@
 #include <vector>
 #include <unordered_map>
 #include <accat/auxilia/auxilia.hpp>
-
+#include <accat/auxilia/defines.hpp>
 namespace accat::luce::repl {
 using namespace std::literals;
 struct Token : auxilia::Printable {
@@ -194,19 +194,17 @@ protected:
       : type_(type), number_is_integer_(true), num_ll_(number), line_(line) {}
 
 public:
-  static auto
-  Number(const std::variant<long long, long double> value,
-         const uint_least32_t line) noexcept {
+  static auto Number(const std::variant<long long, long double> value,
+                     const uint_least32_t line) noexcept {
     return std::visit(
         [line](auto &&v) { return Token{Type::kNumber, v, line}; }, value);
   }
   static auto Lexeme(const Type type,
-                                    const std::string_view lexeme,
-                                    const uint_least32_t line) noexcept {
+                     const std::string_view lexeme,
+                     const uint_least32_t line) noexcept {
     return Token{type, lexeme, line};
   }
-  static auto Error(std::string &&message,
-                                   const uint_least32_t line) noexcept {
+  static auto Error(std::string &&message, const uint_least32_t line) noexcept {
     return Token{Type::kLexError, std::move(message), line};
   }
   static auto eof(const uint_least32_t line) noexcept {

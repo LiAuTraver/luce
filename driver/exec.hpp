@@ -19,7 +19,7 @@ class ExecutionContext {
   void initLog() {
     AC_SPDLOG_INITIALIZATION(luce, debug)
 
-    auto logFile = cli().get_option("log_file")->value().value_or("luce.log");
+    auto logFile = cli().get_option("--log")->value().value_or("luce.log");
 
     spdlog::info("log file: {}", std::filesystem::absolute(logFile));
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

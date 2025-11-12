@@ -25,8 +25,8 @@ constexpr auto is_valid_digit_of_base(const char c, const int base) noexcept
 }
 } // namespace
 namespace accat::luce::repl {
-using auxilia::operator""s;
-using auxilia::operator""sv;
+using std::literals::operator""s;
+using std::literals::operator""sv;
 using enum Lexer::token_type_t;
 inline static constexpr auto tolerable_chars = "_`$"sv;
 // inline static constexpr auto conditional_tolerable_chars = "@$#"sv;

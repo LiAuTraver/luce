@@ -9,11 +9,12 @@
 
 #include "./luce/repl/repl_fwd.hpp"
 #include <accat/auxilia/auxilia.hpp>
+#include <accat/auxilia/defines.hpp>
 
 namespace accat::luce::repl::evaluation {
 using namespace std::literals;
 
-struct AC_EMPTY_BASES AC_NOVTABLE Evaluatable{};
+struct AC_EMPTY_BASES AC_NOVTABLE Evaluatable {};
 struct AC_EMPTY_BASES AC_NOVTABLE Value : Evaluatable {
   friend constexpr bool operator==(const Value &, const Value &) noexcept {
     return true;

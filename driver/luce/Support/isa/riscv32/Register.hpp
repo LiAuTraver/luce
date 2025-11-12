@@ -26,7 +26,6 @@ private:
 public:
   using register_t = Word;
   using registers_t = std::array<register_t, general_purpose_register_count>;
-  using iSpan = auxilia::incontiguous_span<register_t>;
 
   constexpr GeneralPurposeRegisters() {}
   GeneralPurposeRegisters(const GeneralPurposeRegisters &) = delete;
