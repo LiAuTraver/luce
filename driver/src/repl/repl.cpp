@@ -74,7 +74,7 @@ std::string read(Monitor *) {
       if (std::cin.fail()) {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        auxilia::println(stderr, fg(crimson), "Input error, please try again");
+        auxilia::Println(stderr, fg(crimson), "Input error, please try again");
         continue;
       }
       AC_UNREACHABLE("Unexpected error reading input");
@@ -141,7 +141,7 @@ auto delete_watchpoint_cmd(Monitor *monitor, size_t watchpointId) {
 }
 
 auto info_registers_cmd(Monitor *monitor) {
-  auxilia::println(stdout, "{regs}", "regs"_a = monitor->registers());
+  auxilia::Println(stdout, "{regs}", "regs"_a = monitor->registers());
   return auxilia::OkStatus();
 }
 
@@ -173,7 +173,7 @@ auto print_cmd(Monitor *monitor, const std::string &expression) {
       .transform([&](auto &&res1) {
         res1->accept(eval)
             .transform([](auto &&res2) {
-              auxilia::println(
+              auxilia::Println(
                   stdout,
                   "{result}",
                   "result"_a = res2.to_string(auxilia::FormatPolicy::kBrief));
@@ -347,7 +347,7 @@ auto repl(Monitor *monitor) -> auxilia::Generator<Status> {
       if (auto status =
               command::dispatch_command(monitor, command::read(monitor));
           !status) {
-        auxilia::println(stderr,
+        auxilia::Println(stderr,
                          fg(crimson),
                          "{error} {msg}",
                          "error"_a = format(fg(crimson), "error:"),
@@ -355,7 +355,7 @@ auto repl(Monitor *monitor) -> auxilia::Generator<Status> {
       }
       co_yield {};
     } catch (const std::exception &res) {
-      auxilia::println(stderr,
+      auxilia::Println(stderr,
                        "{error} {msg}",
                        "error"_a = fmt::format(fg(crimson), "error:"),
                        "msg"_a = res.what());

@@ -9,7 +9,7 @@ using enum auxilia::FormatPolicy;
 using auxilia::FormatPolicy;
 using auxilia::NotFoundError;
 using auxilia::OkStatus;
-using auxilia::println;
+using auxilia::Println;
 using auxilia::Status;
 using auxilia::StatusOr;
 
@@ -97,8 +97,7 @@ bool WatchPoints::update(expression::Visitor *visitor) {
   return has_changed;
 }
 Debugger::Debugger(Mediator *parent)
-    : Component(parent),
-      visitor_{new expression::Evaluator{parent}} {}
+    : Component(parent), visitor_{new expression::Evaluator{parent}} {}
 Debugger::Debugger(Debugger &&that) noexcept = default;
 Debugger &Debugger::operator=(Debugger &&that) noexcept = default;
 Debugger::~Debugger() = default;
@@ -123,7 +122,7 @@ Status Debugger::add_watchpoint(const std::string &expr) {
       })
       // parse error
       .transform_error([](auto &&res) {
-        println(stderr,
+        Println(stderr,
                 fg(fmt::color::orange),
                 "Cannot add watchpoint: {msg}",
                 "msg"_a = res.message());

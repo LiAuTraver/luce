@@ -134,8 +134,7 @@ Parser::token_t Parser::consume() {
 const Parser::token_t &Parser::peek(const size_t offset) {
   while (queued_tokens.size() <= offset) {
     if (auto token = coro.next())
-      // queued_tokens.emplace(std::move(*token));
-      queued_tokens.emplace_back(std::move(*token));
+      queued_tokens.emplace_back(*std::move(token));
     else
       // optional<T&> is not available in C++23 currently, we uses monostate
       // to indicate to present the end of tokens

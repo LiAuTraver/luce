@@ -21,8 +21,7 @@ public:
 public:
   string_type to_string(
       const auxilia::FormatPolicy policy = auxilia::FormatPolicy::kBrief) const;
-  auto expr() const [[clang::lifetimebound]]
-  -> std::string_view {
+  auto expr() const [[clang::lifetimebound]] -> std::string_view {
     return expr_;
   }
   auto id() const noexcept -> size_t {

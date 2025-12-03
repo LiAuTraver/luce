@@ -13,7 +13,7 @@ LUCE_API int accat::luce::main(const std::span<const std::string_view> args) {
   auto parser = auxilia::program_options::Global("luce", "1.1");
 
   if (auto res = load_arguments() && parse_arguments(args); !res) {
-    auxilia::println(stderr,
+    auxilia::Println(stderr,
                      fg(fmt::color::fire_brick),
                      "Error: {err_msg}",
                      "err_msg"_a = res.message());
