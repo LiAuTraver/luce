@@ -8,7 +8,7 @@
 #include <fmt/ranges.h>
 #include "./constants/riscv32.hpp"
 #include "accat/auxilia/defines.hpp"
-#include "accat/auxilia/details/format.hpp"
+#include "accat/auxilia/base/format.hpp"
 namespace accat::luce::isa {
 /// @brief A class representing a word.
 /// @remark A few things to be clarified:

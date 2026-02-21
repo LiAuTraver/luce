@@ -1,6 +1,6 @@
 
-#include "accat/auxilia/details/format.hpp"
-#include "accat/auxilia/details/views.hpp"
+#include "accat/auxilia/base/format.hpp"
+#include "accat/auxilia/ranges/views.hpp"
 #include "luce/Support/isa/architecture.hpp"
 #include "luce/Support/isa/riscv32/Register.hpp"
 namespace accat::luce::isa::riscv32 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <accat/auxilia/details/config.hpp>
+#include <accat/auxilia/base/config.hpp>
 
 namespace accat::auxilia {
 template <typename> class StatusOr;

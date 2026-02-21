@@ -43,13 +43,13 @@ struct Undefined : /* extends */ auxilia::Monostate,
   constexpr ~Undefined() noexcept = default;
   constexpr auto to_string(
       const auxilia::FormatPolicy & = auxilia::FormatPolicy::kDefault) const
-      -> auxilia::Monostate::string_type {
+      -> string_type {
     return "undefined"s;
   }
   constexpr auto
   to_string_view(const auxilia::FormatPolicy & =
                      auxilia::FormatPolicy::kDefault) const noexcept
-      -> auxilia::Monostate::string_view_type {
+      -> string_view_type {
     return "undefined"sv;
   }
 };

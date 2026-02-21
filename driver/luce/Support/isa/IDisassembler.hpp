@@ -4,7 +4,7 @@
 
 #include "IInstruction.hpp"
 #include "IDecoder.hpp"
-#include "accat/auxilia/details/macros.hpp"
+#include "accat/auxilia/defines.hpp"
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
 namespace accat::luce::isa {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "accat/auxilia/details/program_options.hpp"
-#include "accat/auxilia/details/Status.hpp"
+#include "accat/auxilia/utility/program_options.hpp"
+#include "accat/auxilia/status/Status.hpp"
 
 namespace accat::luce {
 auxilia::Status load_arguments();

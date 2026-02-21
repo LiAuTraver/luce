@@ -2,7 +2,7 @@
 
 #include <optional>
 
-#include "accat/auxilia/details/config.hpp"
+#include "accat/auxilia/base/config.hpp"
 #include "./repl_fwd.hpp"
 namespace accat::auxilia {
 template <typename> class StatusOr;

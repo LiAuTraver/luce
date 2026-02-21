@@ -9,7 +9,8 @@ using namespace accat::luce;
 using namespace accat::auxilia;
 
 TEST(load_program, bytes) {
-  auto littleEndianData = *read_as_bytes<uint32_t>("Z:/luce/data/image.bin");
+  auto littleEndianData =
+      *read_as_bytes<uint32_t>("M:/Projects/luce/data/image.bin");
 
   auto little_endian_byte_span =
       std::span{reinterpret_cast<const std::byte *>(littleEndianData.data()),

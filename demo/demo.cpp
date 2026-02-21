@@ -19,7 +19,7 @@
 //   0xef, 0xbe, 0xad, 0xde  // Invalid instruction
 // };
 // static const char code2[] = {
-// #embed "Z:/luce/data/image.bin"
+// #embed "M:/Projects/luce/data/image.bin"
 // };
 int main() {
   auto code = std::as_bytes(std::span{img});

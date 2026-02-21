@@ -1,7 +1,7 @@
 #include <accat/auxilia/auxilia.hpp>
 #include <utility>
 
-#include "accat/auxilia/details/macros.hpp"
+#include "accat/auxilia/defines.hpp"
 #include "luce/Support/isa/Icpu.hpp"
 
 #include "luce/Support/isa/riscv32/instruction/Atomic.hpp"

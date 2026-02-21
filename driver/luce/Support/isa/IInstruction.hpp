@@ -8,7 +8,7 @@
 #include <span>
 #include <type_traits>
 #include "Word.hpp"
-#include "accat/auxilia/details/format.hpp"
+#include "accat/auxilia/base/format.hpp"
 
 namespace accat::luce::isa {
 class Icpu;

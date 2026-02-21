@@ -6,7 +6,7 @@ auxilia::Status load_arguments() {
   auto &parser = cli();
   parser.add_option(Option("--image", "-i", "Image path"))
       .nargs(1)
-      .default_value(R"(Z:/luce/data/image.bin)");
+      .default_value(R"(M:/Projects/luce/data/image.bin)");
   parser.add_option(Option("--batch", "-b", "Run in batch mode")).nargs(0);
 
   parser.add_option("--log", "-l", "Log file path").nargs(1);
